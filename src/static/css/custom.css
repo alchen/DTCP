@@ -1,0 +1,421 @@
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+  -webkit-user-select: inherit;
+  user-select: inherit;
+}
+
+a {
+  color: #17b;
+  text-decoration: none;
+}
+
+.promptcontainer {
+  height: 100vh;
+  width: 100%;
+}
+
+.prompt {
+  display: block;
+  width: 12rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.promptbackground {
+  width: 50vh;
+  height: 50vh;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-image: url("../image/background.png");
+  background-size: cover;
+  max-width: 1024px;
+  max-height: 1024px;
+  background-position: 14vh 11vh;
+  background-repeat: no-repeat;
+}
+
+.promptbutton {
+  line-height: 1rem;
+  outline: none;
+  background: #fff;
+  color: #6ac;
+  border: none;
+  padding: .75rem;
+  border-radius: .25rem;
+  height: 2.5rem;
+}
+
+.signinbutton,
+.verifiedbutton {
+  width: 100%;
+}
+
+.backbutton {
+  margin-right: .375rem;
+  width: calc(50% - .375rem);
+}
+
+.verifybutton {
+  width: 50%;
+}
+
+.prompticon {
+  vertical-align: middle;
+}
+
+.pininput {
+  width: 100%;
+  line-height: 2rem;
+  border: 0;
+  text-align: center;
+  border-radius: .25rem;
+  margin-bottom: .75rem;
+  outline: none;
+}
+
+.loader {
+  text-align: center;
+  margin-top: .75rem;
+}
+
+.ball-clip-rotate > div {
+  display: inline-block;
+  border: 2px solid #000;
+  border-bottom-color: transparent;
+}
+
+.timeline {
+  height: calc(100vh - 3rem);
+  overflow: auto;
+  display: none;
+}
+
+.activetimeline {
+  display: block;
+}
+
+::-webkit-scrollbar {
+  width: .625rem;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: .625rem;
+  background-color: #eee;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: .625rem;
+  background-color: #ccc;
+}
+
+.tweets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.tweet {
+  border-bottom: 1px solid #ddd;
+  padding: .75rem;
+  overflow: hidden;
+  width: 100%;
+  font-size: .75rem;
+}
+
+.tweet:hover .tweetmetaleft {
+  width: calc(100% - 7rem);
+}
+
+.tweet:hover .tweetmetaright {
+  width: 7rem;
+}
+
+.tweet:hover .tweettime {
+  display: none;
+}
+
+.tweet:hover .tweetactions {
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.tweetleft {
+  float: left;
+}
+
+.tweetright {
+  float: right;
+  width: calc(100% - 3.75rem);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.tweeticon {
+  border-radius: .25rem;
+  width: 3rem;
+  height: 3rem;
+}
+
+.js-display-url {
+  word-break: break-all;
+}
+
+.tweettext {
+  white-space: pre-wrap;
+}
+
+.quotedtext {
+  white-space: pre-wrap;
+}
+
+.tweetmeta {
+  white-space: nowrap;
+  line-height: 1rem;
+  overflow: hidden;
+  position: relative;
+  height: 1rem;
+  overflow: hidden;
+}
+
+.tweetactions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: all .2s;
+  opacity: 0;
+  transition: visibility 0s linear 0.5s,opacity 0.5s linear;
+}
+
+.tweetaction {
+  float: left;
+  margin-left: .25rem;
+}
+
+.tweetbutton {
+  background: none;
+  border: none;
+  outline: none;
+}
+
+.tweetbuttonicon:empty:before {
+  width: .75rem;
+  font-size: .75rem;
+  transition: all .2s;
+}
+
+.tweetbutton:hover .tweetbuttonicon:empty:before {
+  color: #6ac;
+}
+
+.disabledbutton {
+  cursor: default;
+}
+
+.disabledbutton .tweetbuttonicon:empty:before,
+.disabledbutton:hover .tweetbuttonicon:empty:before {
+  color: #ccc;
+}
+
+.activetweetbutton .tweetbuttonicon:empty:before,
+.activetweetbutton:hover .tweetbuttonicon:empty:before {
+  color: #a66;
+}
+
+.name {
+  color: #333;
+  font-weight: bold;
+}
+
+.screenname {
+  color: #999;
+  font-size: 0.6875rem;
+}
+
+.tweetmetaleft {
+  width: calc(100% - 2rem);
+  overflow: hidden;
+  display: inline-block;
+  text-overflow: ellipsis;
+}
+
+.tweetmetaright {
+  text-align: right;
+  color: #999;
+  font-size: 0.6875rem;
+  display: inline-block;
+  height: 1rem;
+  overflow: hidden;
+  width: 2rem; 
+}
+
+.tweettime {
+  background: #fff;
+}
+
+.tweetretweet {
+  font-weight: bold;
+  color: #555;
+  line-height: 1.25rem;
+}
+
+.retweeticon {
+  float: left;
+  margin-right: .125rem;
+  margin-top: .0625rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+.quotedtweet {
+  border: 1px solid #ccc;
+  padding: .375rem;
+  margin: .375rem 0;
+  border-radius: .25rem;
+}
+
+.tweetimagelist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.tweetimagebox {
+  height: 9rem;
+  margin-top: .75rem;
+  overflow: hidden;
+  float: left;
+  background-size: cover;
+  background-position: center; 
+}
+
+.headernav {
+  width: 100%;
+  overflow:hidden;
+  padding: .75rem;
+  border-bottom: .1rem solid #ccc;
+}
+
+.logo {
+  float: left;
+  height: 1.25rem;€
+}
+
+.nav {
+  float: right;
+  height: 1.25rem;
+}
+
+.navlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navicon {
+  float: left;
+  margin-left: .75rem;
+}
+
+.navbutton {
+  background: none;
+  border: none;
+  outline: none;
+  transition: all .2s;
+  height: 1.25rem;
+}
+
+.logobutton {
+  cursor: default;
+}
+
+.navbutton:hover span:empty:before {
+  color: #6ac;
+}
+
+.newtweettext {
+  height: calc(100vh - 2.75rem);
+  position: relative;
+}
+
+.newrawtweet {
+  outline: none;
+  width: 100%;
+  -webkit-text-fill-color: transparent;
+  background-color: transparent;
+  border: none;
+  height: 100%;
+  overflow: auto;
+  font-size: .75rem;
+  padding: .75rem;
+  resize: none;
+}
+
+.newformattedtweet {
+  width: 100%;
+  background-color: transparent;
+  border: none;
+  height: 100%;
+  overflow: auto;
+  font-size: .75rem;
+  padding: .75rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  white-space: pre-wrap;
+}
+
+.newtweetmeta {
+  background-color: #f4f7f9;
+  height: 2.75rem;
+  text-align: right;
+  padding: 0 .75rem;
+  border-top: 1px solid #ddd;
+}
+
+.remaining {
+  font-size: .75rem;
+  padding: 0 .75rem;
+  line-height: 2.75rem;
+  color: #aaa;
+}
+
+.newtweetbutton {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: .25rem;
+  text-align: center;
+  padding: .5rem .75rem;
+  font-size: .75rem;
+  color: #aaa;
+  outline: none;
+  transition: all .1s;
+  cursor: default;
+}
+
+.activenewtweetbutton {
+  color: #fff;
+  background-color: #69c;
+  cursor: pointer;
+}
+
+.iconic-property-fill, .iconic-property-text {stroke: none !important;}
+.iconic-property-stroke {fill: none !important;}
+svg.iconic.iconic-fluid {height:100% !important;width:100% !important;}
+svg.iconic.iconic-sm:not(.iconic-size-md):not(.iconic-size-lg), svg.iconic.iconic-size-sm{width:16px;height:16px;}
+svg.iconic-sm > g.iconic-md, svg.iconic-sm > g.iconic-lg, svg.iconic-md > g.iconic-sm, svg.iconic-md > g.iconic-lg, svg.iconic-lg > g.iconic-sm, svg.iconic-lg > g.iconic-md {display: none;}
+svg.iconic.iconic-icon-sm > g.iconic-lg, svg.iconic.iconic-icon-md > g.iconic-lg {display:none;}
+svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconic-md.iconic-icon-sm > g.iconic-sm, svg.iconic-lg.iconic-icon-sm > g.iconic-sm {display:inline;}

@@ -1,0 +1,40 @@
+{
+  "name": "dtcp",
+  "version": "0.0.1",
+  "description": "Desktop Twitter Client Project",
+  "main": "src/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alchen/DTCP.git"
+  },
+  "author": "uinoka",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alchen/DTCP/issues"
+  },
+  "homepage": "https://github.com/alchen/DTCP#readme",
+  "devDependencies": {
+    "asar": "^0.6.1",
+    "del": "^1.2.0",
+    "gulp": "^3.8.11",
+    "gulp-if": "^1.2.5",
+    "gulp-minify-css": "^1.1.1",
+    "gulp-minify-html": "^1.0.2",
+    "gulp-shell": "^0.4.1",
+    "gulp-uglify": "^1.2.0"
+  },
+  "dependencies": {
+    "electron-gh-releases": "^1.0.1",
+    "lodash": "^3.8.0",
+    "moment": "^2.10.3",
+    "oauth": "^0.9.13",
+    "ractive": "^0.7.3",
+    "ractive-events-tap": "^0.2.0",
+    "ractive-transitions-fade": "^0.2.0",
+    "twitter-text": "^1.12.0"
+  }
+}
