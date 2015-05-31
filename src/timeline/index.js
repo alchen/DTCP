@@ -2,13 +2,14 @@
 
 var Twit = require('../lib/twit');
 var _ = require('lodash');
+var config = require('../config');
 
 function Timeline (oauthToken, oauthTokenSecret, screenName) {
   var self = this;
 
   this.T = new Twit({
-    consumer_key: '4g0E1FHLfCrZMjjiaD3VXyVmb',
-    consumer_secret: '5BqCtFgsHZOnttQT6qSp483erSDVCnUcMX0THCFCe5vnWEv2zC',
+    consumer_key: config.consumerKey,
+    consumer_secret: config.consumerSecret,
     access_token: oauthToken,
     access_token_secret: oauthTokenSecret
   });
@@ -23,7 +24,6 @@ function Timeline (oauthToken, oauthTokenSecret, screenName) {
   this.friends = {};
   this.minTweetCreatedAt = {};
   this.minId = {};
-  this.retweetId = {};
 
   this.stream = this.T.stream('user', {
     stringify_friend_ids: true
@@ -38,7 +38,20 @@ function Timeline (oauthToken, oauthTokenSecret, screenName) {
     // TODO: also send to mentions
     if (self.subscriber) {
       self.subscriber.webContents.send('newTweet', 'home', tweet);
+
+      var status = tweet.retweeted_status || tweet;
+      var entities = status.entities.user_mentions;
+
+      var mentions = _.filter(entities, function (k) {
+        return k.screen_name === self.screenName;
+      });
+
+      if (mentions.length > 0) {
+        self.subscriber.webContents.send('newTweet', 'mentions', tweet);
+      }
     }
+  }).on('error', function (err) {
+    console.log('Stream: Disconnected and we\'ll just play possum here.');
   });
 }
 
@@ -54,6 +67,35 @@ Timeline.prototype.getStream = function getStream() {
 Timeline.prototype.unsubscribe = function unsubscribe() {
   console.log('Timeline: unsubscribe');
   this.subscriber = null;
+};
+
+var threadLength = 3;
+Timeline.prototype.findContext = function findContext(tweetId, replyTo) {
+  console.log('Timeline: find context');
+  // find reply to thread
+  var i = 0;
+  var replyTos = [];
+  while (i < threadLength) {
+    var tweet = this.tweets.home[replyTo] || this.tweets.mentions[replyTo];
+    if (tweet) {
+      replyTos.unshift(tweet);
+      replyTo = tweet.in_reply_to_status_id_str;
+    }
+    i++;
+  }
+  if (replyTos.length) {
+    console.log('Found precontext!');
+    this.subscriber.webContents.send('newPrecontext', replyTos);
+  }
+
+  // find replies
+  var replies = _.filter(this.tweets.home, function (tweet) {
+    return tweet.in_reply_to_status_id_str === tweetId;
+  });
+  if (replies.length) {
+    console.log('Found postcontext!');
+    this.subscriber.webContents.send('newPostcontext', replies);
+  }
 };
 
 Timeline.prototype.sendTweet = function sendTweet(tweet, replyTo, sender) {
@@ -117,16 +159,8 @@ Timeline.prototype.initialLoad = function initialLoad(timeline) {
     screenName: this.screenName
   });
 
-  var sendOrLoad = function (tweets, timeline) {
-    if (_.size(tweets) > 0) {
-      self.sendTweets(timeline);
-    } else {
-      self.loadMore(timeline);
-    }
-  };
-
   var load = function (tweets, timeline) {
-    if (_.size(tweets) == 0) {
+    if (_.size(tweets) === 0) {
       self.loadMore(timeline);
     }
   };
@@ -174,26 +208,36 @@ Timeline.prototype.unfavorite = function unfavorite(tweetId) {
 };
 
 Timeline.prototype.retweet = function retweet(tweetId) {
-  var self = this;
   this.T.post('statuses/retweet/' + tweetId, function (err, data, response) {
     if (!err) {
       console.log('REST: retweeted and got ' + data.id_str);
-      self.retweetId[tweetId] = data.id_str;
     } else {
       console.log(err);
     }
   });
 };
 
-Timeline.prototype.unretweet = function unretweet(tweetId, retweetId) {
-  retweetId = retweetId || this.retweetId[tweetId];
-  if (!retweetId) {
-    console.log('REST: cannot find retweet ID');
-    return;
-  }
-  this.T.post('statuses/destroy/' + retweetId, function (err, data, response) {
+Timeline.prototype.unretweet = function unretweet(tweetId) {
+  var self = this;
+  this.T.get('statuses/show/' + tweetId, {include_my_retweet: true}, function (err, data, response) {
     if (!err) {
-      console.log('REST: unretweeted');
+      var retweetId = data.current_user_retweet.id_str;
+      console.log('REST: retrieved retweetId ' + retweetId);
+      self.T.post('statuses/destroy/' + retweetId, function (err, data, response) {
+        if (!err) {
+          console.log('REST: unretweeted');
+        }
+      });
+    }
+  });
+};
+
+Timeline.prototype.deleteTweet = function deleteTweet(tweetId) {
+  this.T.post('statuses/destroy/' + tweetId, function (err, data, response) {
+    if (!err) {
+      console.log('REST: deleted');
+    } else {
+      console.log(err);
     }
   });
 };

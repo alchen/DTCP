@@ -11,6 +11,11 @@ html {
   user-select: inherit;
 }
 
+@-webkit-keyframes fadein {
+  from {opacity:0;}
+  to {opacity:1;}
+}
+
 a {
   color: #17b;
   text-decoration: none;
@@ -94,14 +99,22 @@ a {
   border-bottom-color: transparent;
 }
 
+.components {
+  position: relative;
+  overflow: auto;
+}
+
 .timeline {
   height: calc(100vh - 3rem);
   overflow: auto;
-  display: none;
 }
 
-.activetimeline {
-  display: block;
+.threadcontainer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  background: #fff;
 }
 
 ::-webkit-scrollbar {
@@ -118,11 +131,15 @@ a {
   background-color: #ccc;
 }
 
-.tweets {
+.tweets, .thread {
   list-style: none;
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+.tweetcontainer {
+  -webkit-animation: fadein .7s;
 }
 
 .tweet {
@@ -157,8 +174,6 @@ a {
 .tweetright {
   float: right;
   width: calc(100% - 3.75rem);
-  -webkit-user-select: text;
-  user-select: text;
 }
 
 .tweeticon {
@@ -173,10 +188,14 @@ a {
 
 .tweettext {
   white-space: pre-wrap;
+/*  -webkit-user-select: text;
+  user-select: text;*/
 }
 
 .quotedtext {
   white-space: pre-wrap;
+/*  -webkit-user-select: text;
+  user-select: text;*/
 }
 
 .tweetmeta {
@@ -264,14 +283,14 @@ a {
 }
 
 .tweetretweet {
-  font-weight: bold;
-  color: #555;
-  line-height: 1.25rem;
+  color: #666;
+  line-height: 1rem;
+  margin-top: .125rem;
 }
 
 .retweeticon {
   float: left;
-  margin-right: .125rem;
+  margin-right: .1875rem;
   margin-top: .0625rem;
   height: 1rem;
   width: 1rem;
@@ -297,8 +316,15 @@ a {
   margin-top: .75rem;
   overflow: hidden;
   float: left;
+}
+
+.tweetimagelink {
+  width: 100%;
+  height: 100%;
+  display: block;
+  font-size: 0;
   background-size: cover;
-  background-position: center; 
+  background-position: center;
 }
 
 .headernav {
@@ -345,37 +371,56 @@ a {
   color: #6ac;
 }
 
+.unreadmark {
+  display: inline-block;
+  font-size: .625rem;
+  background-color: #39D;
+  border-radius: 100%;
+  opacity: .85;
+  position: relative;
+  left: -.25rem;
+  top: .25rem;
+  height: .75rem;
+  width: .75rem;
+}
+
+.newtweet {
+  -webkit-animation: fadein .2s;
+}
+
 .newtweettext {
   height: calc(100vh - 2.75rem);
   position: relative;
+  word-break: break-all;
+  overflow: auto;
 }
 
 .newrawtweet {
-  outline: none;
+  white-space: pre-wrap;
+  display: table;
   width: 100%;
-  -webkit-text-fill-color: transparent;
   background-color: transparent;
   border: none;
-  height: 100%;
-  overflow: auto;
+  min-height: 100%;
   font-size: .75rem;
   padding: .75rem;
   resize: none;
+  outline: none;
+  -webkit-text-fill-color: transparent;
 }
 
 .newformattedtweet {
+  white-space: pre-wrap;
   width: 100%;
   background-color: transparent;
   border: none;
   height: 100%;
-  overflow: auto;
   font-size: .75rem;
   padding: .75rem;
   position: absolute;
   top: 0;
   left: 0;
   z-index: -1;
-  white-space: pre-wrap;
 }
 
 .newtweetmeta {

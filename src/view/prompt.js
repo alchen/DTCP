@@ -2,12 +2,13 @@
 
 var ipc = require('ipc');
 var shell = require('shell');
+var config = require('../config');
 var OAuth = require('oauth');
 var oauth = new OAuth.OAuth(
   'https://api.twitter.com/oauth/request_token',
   'https://api.twitter.com/oauth/access_token',
-  '4g0E1FHLfCrZMjjiaD3VXyVmb',
-  '5BqCtFgsHZOnttQT6qSp483erSDVCnUcMX0THCFCe5vnWEv2zC',
+  config.consumerKey,
+  config.consumerSecret,
   '1.0A',
   'oob',
   'HMAC-SHA1'

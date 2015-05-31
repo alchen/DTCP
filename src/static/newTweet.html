@@ -1,12 +1,26 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>New Tweet</title>
+    <title>New Tweet</title><meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
     <link rel="stylesheet" href="css/normalize.css" />
     <link rel="stylesheet" href="css/custom.css" />
   </head>
   <body>
     <div id="content">
+      <div class="newtweet">
+        <section class="newtweettext">
+          <textarea class="newrawtweet" v-on="keyup: escape | key esc, input: updateTweet" v-model="rawTweet" lazy autofocus="true"></textarea>
+          <section class="newformattedtweet" v-html="formattedTweet"></section>
+        </section>
+        <section class="newtweetmeta">
+          <span class="remaining" v-text="remainingLength"></span>
+          <button class="newtweetbutton" v-class="activenewtweetbutton: isValid" v-on="click: sendTweet">Tweet</button>
+        </section>
+      </div>
     </div>
     <script src="../view/newTweet.js"></script>
   </body>
