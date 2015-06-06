@@ -2,7 +2,8 @@
 
 var notifier = require('node-notifier');
 var ipc = require('ipc');
-var Vue = require('Vue');
+var Vue = require('vue');
+require('../view/components/profile');
 require('../view/components/timeline');
 require('../view/components/thread');
 var Tweet = require('../view/models/tweet');
@@ -24,29 +25,51 @@ ipc.on('initialLoad', function (data) {
     el: '#content',
     events: {
       loadMore: function () {
-        ipc.send('loadMore', this.currentView);
+        if (this.currentNest !== 'userProfile') {
+          ipc.send('loadMore', this.currentView);
+        } else {
+          ipc.send('loadUser', this.profile.user.screenName);
+        }
       },
       showThread: function (threadbase) {
+        console.log('Timeline: show thread');
         this.nest = true;
+        this.currentNest = 'thread';
         this.threadbase = threadbase;
+      },
+      showProfile: function (user) {
+        console.log('Timeline: show profile');
+        this.nest = true;
+        this.currentNest = 'userProfile';
+        this.profile.user = user;
+        this.profile.tweets = [];
       }
     },
     data: {
       screenName: screenName,
       tweets: {
         home: home,
-        mentions: mentions
+        mentions: mentions,
+      },
+      profile: {
+        user: {},
+        tweets: []
       },
       currentView: 'home',
+      currentNest: null,
       nest: false,
       now: moment()
     },
     methods: {
+      compose: function () {
+        ipc.send('compose');
+      },
       back: function () {
         this.nest = false;
-        this.threadbase = null;
+        this.currentNest = null;
       },
       changeTimeline: function (timeline) {
+        this.back();
         if (this.currentView === timeline) {
           this.scrollToTop();
         } else {
@@ -58,8 +81,10 @@ ipc.on('initialLoad', function (data) {
           notifier.notify({
             title: 'Mention from ' + tweet.user.screen_name,
             message: tweet.text,
-            sound: false, // Only Notification Center or Windows Toasters
-            wait: false // wait with callback until user action is taken on notification
+            sound: false,
+            wait: false,
+            // TODO: Should show main window after gaining focus
+            activate: 'com.lab704.dtcp'
           });
         }
       },
@@ -87,12 +112,16 @@ ipc.on('initialLoad', function (data) {
     },
     components: {
       home: {
-        paramAttributes: ['tweets', 'username', 'now'],
-        template: '<div v-component="timeline" tweets="{{tweets.home}}" username="{{username}}" now="{{now}}"></div>'
+        inherit: true,
+        template: '<component is="timeline" tweets="{{tweets.home}}" username="{{screenName}}" now="{{now}}"></component>'
       },
       mentions: {
-        paramAttributes: ['tweets', 'username', 'now'],
-        template: '<div v-component="timeline" tweets="{{tweets.mentions}}" username="{{username}}" now="{{now}}"></div>'
+        inherit: true,
+        template: '<component is="timeline" tweets="{{tweets.mentions}}" username="{{screenName}}" now="{{now}}"></component>'
+      },
+      userProfile: {
+        props: ['profile', 'tweets', 'username', 'now', 'user'],
+        template: '<component is="profile" tweets="{{profile.tweets}}" user="{{profile.user}}" username="{{username}}" now="{{now}}"></component>'
       }
     },
     compiled: function () {
@@ -115,6 +144,17 @@ ipc.on('initialLoad', function (data) {
         console.log('Renderer: newTweets on ' + timeline);
         self.now = moment();
         self.tweets[timeline] = _.map(tweets, function (tweet) {
+          return new Tweet(tweet);
+        });
+      });
+
+      ipc.on('newUserTweets', function (screenName, tweets) {
+        if (!tweets || !tweets.length) {
+          return;
+        }
+        console.log('Renderer: newUserTweets on ' + screenName);
+        self.now = moment();
+        self.profile.tweets = _.map(tweets, function (tweet) {
           return new Tweet(tweet);
         });
       });

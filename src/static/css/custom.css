@@ -104,12 +104,13 @@ a {
   overflow: auto;
 }
 
-.timeline {
+.timelines .timeline {
   height: calc(100vh - 3rem);
   overflow: auto;
 }
 
-.threadcontainer {
+.nestcontainer {
+  height: calc(100vh - 3rem);
   position: absolute;
   left: 0;
   top: 0;
@@ -131,6 +132,11 @@ a {
   background-color: #ccc;
 }
 
+.thread {
+  height: 100%;
+  overflow: auto;
+}
+
 .tweets, .thread {
   list-style: none;
   margin: 0;
@@ -148,6 +154,12 @@ a {
   overflow: hidden;
   width: 100%;
   font-size: .75rem;
+  cursor: default;
+}
+
+.fattweet {
+  background-color: #fcfcfc;
+  padding: .75rem .75rem .5rem .75rem;
 }
 
 .tweet:hover .tweetmetaleft {
@@ -167,8 +179,57 @@ a {
   transition-delay: 0s;
 }
 
+.profilemeta {
+  overflow: hidden;
+  font-size: .75rem;
+  border-bottom: .1rem solid #ccc;
+  line-height: 1.25rem;
+}
+
+.profilecounts > section {
+    margin-right: .375rem;
+    display: inline-block;
+    text-transform: uppercase;
+}
+
+.profilecounttag {
+  color: #999;
+}
+
+.profilebackground {
+  width: 100%;
+  height: 5rem;
+  background-size: cover;
+}
+
+.profilemetaright .name {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+}
+
+.profilemetaright .screenname {
+  color: #777;
+  font-size: 0.6875rem;
+}
+
+.profilemetacontent {
+  padding: .75rem;
+  overflow: hidden;
+}
+
+.profilemetaleft,
 .tweetleft {
   float: left;
+}
+
+.profilemetaright {
+  float: right;
+  width: calc(100% - 3.75rem);
+}
+
+.profiletext {
+  font-size: .875rem;
 }
 
 .tweetright {
@@ -188,14 +249,21 @@ a {
 
 .tweettext {
   white-space: pre-wrap;
-/*  -webkit-user-select: text;
-  user-select: text;*/
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.fattweet .tweettext {
+  margin-top: .75rem;
+  font-size: 1.125rem;
+  color: #333;
+  font-weight: lighter;
 }
 
 .quotedtext {
   white-space: pre-wrap;
-/*  -webkit-user-select: text;
-  user-select: text;*/
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .tweetmeta {
@@ -207,6 +275,12 @@ a {
   overflow: hidden;
 }
 
+.fattweetbottommeta {
+  margin-top: .75rem;
+  color: #999;
+  text-transform: uppercase;
+}
+
 .tweetactions {
   margin: 0;
   padding: 0;
@@ -216,9 +290,22 @@ a {
   transition: visibility 0s linear 0.5s,opacity 0.5s linear;
 }
 
+.fattweetactions {
+  margin: .75rem 0 0 0;
+  padding: 0;
+  list-style: none;
+  transition: all .2s;
+}
+
 .tweetaction {
   float: left;
   margin-left: .25rem;
+}
+
+.fattweetaction {
+  display: inline-block;
+  width: 25%;
+  text-align: center;
 }
 
 .tweetbutton {
@@ -228,9 +315,13 @@ a {
 }
 
 .tweetbuttonicon:empty:before {
-  width: .75rem;
   font-size: .75rem;
   transition: all .2s;
+}
+
+.fattweet .tweetbuttonicon:empty:before {
+  font-size: 1.125rem;
+  color: #333;
 }
 
 .tweetbutton:hover .tweetbuttonicon:empty:before {
@@ -251,14 +342,37 @@ a {
   color: #a66;
 }
 
-.name {
+.tweetmetaleft .name,
+.quotedmeta .name {
   color: #333;
   font-weight: bold;
 }
 
-.screenname {
+.tweetmetaleft .screenname,
+.quotedmeta .screenname {
   color: #999;
   font-size: 0.6875rem;
+}
+
+.fattweetmetaleft,
+.fattweetmetaright {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.fattweetmetaright {
+  margin-left: .5rem;
+}
+
+.fattweetmetaright .name {
+  color: #333;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.fattweetmetaright .screenname {
+  color: #999;
+  font-size: .875rem;
 }
 
 .tweetmetaleft {
@@ -280,6 +394,17 @@ a {
 
 .tweettime {
   background: #fff;
+}
+
+.fattweettime {
+  /*margin-top: .75rem;*/
+  
+}
+
+.fattweetretweet {
+  color: #666;
+  line-height: 1rem;
+  margin-top: .75rem;
 }
 
 .tweetretweet {
@@ -334,9 +459,14 @@ a {
   border-bottom: .1rem solid #ccc;
 }
 
-.logo {
+.headeractions {
   float: left;
-  height: 1.25rem;€
+  height: 1.25rem;
+}
+
+.headeractions .navicon {
+  float: left;
+  margin-right: .75rem;
 }
 
 .nav {
@@ -350,7 +480,7 @@ a {
   padding: 0;
 }
 
-.navicon {
+.nav .navicon {
   float: left;
   margin-left: .75rem;
 }

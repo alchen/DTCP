@@ -74,6 +74,16 @@ ipc.on('loadMore', function (event, timelineToLoad) {
   timeline.loadMore(timelineToLoad);
 });
 
+ipc.on('loadUser', function (event, screenNameToLoad) {
+  console.log('Main: loadMore ' + screenNameToLoad);
+  timeline.loadUser(screenNameToLoad);
+});
+
+ipc.on('compose', function (event) {
+  console.log('Main: compose');
+  windows.getNewTweetWindow();
+});
+
 ipc.on('stopComposing', function (event) {
   var sender = windows.findWindowFromWebContents(event.sender);
   sender.close();

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Testbed</title><meta charset="utf-8" />
+    <title>DTCP</title><meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="" />
@@ -13,6 +13,13 @@
   <body>
     <div id="content">
       <header class="headernav">
+        <section class="headeractions">
+          <ul class="navlist">
+            <li class="navicon">
+              <button class="navbutton" v-on="click: compose"><span class="iconic" data-glyph="pencil"></span></button>
+            </li>
+          </ul>
+        </section>
         <nav class="nav">
           <ul class="navlist">
             <li class="navicon" v-if="nest">
@@ -28,8 +35,8 @@
         </nav>
       </header>
       <section class="components">
-        <section class="timelines" v-component="{{ currentView }}" threadbase="{{threadbase}}" tweets="{{tweets}}" username="{{screenName}}" now="{{now}}" keep-alive></section>
-        <section class="threadcontainer" v-if="nest" v-component="thread" threadbase="{{threadbase}}" username="{{screenName}}" now="{{now}}"></section>
+        <component is="{{currentView}}" class="timelines" keep-alive></component>
+        <component is="{{currentNest}}" class="nestcontainer" v-if="nest" profile="{{profile}}" threadbase="{{threadbase}}" username="{{screenName}}" now="{{now}}"></component>
       </section>
     </div>
     <script src="../view/timelines.js"></script>

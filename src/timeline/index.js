@@ -18,12 +18,12 @@ function Timeline (oauthToken, oauthTokenSecret, screenName) {
   this.tweets = {
     home: {},
     mentions: {},
-    messages: {},
-    user: {}
+    messages: {}
   };
   this.friends = {};
   this.minTweetCreatedAt = {};
   this.minId = {};
+  this.users = {};
 
   this.stream = this.T.stream('user', {
     stringify_friend_ids: true
@@ -40,14 +40,18 @@ function Timeline (oauthToken, oauthTokenSecret, screenName) {
       self.subscriber.webContents.send('newTweet', 'home', tweet);
 
       var status = tweet.retweeted_status || tweet;
-      var entities = status.entities.user_mentions;
 
-      var mentions = _.filter(entities, function (k) {
-        return k.screen_name === self.screenName;
-      });
+      // Check for entities
+      // TODO: this should not happen
+      var entities = status.entities;
+      if (entities && entities.user_mentions) {
+        var mentions = _.filter(entities.user_mentions, function (k) {
+          return k.screen_name === self.screenName;
+        });
 
-      if (mentions.length > 0) {
-        self.subscriber.webContents.send('newTweet', 'mentions', tweet);
+        if (mentions.length > 0) {
+          self.subscriber.webContents.send('newTweet', 'mentions', tweet);
+        }
       }
     }
   }).on('error', function (err) {
@@ -69,23 +73,21 @@ Timeline.prototype.unsubscribe = function unsubscribe() {
   this.subscriber = null;
 };
 
-var threadLength = 3;
 Timeline.prototype.findContext = function findContext(tweetId, replyTo) {
   console.log('Timeline: find context');
   // find reply to thread
-  var i = 0;
   var replyTos = [];
-  while (i < threadLength) {
-    var tweet = this.tweets.home[replyTo] || this.tweets.mentions[replyTo];
-    if (tweet) {
-      replyTos.unshift(tweet);
-      replyTo = tweet.in_reply_to_status_id_str;
-    }
-    i++;
+  var tweet = this.tweets.home[replyTo] || this.tweets.mentions[replyTo];
+  while (tweet) {
+    replyTos.unshift(tweet);
+    replyTo = tweet.in_reply_to_status_id_str;
+    tweet = this.tweets.home[replyTo] || this.tweets.mentions[replyTo];
   }
   if (replyTos.length) {
     console.log('Found precontext!');
     this.subscriber.webContents.send('newPrecontext', replyTos);
+  } else {
+    // Should load remotely
   }
 
   // find replies
@@ -116,16 +118,27 @@ Timeline.prototype.sendTweet = function sendTweet(tweet, replyTo, sender) {
 
 Timeline.prototype.sendTweets = function sendTweets(timeline) {
   console.log('Timeline: send' + timeline);
-  var toSend = _.sortByOrder(this.tweets[timeline], function (it) {
-    return (new Date(it.created_at));
-  }, [false]);
-  this.subscriber.webContents.send('newTweets', timeline, toSend);
+  var toSend;
+  if (timeline === 'home' || timeline === 'mentions' || timeline === 'messages') {
+    toSend = _.sortByOrder(this.tweets[timeline], function (it) {
+      return (new Date(it.created_at));
+    }, [false]);
+    this.subscriber.webContents.send('newTweets', timeline, toSend);
+  } else {
+    toSend = _.sortByOrder(this.users[timeline], function (it) {
+      return (new Date(it.created_at));
+    }, [false]);
+    this.subscriber.webContents.send('newUserTweets', timeline, toSend);
+  }
 };
 
 Timeline.prototype.handleTweet = function handleTweet(tweet, timeline) {
-  if (tweet.id_str) {
+  if (timeline === 'home' || timeline === 'mentions' || timeline === 'messages') {
     this.tweets[timeline][tweet.id_str] = tweet;
+  } else {
+    this.users[timeline][tweet.id_str] = tweet;
   }
+
   var createdAt = new Date(tweet.created_at);
   if (!this.minTweetCreatedAt[timeline] || createdAt < this.minTweetCreatedAt[timeline]) {
     this.minTweetCreatedAt[timeline] = createdAt;
@@ -138,6 +151,7 @@ Timeline.prototype.handleTweets = function handleTweets(data, timeline) {
   _.each(data, function (tweet) {
     self.handleTweet(tweet, timeline);
   });
+
 };
 
 Timeline.prototype.initialLoad = function initialLoad(timeline) {
@@ -183,8 +197,30 @@ Timeline.prototype.loadMore = function loadMore(timeline) {
     if (!err) {
       console.log('REST: handle ' + timeline + ' timeline tweets');
       self.handleTweets(data, timeline);
-      // Notify
       self.sendTweets(timeline);
+    }
+  });
+};
+
+Timeline.prototype.loadUser = function loadUser(screenName) {
+  var self = this;
+  var options = {screen_name: screenName};
+
+  if (this.minTweetCreatedAt[screenName]) {
+    options = {
+      screen_name: screenName,
+      count: 100,
+      max_id: this.minId[screenName]
+    };
+  }
+
+  this.T.get('statuses/user_timeline', options, function (err, data, response) {
+    console.log('REST: loadUser ' + screenName);
+    if (!err) {
+      console.log('REST: handle user tweets from ' + screenName);
+      self.users[screenName] = self.users[screenName] || {};
+      self.handleTweets(data, screenName);
+      self.sendTweets(screenName);
     }
   });
 };

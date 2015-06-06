@@ -5,6 +5,7 @@ var ipc = require('ipc');
 var _ = require('lodash');
 var moment = require('moment');
 var twitterText = require('twitter-text');
+var User = require('./user');
 
 var Tweet = function (tweet) {
   var options = {
@@ -25,6 +26,8 @@ var Tweet = function (tweet) {
   this.inReplyTo = tweet.in_reply_to_status_id_str;
   this.isRetweeted = tweet.retweeted;
   this.isFavorited = tweet.favorited;
+  this.retweetNum = tweet.retweet_count;
+  this.favoriteNum = tweet.favorite_count;
   this.createdAt = moment(new Date(tweet.created_at));
 
   // User info
@@ -33,6 +36,8 @@ var Tweet = function (tweet) {
   this.userId = tweet.user.id_str;
   this.icon = tweet.user.profile_image_url_https;
   this.protected = tweet.user.protected;
+
+  this.user = new User(tweet.user);
 
   this.mentions = (tweet.entities ?
     _.map(tweet.entities.user_mentions, function (k) {

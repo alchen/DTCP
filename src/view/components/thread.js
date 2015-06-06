@@ -1,22 +1,28 @@
 'use strict';
 
-var _ = require('lodash');
 var ipc = require('ipc');
-var Tweet = require('../models/tweet');
-var Vue = require('Vue');
+var Vue = require('vue');
 var detectViewport = require('../directives/detectViewport');
 Vue.use(detectViewport);
+require('./fatTweet');
 require('./tweet');
 
 var template = '<ul class="thread timeline">'
-    + '<li class="tweetcontainer" v-repeat="pretext" v-component="tweet" username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></li>'
-    + '<li class="tweetcontainer" v-with="threadbase" v-component="tweet" username="{{ username }}" now="{{ now }}"></li>'
-    + '<li class="tweetcontainer" v-repeat="replies" v-component="tweet" username="{{ username }}" now="{{ now }}" track-by="id"></li>'
+    + '<li class="tweetcontainer"><component is="tweet" v-repeat="pretext"  username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component></li>'
+    + '<li class="tweetcontainer"><component is="fatTweet" v-repeat="[threadbase]" username="{{ username }}" now="{{ now }}"></component></li>'
+    + '<li class="tweetcontainer"><component is="tweet" v-repeat="replies"  username="{{ username }}" now="{{ now }}" track-by="id"></component></li>'
   + '</ul>';
 
 var Thread = Vue.extend({
-  paramAttributes: ['threadbase', 'username', 'now'],
+  props: ['threadbase', 'username', 'now'],
   events: {
+    showThread: function (tweet) {
+      this.pretext = [];
+      this.replies = [];
+      this.threadbase = tweet;
+      this.findContext();
+      return false;
+    },
     newPrecontext: function (tweets) {
       this.pretext = tweets;
       return false;
@@ -26,13 +32,18 @@ var Thread = Vue.extend({
       return false;
     }
   },
-  compiled: function () {
-    var id, inReplyTo;
-    var tweet = this.threadbase.retweet || this.threadbase;
-    id = tweet.id;
-    inReplyTo = tweet.inReplyTo;
+  methods: {
+    findContext: function () {
+      var id, inReplyTo;
+      var tweet = this.threadbase.retweet || this.threadbase;
+      id = tweet.id;
+      inReplyTo = tweet.inReplyTo;
 
-    ipc.send('findContext', id, inReplyTo);
+      ipc.send('findContext', id, inReplyTo);
+    }
+  },
+  compiled: function () {
+    this.findContext();
   },
   data: function () {
     return {
@@ -48,7 +59,13 @@ var Thread = Vue.extend({
         timelineEl.scrollTop += el.scrollHeight;
         done();
       }
-    }
+    },
+    scrollTo: {
+      enter: function (el, done) {
+        // el.scrollIntoViewIfNeeded()
+        done();
+      }
+    },
   }
 });
 

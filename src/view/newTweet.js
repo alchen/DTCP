@@ -1,7 +1,7 @@
 'use strict';
 
 var ipc = require('ipc');
-var Vue = require('Vue');
+var Vue = require('vue');
 var twitterText = require('twitter-text');
 
 var newTweet;
