@@ -7,7 +7,7 @@ var moment = require('moment');
 var remote = require('remote');
 var contextmenu = require('./contextmenu');
 
-var template = '<div class="tweet fattweet" v-on="contextmenu: rightclick">'
+var template = '<li class="tweetcontainer"><div class="tweet fattweet" v-on="contextmenu: rightclick">'
     + '<section class="fattweetmeta">'
       + '<section class="fattweetmetaleft">'
         + '<img class="tweeticon" v-attr="src: displayIcon" onerror="this.style.visibility=\'hidden\';" />'
@@ -54,9 +54,10 @@ var template = '<div class="tweet fattweet" v-on="contextmenu: rightclick">'
       + '<li class="fattweetaction" v-on="click: doQuote"><button class="tweetbutton" v-class="disabledbutton: isUserProtected"><span class="iconic tweetbuttonicon" data-glyph="double-quote-serif-left"></span></button></li>'
       + '<li class="fattweetaction" v-on="click: doFavorite"><button class="tweetbutton" v-class="activetweetbutton: isFavorited" on-tap="favorite:{{ id_str }}"><span class="iconic tweetbuttonicon" data-glyph="star"></span></button></li>'
     + '</ul>'
-  + '</div>';
+  + '</div></li>';
 
 var Tweet = Vue.extend({
+  replace: true,
   props: ['username', 'now'],
   template: template,
   filters: {

@@ -29,6 +29,7 @@ ipc.on('pretext', function (replyTo, pretext, frontFocus) {
     },
     methods: {
       escape: function () {
+        console.log('papa')
         ipc.send('stopComposing');
       },
       sendTweet: function (event) {

@@ -20,7 +20,7 @@ app.on('ready', function () {
   // Check for updates
   update.check(function (err, status) {
     if (!err && status) {
-      update.download();
+      // update.download();
     }
   });
 
