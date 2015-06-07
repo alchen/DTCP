@@ -26,7 +26,7 @@ var windows = {
       'use-content-size': true,
       show: false
     });
-    newWindow.loadUrl('file://' + __dirname + '/../static/newTweet.html');
+    newWindow.loadUrl('file://' + __dirname + '/static/newTweet.html');
     newTweetWindows.push(newWindow);
 
     newWindow.on('close', function() {
@@ -137,10 +137,10 @@ var windows = {
     }
   },
   loadPrompt: function loadPrompt() {
-    mainWindow.loadUrl('file://' + __dirname + '/../static/prompt.html');
+    mainWindow.loadUrl('file://' + __dirname + '/static/prompt.html');
   },
   loadTimeline: function loadTimeline(timeline) {
-    mainWindow.loadUrl('file://' + __dirname + '/../static/index.html');
+    mainWindow.loadUrl('file://' + __dirname + '/static/index.html');
     timeline.subscribe(mainWindow);
   }
 };

@@ -8,7 +8,7 @@ require('./tweet');
 var scrollStep = 50;
 
 var template = '<ul class="tweets timeline" v-on="scroll: scroll">'
-    + '<li class="tweetcontainer"><component is="tweet" v-repeat="tweets | throttle" username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component></li>'
+    + '<component is="tweet" v-repeat="tweets | throttle" username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component>'
     + '<div class="loader loader-inner ball-clip-rotate" v-detect-viewport><div></div></div>'
   + '</ul>';
 

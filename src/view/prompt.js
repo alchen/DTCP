@@ -14,88 +14,101 @@ var oauth = new OAuth.OAuth(
   'HMAC-SHA1'
 );
 
-var Ractive = require('ractive');
-Ractive.events.tap = require( 'ractive-events-tap' );
+var Vue = require('vue');
 
-var prompt = '<div class="prompt">'
-    + '<button class="promptbutton signinbutton" on-tap="authenticate">Sign in with Twitter</button>'
+var promptTemplate = '<div class="prompt">'
+    + '<button class="promptbutton signinbutton" v-on="click: authenticate">Sign in with Twitter</button>'
+    + '<section class="prompterror" v-if="error" v-text="error"></section>'
   + '</div>';
 
-var verify = '<div class="prompt">'
-    + '<input class="pininput" type="text" value="{{pin}}" placeholder="Enter PIN" />'
-    + '<button class="promptbutton backbutton" on-tap="back">Back</button>'
-    + '<button class="promptbutton verifybutton" on-tap="verify">Verify</button>'
+var verifyTemplate = '<div class="prompt">'
+    + '<input class="pininput" type="text" v-model="pin" placeholder="Enter PIN" />'
+    + '<button class="promptbutton backbutton" v-on="click: back">Back</button>'
+    + '<button class="promptbutton verifybutton" v-on="click: verify">Verify</button>'
+    + '<section class="prompterror" v-if="error" v-text="error"></section>'
   + '</div>';
 
-var success = '<div class="prompt">'
+var successTemplate = '<div class="prompt">'
     + '<button class="promptbutton verifiedbutton">Verified!</button>'
   + '</div>';
 
-var template = '<div class="promptcontainer" intro="fade:300">'
-    + '{{#if stage === \'prompt\'}}'
-      + prompt
-    + '{{elseif stage === \'verify\'}}'
-      + verify
-    + '{{elseif stage === \'success\'}}'
-      + success
-    + '{{/if}}'
-  + '</div>';
-
-var ractive = null;
-
-ractive = new Ractive({
+var prompt = new Vue({
   el: '#content',
-  template: template,
-  partials: {
-  },
   data: {
-    stage: 'prompt'
+    stage: 'prompt',
+    pin: '',
+    error: null,
+    oauthToken: null,
+    oauthTokenSecret: null
   },
-  transitions: {
-    fade: require('ractive-transitions-fade')
+  events: {
+
   },
-  oncomplete: function () {
+  components: {
+    prompt: {
+      replace: true,
+      inherit: true,
+      template: promptTemplate,
+      methods: {
+        authenticate: function () {
+          var self = this;
+          oauth.getOAuthRequestToken(function (error, oauthToken, oauthTokenSecret, results) {
+            if (error) {
+              console.log('Renderer: authenticate err ' + error);
+              self.error = 'Is internet down?';
+            } else {
+              self.error = null;
+              self.oauthToken = oauthToken;
+              self.oauthTokenSecret = oauthTokenSecret;
+              var authenticateUrl = 'https://twitter.com/oauth/authenticate?oauth_token=' + oauthToken;
+              self.authenticateUrl = authenticateUrl;
+              shell.openExternal(authenticateUrl);
+              self.stage = 'verify';
+            }
+          });
+        }
+      }
+    },
+    verify: {
+      replace: true,
+      inherit: true,
+      template: verifyTemplate,
+      methods: {
+        back: function () {
+          this.stage = 'prompt';
+        },
+        verify: function () {
+          var self = this;
+          oauth.getOAuthAccessToken(this.oauthToken, this.oauthTokenSecret, this.pin, 
+            function(error, oauthAccessToken, oauthAccessTokenSecret, results) {
+              if (error){
+                console.log('Renderer: verification err ' + error);
+                self.error = 'Is internet down?';
+              } else {
+                self.error = null;
+                console.log('Renderer: authorized');
+                self.stage = 'success';
+                var util = require('util');
+                console.log(util.inspect(results));
+                setTimeout(function () {
+                  ipc.send(
+                    'verified',
+                    oauthAccessToken,
+                    oauthAccessTokenSecret,
+                    results.screen_name
+                  );
+                }, 777);
+              }
+          });
+        }
+      }
+    },
+    success: {
+      replace: true,
+      template: successTemplate
+    }
   }
 });
 
-ractive.on('back', function () {
-  ractive.set('stage', 'prompt');
-});
 
-ractive.on('authenticate', function () {
-  oauth.getOAuthRequestToken(function (error, oauthToken, oauthTokenSecret, results) {
-    if (error) {
-      console.log('Renderer: authenticate err ' + error);
-    } else {
-      ractive.set('oauthToken', oauthToken);
-      ractive.set('oauthTokenSecret', oauthTokenSecret);
-      var authenticateUrl = 'https://twitter.com/oauth/authenticate?oauth_token=' + oauthToken;
-      ractive.set('authenticateUrl', authenticateUrl);
-      shell.openExternal(authenticateUrl);
-      ractive.set('stage', 'verify');
-    }
-  });
-});
-
-ractive.on('verify', function () {
-  var oauthToken  = ractive.get('oauthToken');
-  var oauthTokenSecret  = ractive.get('oauthTokenSecret');
-  var pin = ractive.get('pin');
-  oauth.getOAuthAccessToken(oauthToken, oauthTokenSecret, pin, 
-    function(error, oauthAccessToken, oauthAccessTokenSecret, results) {
-      if (error){
-        console.log('Renderer: verification err ' + error);
-      } else {
-        console.log('Renderer: authorized');
-        ractive.set('stage', 'success');
-        setTimeout(function () {
-          ipc.send(
-            'verified',
-            oauthAccessToken,
-            oauthAccessTokenSecret,
-            results.screen_name
-          );
-        }, 777);
-      }
-  });
-});
+module.exports = prompt;

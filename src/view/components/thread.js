@@ -8,9 +8,9 @@ require('./fatTweet');
 require('./tweet');
 
 var template = '<ul class="thread timeline">'
-    + '<li class="tweetcontainer"><component is="tweet" v-repeat="pretext"  username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component></li>'
-    + '<li class="tweetcontainer"><component is="fatTweet" v-repeat="[threadbase]" username="{{ username }}" now="{{ now }}"></component></li>'
-    + '<li class="tweetcontainer"><component is="tweet" v-repeat="replies"  username="{{ username }}" now="{{ now }}" track-by="id"></component></li>'
+    + '<component is="tweet" v-repeat="pretext"  username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component>'
+    + '<component is="fatTweet" v-repeat="[threadbase]" username="{{ username }}" now="{{ now }}"></component>'
+    + '<component is="tweet" v-repeat="replies"  username="{{ username }}" now="{{ now }}" track-by="id"></component>'
   + '</ul>';
 
 var Thread = Vue.extend({

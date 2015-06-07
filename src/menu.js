@@ -4,8 +4,8 @@ var app = require('app');
 var shell = require('shell');
 var Menu = require('menu');
 var BrowserWindow = require('browser-window');
-var preferences = require('../preferences');
-var windows = require('../windows');
+var preferences = require('./preferences');
+var windows = require('./windows');
 
 module.exports = {
   createApplicationMenu: function createApplicationMenu() {
@@ -67,7 +67,9 @@ module.exports = {
               label: 'New Tweet',
               accelerator: 'Command+N',
               click: function () {
-                windows.getNewTweetWindow();
+                if (preferences.authenticated) {
+                  windows.getNewTweetWindow();
+                }
               }
             },
             {

@@ -7,7 +7,7 @@ var moment = require('moment');
 var remote = require('remote');
 var contextmenu = require('./contextmenu');
 
-var template = '<div class="tweet" v-on="contextmenu: rightclick" v-touch="tap: leftclick">'
+var template = '<li class="tweetcontainer"><div class="tweet" v-on="contextmenu: rightclick" v-touch="tap: leftclick">'
     + '<section class="tweetleft">'
       + '<img class="tweeticon" v-attr="src: displayIcon" onerror="this.style.visibility=\'hidden\';" v-touch="tap: doShowProfile" />'
     + '</section>'
@@ -55,7 +55,7 @@ var template = '<div class="tweet" v-on="contextmenu: rightclick" v-touch="tap: 
         + '</section>'
       + '</section>'
     + '</section>'
-  + '</div>';
+  + '</div></li>';
 
 var Tweet = Vue.extend({
   replace: true,

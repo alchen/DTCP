@@ -13,7 +13,7 @@
     <div id="content">
       <div class="newtweet">
         <section class="newtweettext">
-          <textarea class="newrawtweet" v-on="keyup: escape | key esc, input: updateTweet" v-model="rawTweet" lazy autofocus="true"></textarea>
+          <textarea class="newrawtweet" v-on="keyup: escape | key 'esc', input: updateTweet" v-model="rawTweet" lazy autofocus="true"></textarea>
           <section class="newformattedtweet" v-html="formattedTweet"></section>
         </section>
         <section class="newtweetmeta">
