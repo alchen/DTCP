@@ -86,10 +86,7 @@ var prompt = new Vue({
                 self.error = 'Is internet down?';
               } else {
                 self.error = null;
-                console.log('Renderer: authorized');
                 self.stage = 'success';
-                var util = require('util');
-                console.log(util.inspect(results));
                 setTimeout(function () {
                   ipc.send(
                     'verified',

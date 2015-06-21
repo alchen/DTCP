@@ -2,59 +2,57 @@
 
 var notifier = require('node-notifier');
 var ipc = require('ipc');
+var _ = require('lodash');
 var Vue = require('vue');
 require('../view/components/profile');
 require('../view/components/timeline');
 require('../view/components/thread');
-var Tweet = require('../view/models/tweet');
-var _ = require('lodash');
 var moment = require('moment');
 
 var timelines;
 
-ipc.on('initialLoad', function (data) {
-  var home = _.map(data.home, function (tweet) {
-    return new Tweet(tweet);
-  });
-  var mentions = _.map(data.mentions, function (tweet) {
-    return new Tweet(tweet);
-  });
-  var screenName = data.screenName;
-
+ipc.on('initialLoad', function (screenname) {
   timelines = new Vue({
     el: '#content',
     events: {
-      loadMore: function () {
-        if (this.currentNest !== 'userProfile') {
-          ipc.send('loadMore', this.currentView);
+      loadMore: function (maxId) {
+        if (this.currentNest !== 'showProfile') {
+          ipc.send('loadMore', this.currentView, maxId);
         } else {
-          ipc.send('loadUser', this.profile.user.screenName);
+          ipc.send('loadUser', this.profile.screenname, maxId);
         }
       },
       showThread: function (threadbase) {
-        console.log('Timeline: show thread');
         this.nest = true;
-        this.currentNest = 'thread';
-        this.threadbase = threadbase;
+        this.currentNest = 'showThread';
+        this.thread.base = threadbase;
       },
       showProfile: function (user) {
-        console.log('Timeline: show profile');
         this.nest = true;
-        this.currentNest = 'userProfile';
-        this.profile.user = user;
-        this.profile.tweets = [];
+        this.currentNest = 'showProfile';
+        this.profile = user;
+        this.tweets.profile = [];
+      },
+      showScreenname: function (screenname) {
+        this.nest = true;
+        this.currentNest = 'showProfile';
+        this.profile = {screenname: screenname};
+        this.tweets.profile = [];
+        ipc.send('loadScreenname', screenname);
       }
     },
     data: {
-      screenName: screenName,
+      screenname: screenname,
       tweets: {
-        home: home,
-        mentions: mentions,
+        home: [],
+        mentions: [],
+        profile: [],
+        pretext: [],
+        replies: []
       },
-      profile: {
-        user: {},
-        tweets: []
+      thread: {
       },
+      profile: {},
       currentView: 'home',
       currentNest: null,
       nest: false,
@@ -79,8 +77,8 @@ ipc.on('initialLoad', function (data) {
       notify: function (timeline, tweet) {
         if (timeline === 'mentions') {
           notifier.notify({
-            title: 'Mention from ' + tweet.user.screen_name,
-            message: tweet.text,
+            title: 'Mention from ' + tweet.user.screenname,
+            message: tweet.rawStatus,
             sound: false,
             wait: false,
             // TODO: Should show main window after gaining focus
@@ -108,20 +106,71 @@ ipc.on('initialLoad', function (data) {
 
         // Set things in motion
         requestAnimationFrame(step); 
+      },
+      mergeTweet: function (dstTweet, srcTweet) {
+        _.assign(dstTweet, srcTweet);
+      },
+      addTweet: function (target, tweet, push) {
+        var self = this;
+
+        _.each(this.tweets, function (timeline, name) {
+          var oldTweet = _.find(timeline, function (old) {
+            return old.id === tweet.id;
+          });
+
+          if (name !== target && oldTweet) {
+            self.mergeTweet(oldTweet, tweet);
+          } else if (name === target) {
+            if (oldTweet) {
+              self.mergeTweet(oldTweet, tweet);
+            } else if (push) {
+              self.tweets[target].push(tweet);
+            } else {
+              self.tweets[target].unshift(tweet);
+            }
+          }
+        });
+      },
+      updateTweet: function (tweet) {
+        var self = this;
+        _.each(this.tweets, function (timeline) {
+          var oldTweet = _.find(timeline, function (old) {
+            return old.id === tweet.id;
+          });
+
+          if (oldTweet) {
+            self.mergeTweet(oldTweet, tweet);
+          }
+        });
+      },
+      deleteTweet: function (tweetId) {
+        _.each(this.tweets, function (timeline) {
+          var index = _.findIndex(timeline, function (old) {
+            return old.id === tweetId;
+          });
+
+          if (index !== -1) {
+            timeline.$remove(index);
+          }
+        });
       }
     },
     components: {
       home: {
         inherit: true,
-        template: '<component is="timeline" tweets="{{tweets.home}}" username="{{screenName}}" now="{{now}}"></component>'
+        template: '<component is="timeline" tweets="{{@ tweets.home}}" username="{{screenname}}" now="{{now}}"></component>'
       },
       mentions: {
         inherit: true,
-        template: '<component is="timeline" tweets="{{tweets.mentions}}" username="{{screenName}}" now="{{now}}"></component>'
+        template: '<component is="timeline" tweets="{{@ tweets.mentions}}" username="{{screenname}}" now="{{now}}"></component>'
       },
-      userProfile: {
-        props: ['profile', 'tweets', 'username', 'now', 'user'],
-        template: '<component is="profile" tweets="{{profile.tweets}}" user="{{profile.user}}" username="{{username}}" now="{{now}}"></component>'
+      showProfile: {
+        inherit: true,
+        template: '<component is="profile" tweets="{{@ tweets.profile}}" user="{{profile}}" username="{{screenname}}" now="{{now}}"></component>'
+      },
+      showThread: {
+        inherit: true,
+        template: '<component is="thread" base="{{@ thread.base}}" pretext="{{@ tweets.pretext}}" replies="{{@ tweets.replies}}" username="{{screenname}}" now="{{now}}"></component>'
       }
     },
     compiled: function () {
@@ -130,10 +179,19 @@ ipc.on('initialLoad', function (data) {
         self.now = moment();
       }, 60 * 1000);
 
-      ipc.on('newTweet', function (timeline, tweet) {
-        console.log('Renderer: newTweet on ' + timeline);
+      ipc.on('deleteTweet', function (tweetId) {
         self.now = moment();
-        self.tweets[timeline].unshift(new Tweet(tweet));
+        self.deleteTweet(tweetId);
+      });
+
+      ipc.on('updateTweet', function (tweet) {
+        self.now = moment();
+        self.updateTweet(tweet);
+      });
+
+      ipc.on('newTweet', function (timeline, tweet) {
+        self.now = moment();
+        self.addTweet(timeline, tweet);
         self.notify(timeline, tweet);
       });
 
@@ -141,36 +199,29 @@ ipc.on('initialLoad', function (data) {
         if (!tweets || !tweets.length) {
           return;
         }
-        console.log('Renderer: newTweets on ' + timeline);
         self.now = moment();
-        self.tweets[timeline] = _.map(tweets, function (tweet) {
-          return new Tweet(tweet);
+        _.each(tweets, function (tweet) {
+          self.addTweet(timeline, tweet, true);
         });
       });
 
-      ipc.on('newUserTweets', function (screenName, tweets) {
-        if (!tweets || !tweets.length) {
-          return;
-        }
-        console.log('Renderer: newUserTweets on ' + screenName);
+      ipc.on('newProfileUser', function (user) {
         self.now = moment();
-        self.profile.tweets = _.map(tweets, function (tweet) {
-          return new Tweet(tweet);
-        });
+        self.profile = user;
       });
 
-      ipc.on('newPrecontext', function (tweets) {
-        tweets = _.map(tweets, function (tweet) {
-          return new Tweet(tweet);
-        });
-        self.$broadcast('newPrecontext', tweets);
+      ipc.on('newProfile', function (user, tweets) {
+        self.now = moment();
+        self.profile = user;
+        self.tweets.profile = self.tweets.profile.concat(tweets);
       });
 
-      ipc.on('newPostcontext', function (tweets) {
-        tweets = _.map(tweets, function (tweet) {
-          return new Tweet(tweet);
-        });
-        self.$broadcast('newPostcontext', tweets);
+      ipc.on('newPretext', function (tweets) {
+        self.$broadcast('newPretext', tweets);
+      });
+
+      ipc.on('newReplies', function (tweets) {
+        self.$broadcast('newReplies', tweets);
       });
     }
   });

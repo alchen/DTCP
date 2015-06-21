@@ -8,48 +8,37 @@ require('./fatTweet');
 require('./tweet');
 
 var template = '<ul class="thread timeline">'
-    + '<component is="tweet" v-repeat="pretext"  username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component>'
-    + '<component is="fatTweet" v-repeat="[threadbase]" username="{{ username }}" now="{{ now }}"></component>'
-    + '<component is="tweet" v-repeat="replies"  username="{{ username }}" now="{{ now }}" track-by="id"></component>'
+    + '<component is="tweet" v-repeat="tweet: pretext"  username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component>'
+    + '<component is="fatTweet" tweet="{{ base }}" username="{{ username }}" now="{{ now }}"></component>'
+    + '<component is="tweet" v-repeat="tweet: replies"  username="{{ username }}" now="{{ now }}" track-by="id"></component>'
   + '</ul>';
 
 var Thread = Vue.extend({
-  props: ['threadbase', 'username', 'now'],
+  props: ['base', 'pretext', 'replies', 'username', 'now'],
   events: {
     showThread: function (tweet) {
       this.pretext = [];
       this.replies = [];
-      this.threadbase = tweet;
+      this.base = tweet;
       this.findContext();
       return false;
     },
-    newPrecontext: function (tweets) {
+    newPretext: function (tweets) {
       this.pretext = tweets;
       return false;
     },
-    newPostcontext: function (tweets) {
+    newReplies: function (tweets) {
       this.replies = tweets;
       return false;
     }
   },
   methods: {
     findContext: function () {
-      var id, inReplyTo;
-      var tweet = this.threadbase.retweet || this.threadbase;
-      id = tweet.id;
-      inReplyTo = tweet.inReplyTo;
-
-      ipc.send('findContext', id, inReplyTo);
+      ipc.send('findContext', this.base.id);
     }
   },
   compiled: function () {
     this.findContext();
-  },
-  data: function () {
-    return {
-      pretext: [],
-      replies: []
-    };
   },
   template: template,
   transitions: {
@@ -58,13 +47,15 @@ var Thread = Vue.extend({
         var timelineEl = document.getElementsByClassName('thread')[0];
         timelineEl.scrollTop += el.scrollHeight;
         done();
-      }
+      },
+      css: false
     },
     scrollTo: {
       enter: function (el, done) {
         // el.scrollIntoViewIfNeeded()
         done();
-      }
+      },
+      css: false
     },
   }
 });

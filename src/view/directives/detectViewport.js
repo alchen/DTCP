@@ -15,7 +15,7 @@ function notify (directive) {
 
 	var inViewport = isElementInViewport(directive.el);
 
-	if (!directive.inViewport || directive.inViewport !== inViewport) {
+	if (directive.inViewport === undefined || directive.inViewport !== inViewport) {
 		directive.inViewport = inViewport;
 		var direction = inViewport ? 'enter' : 'leave';
 		directive.vm.$emit('viewport' + direction, directive.el);
@@ -55,5 +55,5 @@ var directive = {
 };
 
 module.exports.install = function (Vue, options) {
-	Vue.directive('detect-viewport', directive)
+	Vue.directive('detect-viewport', directive);
 };

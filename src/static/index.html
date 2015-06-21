@@ -36,7 +36,7 @@
       </header>
       <section class="components">
         <component is="{{currentView}}" class="timelines" keep-alive></component>
-        <component is="{{currentNest}}" class="nestcontainer" v-if="nest" profile="{{profile}}" threadbase="{{threadbase}}" username="{{screenName}}" now="{{now}}"></component>
+        <component is="{{currentNest}}" class="nestcontainer" v-if="nest"></component>
       </section>
     </div>
     <script src="../view/timelines.js"></script>

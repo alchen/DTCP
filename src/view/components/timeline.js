@@ -5,46 +5,41 @@ var detectViewport = require('../directives/detectViewport');
 Vue.use(detectViewport);
 require('./tweet');
 
-var scrollStep = 50;
+var defaultLength = 50;
 
 var template = '<ul class="tweets timeline" v-on="scroll: scroll">'
-    + '<component is="tweet" v-repeat="tweets | throttle" username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component>'
+    + '<component is="tweet" v-repeat="tweet: tweets" username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component>'
     + '<div class="loader loader-inner ball-clip-rotate" v-detect-viewport><div></div></div>'
   + '</ul>';
 
 var Timeline = Vue.extend({
   replace: true,
   props: ['tweets', 'username', 'now'],
-  filters: {
-    throttle: function (tweets) {
-      return tweets.slice(0, this.scrollLength);
-    }
-  },
   events: {
-    'viewportenter': function () {
-      this.scrollLength = this.scrollLength + scrollStep;
-      if (this.scrollLength > this.tweets.length) {
-        this.$dispatch('loadMore');
-      } else {
-        console.log('Timeline: increase throttle threshold');
-      }
+    'viewportenter': function (el) {
+      el.style.height = 'auto';
+      var oldestTweet = this.tweets[this.tweets.length - 1];
+      this.$dispatch('loadMore',  oldestTweet ? oldestTweet.id : undefined);
+      this.loaderTimer = setTimeout(function () {
+        el.style.opacity = '0';
+      }, 1 * 1000);
+    },
+    'viewportleave': function (el) {
+      clearTimeout(this.loaderTimer);
+      el.style.opacity = '1';
     },
     'hook:detached': function () {
-      this.scrollLength = scrollStep;
-    },
-    rewind: function () {
-      this.scrollLength = scrollStep;
-      return false;
+      this.rewind();
     }
-  },
-  data: function () {
-    return { scrollLength: scrollStep };
   },
   template: template,
   methods: {
+    rewind: function () {
+      this.tweets = this.tweets.slice(0, defaultLength);
+    },
     scroll: function (event) {
-      if (event.target.scrollTop === 0) {
-        this.scrollLength = scrollStep;
+      if (event.target.scrollTop < 64) {
+        this.rewind();
       }
     }
   },
@@ -56,7 +51,8 @@ var Timeline = Vue.extend({
           timelineEl.scrollTop += el.scrollHeight;
         }
         done();
-      }
+      },
+      css: false
     }
   }
 });

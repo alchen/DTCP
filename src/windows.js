@@ -3,7 +3,7 @@
 var shell = require('shell');
 var BrowserWindow = require('browser-window');
 
-var mainWindow = null;
+var mainWindow;
 var newTweetWindows = [];
 var newTweetWindowsInUse = [];
 
@@ -112,6 +112,11 @@ var windows = {
       event.preventDefault();
     });
 
+    mainWindow.webContents.on('will-navigate', function (event) {
+      console.log('Don\'t navigate!');
+      event.preventDefault();
+    });
+
     mainWindow.on('close', function (event, x, y, z) {
       mainWindow.hide();
       if (!global.willQuit) {
@@ -137,11 +142,19 @@ var windows = {
     }
   },
   loadPrompt: function loadPrompt() {
+    this.unloadTimeline();
     mainWindow.loadUrl('file://' + __dirname + '/static/prompt.html');
   },
   loadTimeline: function loadTimeline(timeline) {
-    mainWindow.loadUrl('file://' + __dirname + '/static/index.html');
     timeline.subscribe(mainWindow);
+    this.timeline = timeline;
+    mainWindow.loadUrl('file://' + __dirname + '/static/index.html');
+  },
+  unloadTimeline: function unloadTimeline() {
+    if (this.timeline) {
+      this.timeline.unsubscribe();
+      this.timeline = undefined;
+    }
   }
 };
 

@@ -1,3 +1,5 @@
+'use strict';
+
 //
 //  Create and execute http requests to an Oauth-protected resource
 //
@@ -5,7 +7,7 @@ var EventEmitter = require('events').EventEmitter
   , querystring = require('querystring')
   , util = require('util')
   , Parser = require('./parser')
-  , Auth = require('./auth')
+  , Auth = require('./auth');
 
 // set of status codes where we don't attempt reconnects
 var STATUS_CODES_TO_ABORT_ON = [ 400, 401, 403, 404, 406, 410, 422 ];
@@ -20,100 +22,106 @@ var STATUS_CODES_TO_ABORT_ON = [ 400, 401, 403, 404, 406, 410, 422 ];
  */
 function OARequest (oauth, method, path, params) {
   if (method !== 'GET' && method !== 'POST') {
-    throw new Error('method `'+method+'` not supported.\n')
+    throw new Error('method `'+method+'` not supported.\n');
   }
-  this.oauth = oauth
-  this.method = method
+  this.oauth = oauth;
+  this.method = method;
 
-  this.twit_options = {}
+  this.twit_options = {};
 
   if (params && params.twit_options && typeof params.twit_options !== 'object') {
     // invalid `twit_options` specified
-    throw new Error('Invalid twit_options supplied: '+params.twit_options)
+    throw new Error('Invalid twit_options supplied: '+params.twit_options);
   } else if (params.twit_options) {
     // valid `twit_options` specified - override the default
-    this.twit_options = JSON.parse(JSON.stringify(params.twit_options))
-    delete params.twit_options
+    this.twit_options = JSON.parse(JSON.stringify(params.twit_options));
+    delete params.twit_options;
   }
 
   if (method === 'GET') {
-    this.path = path + (params ? '?' + querystring.stringify(params) : '')
+    this.path = path + (params ? '?' + querystring.stringify(params) : '');
     // Fix the mismatch between OAuth's  RFC3986's and Javascript's beliefs in what is right and wrong ;)
-    this.path = this.path.replace(/\!/g, "%21")
-	                 .replace(/\'/g, "%27")
-	                 .replace(/\(/g, "%28")
-	                 .replace(/\)/g, "%29")
-	                 .replace(/\*/g, "%2A");
-    this.params = null
+    this.path = this.path.replace(/\!/g, '%21')
+	                 .replace(/\'/g, '%27')
+	                 .replace(/\(/g, '%28')
+	                 .replace(/\)/g, '%29')
+	                 .replace(/\*/g, '%2A');
+    this.params = null;
   } else if (method === 'POST') {
-    this.path = path
-    this.params = params
+    this.path = path;
+    this.params = params;
   }
 
-  EventEmitter.call(this)
+  EventEmitter.call(this);
 }
 
-util.inherits(OARequest, EventEmitter)
+util.inherits(OARequest, EventEmitter);
 
 /**
  * Perform http request & persist the connection
  * Emit events as they come in from twitter
  */
 OARequest.prototype.persist = function () {
-  var self = this
+  var self = this;
 
-  this.parser = new Parser()
+  this.parser = new Parser();
 
   //handle twitter objects as they come in
   this.parser.on('element', function (msg) {
     // first msg; successful connection => reset reconnect interval
-    self.connectInterval = 0
-    if      (msg.delete)          { self.emit('delete', msg) }
-    else if (msg.disconnect)      { self.handleDisconnect(msg) }
-    else if (msg.limit)           { self.emit('limit', msg) }
-    else if (msg.scrub_geo)       { self.emit('scrub_geo', msg) }
-    else if (msg.warning)         { self.emit('warning', msg) }
-    else if (msg.status_withheld) { self.emit('status_withheld', msg) }
-    else if (msg.user_withheld)   { self.emit('user_withheld', msg) }
-    else if (msg.friends || msg.friends_str) { self.emit('friends', msg) }
-    else if (msg.direct_message)  { self.emit('direct_message', msg) }
+    self.connectInterval = 0;
+    if      (msg.delete)          { self.emit('delete', msg); }
+    else if (msg.disconnect)      { self.handleDisconnect(msg); }
+    else if (msg.limit)           { self.emit('limit', msg); }
+    else if (msg.scrub_geo)       { self.emit('scrub_geo', msg); }
+    else if (msg.warning)         { self.emit('warning', msg); }
+    else if (msg.status_withheld) { self.emit('status_withheld', msg); }
+    else if (msg.user_withheld)   { self.emit('user_withheld', msg); }
+    else if (msg.friends || msg.friends_str) { self.emit('friends', msg); }
+    else if (msg.direct_message)  { self.emit('direct_message', msg); }
     else if (msg.event)           {
-      self.emit('user_event', msg)
+      self.emit('user_event', msg);
       // reference: https://dev.twitter.com/docs/streaming-apis/messages#User_stream_messages
-      var ev = msg.event
+      var ev = msg.event;
 
-      if      (ev === 'blocked')                { self.emit('blocked', msg) }
-      else if (ev === 'unblocked')              { self.emit('unblocked', msg) }
-      else if (ev === 'favorite')               { self.emit('favorite', msg) }
-      else if (ev === 'unfavorite')             { self.emit('unfavorite', msg) }
-      else if (ev === 'follow')                 { self.emit('follow', msg) }
-      else if (ev === 'unfollow')               { self.emit('unfollow', msg) }
-      else if (ev === 'user_update')            { self.emit('user_update', msg) }
-      else if (ev === 'list_created')           { self.emit('list_created', msg) }
-      else if (ev === 'list_destroyed')         { self.emit('list_destroyed', msg) }
-      else if (ev === 'list_updated')           { self.emit('list_updated', msg) }
-      else if (ev === 'list_member_added')      { self.emit('list_member_added', msg) }
-      else if (ev === 'list_member_removed')    { self.emit('list_member_removed', msg) }
-      else if (ev === 'list_user_subscribed')   { self.emit('list_user_subscribed', msg) }
-      else if (ev === 'list_user_unsubscribed') { self.emit('list_user_unsubscribed', msg) }
-      else                                      { self.emit('unknown_user_event', msg) }
-    } else                                      { self.emit('tweet', msg) }
-  })
+      if      (ev === 'blocked')                { self.emit('blocked', msg); }
+      else if (ev === 'unblocked')              { self.emit('unblocked', msg); }
+      else if (ev === 'favorite')               { self.emit('favorite', msg); }
+      else if (ev === 'unfavorite')             { self.emit('unfavorite', msg); }
+      else if (ev === 'follow')                 { self.emit('follow', msg); }
+      else if (ev === 'unfollow')               { self.emit('unfollow', msg); }
+      else if (ev === 'user_update')            { self.emit('user_update', msg); }
+      else if (ev === 'list_created')           { self.emit('list_created', msg); }
+      else if (ev === 'list_destroyed')         { self.emit('list_destroyed', msg); }
+      else if (ev === 'list_updated')           { self.emit('list_updated', msg); }
+      else if (ev === 'list_member_added')      { self.emit('list_member_added', msg); }
+      else if (ev === 'list_member_removed')    { self.emit('list_member_removed', msg); }
+      else if (ev === 'list_user_subscribed')   { self.emit('list_user_subscribed', msg); }
+      else if (ev === 'list_user_unsubscribed') { self.emit('list_user_unsubscribed', msg); }
+      else if (ev === 'retweeted_retweet')      { self.emit('retweeted_retweet', msg); }
+      else if (ev === 'favorited_retweet')      { self.emit('favorited_retweet', msg); }
+      else                                      { self.emit('unknown_user_event', msg); }
+    } else                                      { self.emit('tweet', msg); }
+  });
+
+  this.parser.on('limit', function (err) {
+    self.emit('limit', err);
+  });
 
   this.parser.on('error', function (err) {
-    self.emit('error', err)
-  })
+    self.emit('error', err);
+  });
 
   //kick off the persisting http request - call it on nextTick so events
   //can be listened on in current event loop tick before we connect
   process.nextTick(function () {
     // don't call `.start()` so that `.stop()` can be called in the
     // same event loop tick and set the `abortedBy` flag to stop a request attempt.
-    self.keepAlive()
-  })
+    self.keepAlive();
+  });
 
-  return this
-}
+  return this;
+};
 
 /**
  * Kick off the http request, and persist the connection
@@ -121,42 +129,42 @@ OARequest.prototype.persist = function () {
  */
 OARequest.prototype.start = function () {
   this.abortedBy = null;
-  this.keepAlive()
-  return this
-}
+  this.keepAlive();
+  return this;
+};
 
 /**
  * Abort the http request, stop scheduled reconnect (if one was scheduled) and clear state
  *
  */
 OARequest.prototype.stop = function () {
-  this.abortedBy = 'twit-client'
+  this.abortedBy = 'twit-client';
 
   if (this.request) {
-    this.request.abort()
-    this.request.removeAllListeners()
-    delete this.request
+    this.request.abort();
+    this.request.removeAllListeners();
+    delete this.request;
   }
 
   if (this.response) {
-    this.response.removeAllListeners()
+    this.response.removeAllListeners();
   }
 
   // ensure a scheduled reconnect does not occur (if one was scheduled)
   // this can happen if we get a close event before .stop() is called
-  clearTimeout(this.scheduledReconnect)
+  clearTimeout(this.scheduledReconnect);
   // mark this value as `null` so it is clear via introspection that no timeout is scheduled
-  this.scheduledReconnect = null
+  this.scheduledReconnect = null;
 
   // clear our stall abort timeout
-  this.stopStallAbortTimeout()
+  this.stopStallAbortTimeout();
 
   // reset our reconnect state variables
-  this.connectInterval = 0
-  this.usedFirstReconnect = false
+  this.connectInterval = 0;
+  this.usedFirstReconnect = false;
 
-  return this
-}
+  return this;
+};
 
 /**
  * Make http request and keep the connection alive. Handles the req events here.
@@ -187,30 +195,31 @@ OARequest.prototype.keepAlive = function () {
     });
 
     self.response.once('close', function () {
-      self.handleCloseEvent()
-    })
+      self.handleCloseEvent();
+    });
 
     self.response.on('error', function (err) {
       // expose response errors on twit instance
-      self.emit('error', err)
-    })
+      self.emit('error', err);
+    });
 
     if (STATUS_CODES_TO_ABORT_ON.indexOf(response.statusCode) !== -1) {
       // stop the stream explicitly so we don't reconnect
-      self.stop()
+      self.stop();
 
-      var error = new Error('Bad Twitter streaming request: ' + response.statusCode)
-      error.response = response
+      var error = new Error('Bad Twitter streaming request: ' + response.statusCode);
+      error.response = response;
       self.emit('error', error);
     }
   });
 
   this.request.once('close', function () {
-    self.handleCloseEvent()
+    self.handleCloseEvent();
   });
 
+  // TODO: reconnect when internet is back
   this.request.on('error', function (err) {
-    self.stop()
+    self.stop();
 
     self.emit('error', err);
   });
@@ -218,7 +227,7 @@ OARequest.prototype.keepAlive = function () {
   this.request.end();
   this.emit('connect', this.request);
   return this;
-}
+};
 
 /**
  * Handle when the request or response closes.
@@ -234,7 +243,7 @@ OARequest.prototype.handleCloseEvent = function () {
 
   // We closed it explicitly - don't reconnect
   if (self.abortedBy === 'twit-client')
-    return
+    return;
 
   // we got disconnected by twitter - reconnect according to their guidelines
   self.abortedBy = 'twitter';
@@ -242,7 +251,7 @@ OARequest.prototype.handleCloseEvent = function () {
   if (self.scheduledReconnect) {
     // if we already have a reconnect scheduled, don't schedule another one.
     // this race condition can happen if self.request and self.response both emit `close`
-    return
+    return;
   }
 
   if (self.response && self.response.statusCode === 420) {
@@ -285,7 +294,7 @@ OARequest.prototype.handleCloseEvent = function () {
     self.start();
     delete self.scheduledReconnect;
   }, self.connectInterval);
-}
+};
 
 /**
  * Handles a disconnect message from twitter. Closes the connection, and emits descriptive info
@@ -294,10 +303,10 @@ OARequest.prototype.handleCloseEvent = function () {
  *
  */
 OARequest.prototype.handleDisconnect = function (msg) {
-  this.emit('disconnect', msg)
-  this.stop()
-  return this
-}
+  this.emit('disconnect', msg);
+  this.stop();
+  return this;
+};
 
 /**
  * Make an HTTP request to twitter, pass the parsed reply to @callback
@@ -306,19 +315,19 @@ OARequest.prototype.handleDisconnect = function (msg) {
  *
  */
 OARequest.prototype.end = function (callback) {
-  var self = this
+  var self = this;
 
   // handle the http response - maybe retry if specified `retry`
   var responseHandler = function (err, raw, response) {
     if (err instanceof Error) {
       // socket error
       // add default values to error
-      err.twitterReply = raw || null
+      err.twitterReply = raw || null;
       // no code sent from twitter
       err.code = null;
       err.allErrors = [];
 
-      return callback(err, err.twitterReply, response)
+      return callback(err, err.twitterReply, response);
     }
 
     // handle http errors
@@ -328,16 +337,16 @@ OARequest.prototype.end = function (callback) {
         STATUS_CODES_TO_ABORT_ON.indexOf(err.statusCode) === -1
       ) {
         // we should retry the request
-        self.makeRequest(responseHandler)
-        return
+        self.makeRequest(responseHandler);
+        return;
       }
 
-      var error = new Error()
+      var error = new Error();
       // default error message which will get overwritten
       error.message = 'Unknown Twitter API Error';
-      error.statusCode = err.statusCode
+      error.statusCode = err.statusCode;
       // keep consistent with the rest of the error handling by passing the raw response data here
-      error.twitterReply = err.data
+      error.twitterReply = err.data;
       // code to be overwritten by parsing twitter error objects
       error.code = null;
       // array of error objects returned by twitter
@@ -345,12 +354,12 @@ OARequest.prototype.end = function (callback) {
 
       // try to populate `message`, `code` and `allErrors`
       try {
-        var parsedError = JSON.parse(err.data)
+        var parsedError = JSON.parse(err.data);
 
         if (parsedError.errors && parsedError.errors.length) {
           // default to the first error
-          error.message = parsedError.errors[0].message
-          error.code = parsedError.errors[0].code
+          error.message = parsedError.errors[0].message;
+          error.code = parsedError.errors[0].code;
 
           // save reference to all errors
           error.allErrors = parsedError.errors;
@@ -359,44 +368,44 @@ OARequest.prototype.end = function (callback) {
         // if twitter error reply is not as-expected, just go with what we have
       }
 
-      return callback(error, undefined, response)
+      return callback(error, undefined, response);
     } else if (err) {
       // handle non-http errors
-      err.twitterReply = raw
-      return callback(err, undefined, response)
+      err.twitterReply = raw;
+      return callback(err, undefined, response);
     }
 
     // non-error case - parse response and pass to user's callback
 
     // parse response
     var parsed = null
-      , parseError = null
+      , parseError = null;
 
     try {
-      parsed = JSON.parse(raw)
+      parsed = JSON.parse(raw);
     } catch(e) {
-      parseError = new Error('twitter reply is not a valid JSON string.')
-      parseError.twitterReply = raw
+      parseError = new Error('twitter reply is not a valid JSON string.');
+      parseError.twitterReply = raw;
     }
 
     // handle parsing errors
     if (parseError) {
-      return callback(parseError, undefined, response)
+      return callback(parseError, undefined, response);
     } else if (!parsed) {
       // null, false or empty reply
-      var badReplyError = new Error('twitter sent bad reply: `'+parsed+'`.')
-      badReplyError.twitterReply = raw
+      var badReplyError = new Error('twitter sent bad reply: `'+parsed+'`.');
+      badReplyError.twitterReply = raw;
 
-      return callback(badReplyError, undefined, response)
+      return callback(badReplyError, undefined, response);
     }
 
-    return callback(null, parsed, response)
+    return callback(null, parsed, response);
   }
 
   // make the http request and handle it before calling user's cb
-  this.makeRequest(responseHandler)
+  this.makeRequest(responseHandler);
 
-  return this
+  return this;
 }
 
 /**
@@ -409,11 +418,11 @@ OARequest.prototype.end = function (callback) {
  *
  */
 OARequest.prototype.makeRequest = function (cb) {
-  var action = this.method.toLowerCase()
-  var self = this
+  var action = this.method.toLowerCase();
+  var self = this;
 
   if (action !== 'get' && action !== 'post')
-    throw new Error('method `'+action+'` not supported')
+    throw new Error('method `'+action+'` not supported');
 
   //  GET
   if (action === 'get') {
@@ -422,7 +431,7 @@ OARequest.prototype.makeRequest = function (cb) {
       , self.oauth.config.access_token
       , self.oauth.config.access_token_secret
       , cb
-    )
+    );
   }
   //  POST
   return self.oauth.oa.post(
@@ -431,8 +440,8 @@ OARequest.prototype.makeRequest = function (cb) {
     , self.oauth.config.access_token_secret
     , self.params
     , cb
-  )
-}
+  );
+};
 
 
 
@@ -453,7 +462,7 @@ OARequest.prototype.resetStallAbortTimeout = function () {
     }
   }, 90000);
   return this;
-}
+};
 
 /**
  * Stop stall timeout
@@ -462,9 +471,8 @@ OARequest.prototype.resetStallAbortTimeout = function () {
 OARequest.prototype.stopStallAbortTimeout = function () {
   clearTimeout(this.stallAbortTimeout);
   // mark the timer as `null` so it is clear via introspection that the timeout is not scheduled
-  this.stallAbortTimeout = null
+  this.stallAbortTimeout = null;
   return this;
-}
+};
 
-module.exports = OARequest
-
+module.exports = OARequest;

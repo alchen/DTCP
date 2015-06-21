@@ -5,12 +5,9 @@ var app = require('app');
 var ipc = require('ipc');
 var windows, menu;
 
-// Report crashes to our server.
-require('crash-reporter').start();
-
 var preferences = require('./preferences');
 var update = require('./update');
-var Timeline = require('./timeline');
+var Timeline = require('./stream');
 var timeline;
 // var timeline = new Timeline();
 
@@ -32,7 +29,7 @@ app.on('ready', function () {
   menu.createApplicationMenu();
 
   if (preferences.authenticated) {
-    timeline = new Timeline(preferences.oauthToken, preferences.oauthTokenSecret, preferences.screenName);
+    timeline = new Timeline(preferences.oauthToken, preferences.oauthTokenSecret, preferences.screenname);
   }
 
   windows.createMainWindow(timeline);
@@ -53,34 +50,33 @@ app.on('before-quit', function () {
   preferences.save();
 });
 
-ipc.on('verified', function (event, oauthToken, oauthTokenSecret, screenName) {
+ipc.on('verified', function (event, oauthToken, oauthTokenSecret, screenname) {
   preferences.authenticated = true;
   preferences.oauthToken = oauthToken;
   preferences.oauthTokenSecret = oauthTokenSecret;
-  preferences.screenName = screenName;
+  preferences.screenname = screenname;
 
-  timeline = new Timeline(oauthToken, oauthTokenSecret, screenName);
-  windows.getMainWindow().loadUrl('file://' + __dirname + '/static/index.html');
-  timeline.subscribe(windows.getMainWindow());
+  timeline = new Timeline(oauthToken, oauthTokenSecret, screenname);
+  windows.loadTimeline(timeline);
 });
 
 ipc.on('initialLoad', function () {
-  console.log('Main: initial load');
   timeline.initialLoad();
 });
 
-ipc.on('loadMore', function (event, timelineToLoad) {
-  console.log('Main: loadMore ' + timelineToLoad);
-  timeline.loadMore(timelineToLoad);
+ipc.on('loadMore', function (event, timelineToLoad, maxId) {
+  timeline.loadMore(timelineToLoad, maxId);
 });
 
-ipc.on('loadUser', function (event, screenNameToLoad) {
-  console.log('Main: loadMore ' + screenNameToLoad);
-  timeline.loadUser(screenNameToLoad);
+ipc.on('loadUser', function (event, screennameToLoad, maxId) {
+  timeline.loadUser(screennameToLoad, maxId);
+});
+
+ipc.on('loadScreenname', function (event, screennameToLoad) {
+  timeline.loadScreenname(screennameToLoad);
 });
 
 ipc.on('compose', function (event) {
-  console.log('Main: compose');
   windows.getNewTweetWindow();
 });
 
@@ -89,10 +85,8 @@ ipc.on('stopComposing', function (event) {
   sender.close();
 });
 
-ipc.on('findContext', function (event, tweetId, replyTo) {
-  console.log('Main: show thread for ' + tweetId + ' and ' + replyTo);
-
-  timeline.findContext(tweetId, replyTo);
+ipc.on('findContext', function (event, tweetId) {
+  timeline.findContext(tweetId);
 });
 
 ipc.on('sendTweet', function (event, tweet, replyTo) {

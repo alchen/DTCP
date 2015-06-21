@@ -1,9 +1,8 @@
 {
   "name": "dtcp",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "description": "Desktop Twitter Client Project",
   "main": "src/main.js",
-  "private": true,
   "scripts": {
     "start": "electron ."
   },
@@ -12,7 +11,7 @@
     "url": "git+https://github.com/alchen/DTCP.git"
   },
   "author": "uinoka",
-  "license": "ISC",
+  "license": "AGPL",
   "bugs": {
     "url": "https://github.com/alchen/DTCP/issues"
   },
@@ -20,7 +19,7 @@
   "devDependencies": {
     "asar": "^0.7.1",
     "del": "^1.2.0",
-    "electron-prebuilt": "^0.27.2",
+    "electron-prebuilt": "^0.27.3",
     "electron-rebrand": "^1.0.0",
     "electron-rebuild": "^0.2.2",
     "gulp": "^3.9.0",
@@ -44,7 +43,7 @@
     "semver": "^4.3.6",
     "shellwords": "^0.1.0",
     "twitter-text": "^1.12.0",
-    "vue": "yyx990803/vue#dev",
+    "vue": "^0.12.1",
     "vue-touch": "^0.1.2",
     "which": "^1.1.1"
   }

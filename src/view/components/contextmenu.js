@@ -39,7 +39,7 @@ module.exports = {
     contextTemplate[5].click = vm.doDelete;
     contextTemplate[7].click = vm.doShowInBrowser;
 
-    if (vm.$data.isUserProtected()) {
+    if (vm.tweet.protected) {
       contextTemplate[1].enabled = false;
       contextTemplate[2].enabled = false;
     } else {
@@ -47,7 +47,7 @@ module.exports = {
       contextTemplate[2].enabled = true;
     }
 
-    if (vm.screenName !== vm.username) {
+    if (vm.tweet.screenname !== vm.username) {
       contextTemplate[5].enabled = false;
     } else {
       contextTemplate[5].enabled = true;

@@ -100,6 +100,7 @@ a {
 .loader {
   text-align: center;
   margin-top: .75rem;
+  transition: all 1s;
 }
 
 .ball-clip-rotate > div {
@@ -110,7 +111,7 @@ a {
 
 .components {
   position: relative;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .timelines .timeline {
@@ -179,13 +180,19 @@ a {
   width: 7rem;
 }
 
-.tweet:hover .tweettime {
+.tweet:hover .tweettime,
+.tweet:hover .tweetindicator {
   display: none;
 }
 
 .tweet:hover .tweetactions {
   opacity: 1;
   transition-delay: 0s;
+}
+
+.profile {
+  height: 100%;
+  overflow-y: scroll;
 }
 
 .profilemeta {
@@ -296,7 +303,7 @@ a {
   list-style: none;
   transition: all .2s;
   opacity: 0;
-  transition: visibility 0s linear 0.5s,opacity 0.5s linear;
+  transition: visibility 0s linear 0.5s, opacity 0.5s linear;
 }
 
 .fattweetactions {
@@ -307,8 +314,8 @@ a {
 }
 
 .tweetaction {
-  float: left;
-  margin-left: .25rem;
+  display: inline-block;
+  margin-left: .85rem;
 }
 
 .fattweetaction {
@@ -321,11 +328,19 @@ a {
   background: none;
   border: none;
   outline: none;
+  padding: 0;
+  height: 1rem;
 }
 
 .tweetbuttonicon:empty:before {
   font-size: .75rem;
   transition: all .2s;
+  line-height: 1rem;
+}
+
+.tweetindicator:empty:before {
+  color: #fc2;
+  text-shadow: 0 0 1px #ccc;
 }
 
 .fattweet .tweetbuttonicon:empty:before {
@@ -348,7 +363,7 @@ a {
 
 .activetweetbutton .tweetbuttonicon:empty:before,
 .activetweetbutton:hover .tweetbuttonicon:empty:before {
-  color: #a66;
+  color: #07f;
 }
 
 .tweetmetaleft .name,
@@ -402,7 +417,11 @@ a {
 }
 
 .tweettime {
-  background: #fff;
+  background-color: #fff;
+}
+
+.tweetindicator {
+  background-color: #fff;
 }
 
 .fattweettime {
@@ -466,6 +485,7 @@ a {
   overflow:hidden;
   padding: .75rem;
   border-bottom: .1rem solid #ccc;
+  background-color: #f6f6f6;
 }
 
 .headeractions {

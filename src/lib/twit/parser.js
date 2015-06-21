@@ -1,3 +1,5 @@
+'use strict';
+
 //
 //  Parser - for Twitter Streaming API
 //
@@ -5,7 +7,7 @@ var util = require('util')
   , EventEmitter = require('events').EventEmitter;
 
 var Parser = module.exports = function ()  { 
-  this.message = ''
+  this.message = '';
 
   EventEmitter.call(this);
 };
@@ -32,15 +34,20 @@ Parser.prototype.parse = function (chunk) {
       
       if (!piece.length) { continue; } //empty object
       
-      try {
-        var msg = JSON.parse(piece)
-      } catch (err) {
-        this.emit('error', new Error('Error parsing twitter reply: `'+piece+'`, error message `'+err+'`'));
-      } finally {
-        if (msg)
-          this.emit('element', msg)
+      var msg;
+      if (piece === 'Exceeded connection limit for user') {
+        this.emit('limit', piece);
+      } else {
+        try {
+          msg = JSON.parse(piece);
+        } catch (err) {
+          this.emit('error', new Error('Error parsing twitter reply: `' + piece + '`, error message `' + err + '`'));
+        } finally {
+          if (msg)
+            this.emit('element', msg);
 
-        continue
+          continue;
+        }
       }
     }
     offset++;

@@ -8,7 +8,7 @@ var User = function (user) {
   this.id = user.id_str;
 
   // User info
-  this.screenName = user.screen_name;
+  this.screenname = user.screen_name;
   this.name = user.name;
   this.icon = user.profile_image_url_https;
   this.profileBackground = user.profile_banner_url;

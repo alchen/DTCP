@@ -6,49 +6,53 @@ Vue.use(vueTouch);
 var moment = require('moment');
 var remote = require('remote');
 var contextmenu = require('./contextmenu');
+var ipc = require('ipc');
+var shell = require('shell');
+var _ = require('lodash');
 
 var template = '<li class="tweetcontainer"><div class="tweet" v-on="contextmenu: rightclick" v-touch="tap: leftclick">'
     + '<section class="tweetleft">'
-      + '<img class="tweeticon" v-attr="src: displayIcon" onerror="this.style.visibility=\'hidden\';" v-touch="tap: doShowProfile" />'
+      + '<img class="tweeticon" v-attr="src: tweet.icon" onerror="this.style.visibility=\'hidden\';" v-touch="tap: doShowProfile" />'
     + '</section>'
     + '<section class="tweetright">'
       + '<section class="tweetmeta">'
         + '<section class="tweetmetaleft">'
-          + '<span class="name" v-text="displayName" v-touch="tap: doShowProfile"></span>'
+          + '<span class="name" v-text="tweet.name" v-touch="tap: doShowProfile"></span>'
           + '&nbsp;'
-          + '<span class="screenname" v-text="displayScreenName | at" v-touch="tap: doShowProfile"></span>'
+          + '<span class="screenname" v-text="tweet.screenname | at" v-touch="tap: doShowProfile"></span>'
         + '</section>'
         + '<section class="tweetmetaright">'
-          + '<span class="tweettime" v-text="timeFrom"></span>'
+          + '<span class="tweettime" v-text="timeFrom" v-if="!tweet.isFavorited"></span>'
+          + '<span class="tweetindicator iconic tweetbuttonicon" data-glyph="star" v-if="tweet.isFavorited"></span>'
           + '<ul class="tweetactions">'
             + '<li class="tweetaction" v-on="click: doReply"><button class="tweetbutton"><span class="iconic tweetbuttonicon" data-glyph="share"></span></button></li>'
-            + '<li class="tweetaction" v-on="click: doRetweet"><button class="tweetbutton" v-class="disabledbutton: isUserProtected, activetweetbutton: isRetweeted"><span class="iconic tweetbuttonicon" data-glyph="loop-circular"></span></button></li>'
-            + '<li class="tweetaction" v-on="click: doQuote"><button class="tweetbutton" v-class="disabledbutton: isUserProtected"><span class="iconic tweetbuttonicon" data-glyph="double-quote-serif-left"></span></button></li>'
-            + '<li class="tweetaction" v-on="click: doFavorite"><button class="tweetbutton" v-class="activetweetbutton: isFavorited"><span class="iconic tweetbuttonicon" data-glyph="star"></span></button></li>'
+            + '<li class="tweetaction" v-on="click: doRetweet"><button class="tweetbutton" v-class="disabledbutton: tweet.protected, activetweetbutton: tweet.isRetweeted"><span class="iconic tweetbuttonicon" data-glyph="loop-circular"></span></button></li>'
+            + '<li class="tweetaction" v-on="click: doQuote"><button class="tweetbutton" v-class="disabledbutton: tweet.protected"><span class="iconic tweetbuttonicon" data-glyph="double-quote-serif-left"></span></button></li>'
+            + '<li class="tweetaction" v-on="click: doFavorite"><button class="tweetbutton" v-class="activetweetbutton: tweet.isFavorited"><span class="iconic tweetbuttonicon" data-glyph="star"></span></button></li>'
           + '</ul>'
         + '</section>'
       + '</section>'
-      + '<section class="tweettext" v-html="status"></section>'
-      + '<section class="tweetretweet" v-if="retweet">'
-        + '<span class="iconic retweeticon" data-glyph="loop-square"></span><span class="retweetname" v-text="name"></span>'
+      + '<section class="tweettext" v-html="tweet.status"></section>'
+      + '<section class="tweetretweet" v-if="tweet.retweetedBy || tweet.isRetweeted">'
+        + '<span class="iconic retweeticon" data-glyph="loop-square"></span><span class="retweetname" v-if="tweet.retweetedBy" v-text="tweet.retweetedBy"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>'
       + '</section>'
-      + '<section class="tweetmedia" v-if="media">'
+      + '<section class="tweetmedia" v-if="tweet.media">'
         + '<ul class="tweetimagelist">'
-          + '<li class="tweetimagebox" v-style="width: \'calc(100% / \' + media.length + \')\'" v-repeat="media">'
+          + '<li class="tweetimagebox" v-style="width: \'calc(100% / \' + tweet.media.length + \')\'" v-repeat="tweet.media">'
             + '<a class="tweetimagelink" target="_blank" v-style="background-image: \'url(\' + $value + \':small)\'" v-attr="href: $value" v-text="$value"></a>'
           + '</li>'
         + '</ul>'
       + '</section>'
-      + '<section class="quotedtweet" v-if="quoteStatus">'
+      + '<section class="quotedtweet" v-if="tweet.quote">'
         + '<section class="quotedmeta">'
-          + '<span class="name" v-text="quoteStatus.name"></span>'
+          + '<span class="name" v-text="tweet.quote.name"></span>'
           + '&nbsp;'
-          + '<span class="screenname" v-text="quoteStatus.screenName | at"></span>'
+          + '<span class="screenname" v-text="tweet.quote.screenname | at"></span>'
         + '</section>'
-        + '<section class="quotedtext" v-html="quoteStatus.formattedStatus"></section>'
-        + '<section class="tweetmedia" v-if="quoteStatus.media">'
+        + '<section class="quotedtext" v-html="tweet.quote.status"></section>'
+        + '<section class="tweetmedia" v-if="tweet.quote.media">'
           + '<ul class="tweetimagelist">'
-            + '<li class="tweetimagebox" v-style="width: \'calc(100% / \' + quoteStatus.media.length + \')\'" v-repeat="quoteStatus.media">'
+            + '<li class="tweetimagebox" v-style="width: \'calc(100% / \' + tweet.quote.media.length + \')\'" v-repeat="tweet.quote.media">'
               + '<a class="tweetimagelink" target="_blank" v-style="background-image: \'url(\' + $value + \':small)\'" v-attr="href: $value" v-text="$value"></a>'
             + '</li>'
           + '</ul>'
@@ -67,32 +71,8 @@ var Tweet = Vue.extend({
     }
   },
   computed: {
-    displayIcon: function () {
-      var self = this.$data.retweet || this.$data;
-      return self.icon;
-    },
-    displayName: function () {
-      var self = this.$data.retweet || this.$data;
-      return self.name;
-    },
-    displayScreenName: function () {
-      var self = this.$data.retweet || this.$data;
-      return self.screenName;
-    },
-    quoteStatus: function () {
-      var self = this.$data.retweet || this.$data;
-      return self.quote;
-    },
-    status: function () {
-      var self = this.$data.retweet || this.$data;
-      return self.formattedStatus;
-    },
-    isUserProtected: function () {
-      var self = this.$data.retweet || this.$data.quote || this.$data;
-      return self.protected;
-    },
     timeFrom: function () {
-      var createdAt = this.createdAt;
+      var createdAt = moment(new Date(this.tweet.createdAt));
       var now = this.now;
       var duration = moment.duration(now.diff(createdAt));
 
@@ -115,32 +95,41 @@ var Tweet = Vue.extend({
   },
   methods: {
     doReply: function (event) {
-      console.log('Tweet: reply');
-      this.$data.doReply(this.username);
+      var self = this;
+      var mentions = _.filter(this.tweet.mentions, function (k) {
+        return k !== self.username;
+      });
+      mentions.unshift(this.tweet.screenname);
+
+      ipc.send('reply', this.tweet.id, mentions);
     },
     doRetweet: function (event) {
-      console.log('Tweet: retweet');
-      this.$data.doRetweet();
+      ipc.send('retweet', this.tweet.id, !this.tweet.isRetweeted);
     },
     doQuote: function (event) {
-      console.log('Tweet: quote');
-      this.$data.doQuote();
+      var tweetUrl = 'https://twitter.com/'
+        + this.tweet.screenName
+        + '/status/'
+        + this.tweet.id;
+
+      ipc.send('quote', this.tweet.id, tweetUrl);
     },
     doFavorite: function (event) {
-      console.log('Tweet: favorite');
-      this.$data.doFavorite();
+      ipc.send('favorite', this.tweet.id, !this.tweet.isFavorited);
     },
     doDelete: function (event) {
-      console.log('Tweet: delete');
-      this.$data.doDelete();
+      ipc.send('delete', this.tweet.id);
     },
     doShowInBrowser: function (event) {
-      console.log('Tweet: Show in browser');
-      this.$data.doShowInBrowser();
+      var tweetUrl = 'https://twitter.com/'
+        + this.tweet.screenName
+        + '/status/'
+        + this.tweet.id;
+
+      shell.openExternal(tweetUrl);
     },
     doShowProfile: function () {
-      var self = this.$data.retweet || this.$data;
-      this.$dispatch('showProfile', self.user);
+      this.$dispatch('showProfile', this.tweet.user);
     },
     rightclick: function (event) {
       var menu = contextmenu.build(this);
@@ -148,14 +137,16 @@ var Tweet = Vue.extend({
       event.preventDefault();
     },
     leftclick: function (event) {
-      console.log('Tweet: show thread');
-
-      // React if it's not a link
-      if (event.target.tagName !== 'A'
-        && event.target.tagName !== 'SPAN'
+      if (event.target.tagName === 'A') {
+        var screenname = event.target.getAttribute('data-screen-name');
+        if (screenname) {
+          this.$dispatch('showScreenname', screenname);
+        }
+      } else if (event.target.tagName !== 'SPAN'
         && event.target.tagName !== 'BUTTON'
         && event.target.tagName !== 'IMG') {
-        this.$dispatch('showThread', this.$data);
+        // Avoid firing on wrong elements
+        this.$dispatch('showThread', this.tweet);
       }
     }
   },
