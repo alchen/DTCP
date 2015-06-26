@@ -44,13 +44,11 @@ var Tweet = function (tweet, screenname) {
   this.isFavorited = tweet.favorited;
   this.retweetCount = tweet.retweet_count;
   this.favoriteCount = tweet.favorite_count;
-  this.createdAt = tweet.created_at;
 
   // User info
   this.screenname = tweet.user.screen_name;
   this.name = tweet.user.name;
   this.userId = tweet.user.id_str;
-  this.icon = tweet.user.profile_image_url_https;
   this.protected = tweet.user.protected;
 
   this.user = new User(tweet.user);
@@ -73,6 +71,12 @@ var Tweet = function (tweet, screenname) {
   } else {
     this.quote = null;
   }
+
+  this.createdAt = tweet.created_at;
+  this.gaps = {
+    home: false,
+    mentions: false
+  };
 };
 
 Tweet.prototype.mentionsScreenname =  function (screenname) {

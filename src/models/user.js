@@ -11,6 +11,8 @@ var User = function (user) {
   this.screenname = user.screen_name;
   this.name = user.name;
   this.icon = user.profile_image_url_https;
+  this.biggerIcon = this.icon.replace('_normal', '_bigger');
+  this.originalIcon = this.icon.replace('_normal', '');
   this.profileBackground = user.profile_banner_url;
 
   this.description = user.description;
@@ -18,7 +20,7 @@ var User = function (user) {
 
   this.expandedUrl = user.url && user.entities ? user.entities.url.urls[0].expanded_url : null;
   this.location = user.location;
-  
+
   this.followersCount = user.followers_count;
   this.friendsCount = user.friends_count;
   this.listedCount = user.listed_count;

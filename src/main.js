@@ -68,6 +68,10 @@ ipc.on('loadMore', function (event, timelineToLoad, maxId) {
   timeline.loadMore(timelineToLoad, maxId);
 });
 
+ipc.on('loadSince', function (event, timelineToLoad, sinceId) {
+  timeline.loadSince(timelineToLoad, sinceId);
+});
+
 ipc.on('loadUser', function (event, screennameToLoad, maxId) {
   timeline.loadUser(screennameToLoad, maxId);
 });

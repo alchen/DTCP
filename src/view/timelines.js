@@ -10,68 +10,110 @@ require('../view/components/thread');
 var moment = require('moment');
 
 var timelines;
+var defaultLength = 50;
 
 ipc.on('initialLoad', function (screenname) {
   timelines = new Vue({
     el: '#content',
+    computed: {
+      topFrame: function () {
+        return this.frames[this.frames.length - 1];
+      }
+    },
     events: {
+      loadSince: function (sinceId) {
+        ipc.send('loadSince', this.topFrame.view, sinceId);
+      },
       loadMore: function (maxId) {
-        if (this.currentNest !== 'showProfile') {
-          ipc.send('loadMore', this.currentView, maxId);
+        if (this.topFrame.view !== 'profile') {
+          ipc.send('loadMore', this.topFrame.view, maxId);
         } else {
-          ipc.send('loadUser', this.profile.screenname, maxId);
+          ipc.send('loadUser', this.topFrame.profile.screenname, maxId);
         }
       },
       showThread: function (threadbase) {
-        this.nest = true;
-        this.currentNest = 'showThread';
-        this.thread.base = threadbase;
+        var newFrame = {
+          is: 'thread',
+          view: 'thread',
+          base: threadbase,
+          pretext: [],
+          replies: []
+        };
+        this.frames.push(newFrame);
       },
       showProfile: function (user) {
-        this.nest = true;
-        this.currentNest = 'showProfile';
-        this.profile = user;
-        this.tweets.profile = [];
+        if (this.topFrame.profile && this.topFrame.profile.screenname === user.screenname) {
+          return;
+        }
+        var newFrame = {
+          is: 'profile',
+          view: 'profile',
+          profile: user,
+          tweets: []
+        };
+        this.frames.push(newFrame);
       },
       showScreenname: function (screenname) {
-        this.nest = true;
-        this.currentNest = 'showProfile';
-        this.profile = {screenname: screenname};
-        this.tweets.profile = [];
+        if (this.topFrame.profile && this.topFrame.profile.screenname === screenname) {
+          return;
+        }
+        var newFrame = {
+          is: 'profile',
+          view: 'profile',
+          profile: {screenname: screenname},
+          tweets: []
+        };
+        this.frames.push(newFrame);
         ipc.send('loadScreenname', screenname);
       }
     },
+    created: function () {
+      this.frames.push({
+        is: 'timeline',
+        view: 'home',
+        tweets: this.tweets.home
+      });
+    },
     data: {
+      frames: [],
       screenname: screenname,
       tweets: {
         home: [],
-        mentions: [],
-        profile: [],
-        pretext: [],
-        replies: []
+        mentions: []
       },
-      thread: {
-      },
-      profile: {},
-      currentView: 'home',
-      currentNest: null,
-      nest: false,
       now: moment()
     },
     methods: {
+      scroll: function (event) {
+        if (event.target.scrollTop === 0
+          && (this.topFrame.view === 'home' || this.topFrame.view === 'mentions')) {
+          this.rewind(this.topFrame.view);
+        }
+      },
+      rewind: function (timeline) {
+        this.tweets[timeline] = this.tweets[timeline].slice(0, defaultLength);
+      },
+      popTweet: function (timeline) {
+        return this.tweets[timeline].pop();
+      },
       compose: function () {
         ipc.send('compose');
       },
       back: function () {
-        this.nest = false;
-        this.currentNest = null;
+        if (this.frames.length > 1) {
+          this.frames.pop();
+        }
       },
       changeTimeline: function (timeline) {
-        this.back();
-        if (this.currentView === timeline) {
+        if (this.frames.length === 1 && this.frames[0].view === timeline) {
           this.scrollToTop();
-        } else {
-          this.currentView = timeline;
+        } else if (this.topFrame.view !== timeline) {
+          this.rewind(this.frames[0].view);
+          this.frames = [ {
+            is: 'timeline',
+            view: timeline,
+            tweets: this.tweets[timeline]
+          } ];
         }
       },
       notify: function (timeline, tweet) {
@@ -87,25 +129,35 @@ ipc.on('initialLoad', function (screenname) {
         }
       },
       scrollToTop: function () {
-        var target = document.getElementsByClassName('timeline')[0];
-        var duration = 210;
-        var animationDelay = 30;
-        var scrollHeight = target.scrollTop;
-        var scrollStep = scrollHeight / (duration / animationDelay);
+        var frames = document.getElementsByClassName('frame');
+        var target = frames[frames.length - 1];
+        var speed = 300;
+        var delay = 16;
 
-        function step() {
-          setTimeout(function () {
-            if (target.scrollTop > scrollStep) {
-              target.scrollTop -= scrollStep;
-              requestAnimationFrame(step);
-            } else {
-              target.scrollTop = 0;
-            }
-          }, animationDelay);
-        }
+        var easing = function (time) {
+          return time < 0.5 ? 8 * time * time * time * time : 1 - 8 * (--time) * time * time * time;
+        };
 
-        // Set things in motion
-        requestAnimationFrame(step); 
+        var animation;
+        var startLocation = target.scrollTop;
+        var distance = -startLocation;
+        var timeLapsed = 0;
+        var percentage, position;
+
+        var step = function () {
+          timeLapsed += 16;
+          percentage = ( timeLapsed / speed );
+          percentage = ( percentage > 1 ) ? 1 : percentage;
+          position = startLocation + ( distance * easing(percentage) );
+          requestAnimationFrame(function () {
+            target.scrollTop = Math.floor(position);
+          });
+          if (target.scrollTop === 0) {
+            clearInterval(animation);
+          }
+        };
+
+        animation = setInterval(step, delay);
       },
       mergeTweet: function (dstTweet, srcTweet) {
         _.assign(dstTweet, srcTweet);
@@ -113,33 +165,78 @@ ipc.on('initialLoad', function (screenname) {
       addTweet: function (target, tweet, push) {
         var self = this;
 
-        _.each(this.tweets, function (timeline, name) {
-          var oldTweet = _.find(timeline, function (old) {
-            return old.id === tweet.id;
-          });
+        this.updateTweet(tweet);
 
-          if (name !== target && oldTweet) {
-            self.mergeTweet(oldTweet, tweet);
-          } else if (name === target) {
-            if (oldTweet) {
-              self.mergeTweet(oldTweet, tweet);
-            } else if (push) {
-              self.tweets[target].push(tweet);
-            } else {
-              self.tweets[target].unshift(tweet);
+        var oldTweet = _.find(this.tweets[target], function (old) {
+          return old.id === tweet.id;
+        });
+
+        if (!oldTweet) {
+          if (push) {
+            self.tweets[target].push(tweet);
+          } else {
+            self.tweets[target].unshift(tweet);
+          }
+        }
+      },
+      addFiller: function (target, tweets) {
+        _.each(tweets, this.updateTweet);
+
+        var oldTweet;
+        var timeline = this.tweets[target];
+        var sinceId = tweets[tweets.length - 1];
+
+        var index = _.findIndex(timeline, function (oldTweet) {
+          return oldTweet.id === sinceId;
+        });
+
+        // tweets is reversed
+        _.each(tweets, function (tweet) {
+          if (index < 0) {
+            _.find(timeline, function (old) {
+              return old.id === tweet.id;
+            });
+            if (!oldTweet) {
+              timeline.unshift(tweet);
+            }
+          } else if (tweet.id === timeline[index].id) {
+            index--;
+          } else {
+            _.find(timeline, function (old) {
+              return old.id === tweet.id;
+            });
+            if (!oldTweet) {
+              timeline.unshift(tweet);
             }
           }
         });
       },
+      sort: function (timeline) {
+        this.tweets[timeline] = _.sortBy(this.tweets[timeline], function (tweet) {
+            return new Date(tweet.createdAt);
+          }).reverse();
+      },
       updateTweet: function (tweet) {
         var self = this;
-        _.each(this.tweets, function (timeline) {
+
+        var updateTimeline = function (timeline) {
           var oldTweet = _.find(timeline, function (old) {
             return old.id === tweet.id;
           });
 
           if (oldTweet) {
             self.mergeTweet(oldTweet, tweet);
+          }
+        };
+
+        _.each(this.tweets, updateTimeline);
+
+        _.each(this.frames, function (frame) {
+          if (frame.base) {
+            updateTimeline(frame.pretext);
+            updateTimeline(frame.replies);
+          } else if (frame.profile) {
+            updateTimeline(frame.tweets);
           }
         });
       },
@@ -153,31 +250,28 @@ ipc.on('initialLoad', function (screenname) {
             timeline.$remove(index);
           }
         });
+      },
+      keepPosition: function (offset) {
+        var el = document.getElementsByClassName('frame')[0];
+        var toBottom =  el.scrollTop < 64 ? 0 : el.scrollHeight - el.scrollTop;
+        this.$nextTick(function () {
+          el.scrollTop = toBottom ? el.scrollHeight - toBottom + (offset || 0) : 0;
+        });
       }
     },
     components: {
-      home: {
-        inherit: true,
-        template: '<component is="timeline" tweets="{{@ tweets.home}}" username="{{screenname}}" now="{{now}}"></component>'
-      },
-      mentions: {
-        inherit: true,
-        template: '<component is="timeline" tweets="{{@ tweets.mentions}}" username="{{screenname}}" now="{{now}}"></component>'
-      },
-      showProfile: {
-        inherit: true,
-        template: '<component is="profile" tweets="{{@ tweets.profile}}" user="{{profile}}" username="{{screenname}}" now="{{now}}"></component>'
-      },
-      showThread: {
-        inherit: true,
-        template: '<component is="thread" base="{{@ thread.base}}" pretext="{{@ tweets.pretext}}" replies="{{@ tweets.replies}}" username="{{screenname}}" now="{{now}}"></component>'
-      }
     },
     compiled: function () {
       var self = this;
       setInterval(function () {
         self.now = moment();
       }, 60 * 1000);
+
+      document.onkeyup = function (event) {
+        if (event.keyCode === 27) { // ESC
+          self.back();
+        }
+      };
 
       ipc.on('deleteTweet', function (tweetId) {
         self.now = moment();
@@ -193,6 +287,10 @@ ipc.on('initialLoad', function (screenname) {
         self.now = moment();
         self.addTweet(timeline, tweet);
         self.notify(timeline, tweet);
+        self.keepPosition();
+        self.$nextTick(function () {
+          self.popTweet(timeline);
+        });
       });
 
       ipc.on('newTweets', function (timeline, tweets) {
@@ -205,15 +303,30 @@ ipc.on('initialLoad', function (screenname) {
         });
       });
 
+      ipc.on('newFiller', function (timeline, tweets) {
+        if (!tweets || !tweets.length) {
+          return;
+        }
+        self.now = moment();
+        self.addFiller(timeline, tweets);
+        self.keepPosition();
+      });
+
       ipc.on('newProfileUser', function (user) {
         self.now = moment();
-        self.profile = user;
+        if (self.topFrame.profile
+          && self.topFrame.profile.screenname === user.screenname) {
+          self.topFrame.profile = user;
+        }
       });
 
       ipc.on('newProfile', function (user, tweets) {
         self.now = moment();
-        self.profile = user;
-        self.tweets.profile = self.tweets.profile.concat(tweets);
+        if (self.topFrame.profile
+          && self.topFrame.profile.screenname === user.screenname) {
+          self.topFrame.profile = user;
+          self.topFrame.tweets = self.topFrame.tweets.concat(tweets);
+        }
       });
 
       ipc.on('newPretext', function (tweets) {
@@ -223,6 +336,8 @@ ipc.on('initialLoad', function (screenname) {
       ipc.on('newReplies', function (tweets) {
         self.$broadcast('newReplies', tweets);
       });
+    },
+    transitions: {
     }
   });
 });

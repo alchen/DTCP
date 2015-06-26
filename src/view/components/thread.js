@@ -8,7 +8,7 @@ require('./fatTweet');
 require('./tweet');
 
 var template = '<ul class="thread timeline">'
-    + '<component is="tweet" v-repeat="tweet: pretext"  username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component>'
+    + '<component is="tweet" v-repeat="tweet: pretext"  username="{{ username }}" now="{{ now }}" track-by="id"></component>'
     + '<component is="fatTweet" tweet="{{ base }}" username="{{ username }}" now="{{ now }}"></component>'
     + '<component is="tweet" v-repeat="tweet: replies"  username="{{ username }}" now="{{ now }}" track-by="id"></component>'
   + '</ul>';
@@ -24,39 +24,38 @@ var Thread = Vue.extend({
       return false;
     },
     newPretext: function (tweets) {
-      this.pretext = tweets;
+      if (tweets.length && tweets[tweets.length - 1].id === this.base.inReplyTo) {
+        this.pretext = tweets;
+        this.$nextTick(this.scrollToFat);
+      }
       return false;
     },
     newReplies: function (tweets) {
-      this.replies = tweets;
+      if (tweets.length && tweets[0].inReplyTo === this.base.id) {
+        this.replies = tweets;
+      }
       return false;
     }
   },
   methods: {
     findContext: function () {
       ipc.send('findContext', this.base.id);
+    },
+    scrollToFat: function () {
+      var el = document.getElementsByClassName('fattweet')[0];
+      if (el) {
+        el.scrollIntoViewIfNeeded();
+      }
     }
   },
   compiled: function () {
     this.findContext();
   },
+  attached: function () {
+    this.scrollToFat();
+  },
   template: template,
   transitions: {
-    keepScroll: {
-      enter: function (el, done) {
-        var timelineEl = document.getElementsByClassName('thread')[0];
-        timelineEl.scrollTop += el.scrollHeight;
-        done();
-      },
-      css: false
-    },
-    scrollTo: {
-      enter: function (el, done) {
-        // el.scrollIntoViewIfNeeded()
-        done();
-      },
-      css: false
-    },
   }
 });
 

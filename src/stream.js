@@ -31,6 +31,12 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
   this.stream.on('friends', function (friendsMsg) {
     console.log('Stream: friend');
     self.timeline.setFriends(friendsMsg.friends_str);
+
+    // We just connected or we are reconnected
+    var gaps = self.timeline.insertGap();
+    _.each(gaps, function (tweet) {
+      self.send('updateTweet', tweet);
+    });
   });
 
   this.stream.on('tweet', function (tweet) {
@@ -76,8 +82,8 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
     }
   });
 
-  this.stream.on('error', function (err) {
-    console.log('Stream: Disconnected and we\'ll just play possum here.');
+  this.stream.on('internet_error', function (err) {
+    console.log('Stream: internet is down.');
     console.log(err);
   });
 }
@@ -90,6 +96,12 @@ Stream.prototype.subscribe = function subscribe(window) {
 Stream.prototype.unsubscribe = function unsubscribe() {
   console.log('Stream: unsubscribe');
   this.subscriber = null;
+};
+
+Stream.prototype.close = function () {
+  console.log('Stream: close');
+  this.stream.stop();
+  this.stream.removeAllListeners();
 };
 
 Stream.prototype.send = function () {
@@ -122,7 +134,7 @@ Stream.prototype.saveTweets = function saveTweets(timeline, rawTweets) {
   }
 };
 
-Stream.prototype.sendTweets = function sendTweets(timeline, maxId) {
+Stream.prototype.sendTweets = function (timeline, maxId) {
   var payload;
   if (timeline === 'home') {
     payload = this.timeline.getHome(maxId).slice(0, sendThreshold);
@@ -133,7 +145,26 @@ Stream.prototype.sendTweets = function sendTweets(timeline, maxId) {
   this.send('newTweets', timeline, payload);
 };
 
-Stream.prototype.loadMore = function loadMore(timeline, maxId) {
+Stream.prototype.sendFiller = function (timeline, filler) {
+  this.send('newFiller', timeline, filler);
+};
+
+Stream.prototype.loadSince = function (timeline, sinceId) {
+  var self = this;
+  var options = { count: loadThreshold, since_id: sinceId };
+
+  this.T.get('statuses/' + timeline + '_timeline', options, function (err, rawTweets, response) {
+    if (!err) {
+      var tweets = _.map(rawTweets, function (rawTweet) {
+        return new Tweet(rawTweet, self.screenname);
+      });
+      var filler = self.timeline.closeGap(timeline, sinceId, tweets);
+      self.sendFiller(timeline, filler);
+    }
+  });
+};
+
+Stream.prototype.loadMore = function (timeline, maxId) {
   var self = this;
 
   var payload;

@@ -10,9 +10,11 @@ var ipc = require('ipc');
 var shell = require('shell');
 var _ = require('lodash');
 
-var template = '<li class="tweetcontainer"><div class="tweet" v-on="contextmenu: rightclick" v-touch="tap: leftclick">'
+var template = '<li class="tweetcontainer">'
+  + '<div class="gap" v-if="tweet.gaps[view]" v-touch="tap: loadMissing">Load missing tweets</div>'
+  + '<div class="tweet" v-on="contextmenu: rightclick" v-touch="tap: leftclick">'
     + '<section class="tweetleft">'
-      + '<img class="tweeticon" v-attr="src: tweet.icon" onerror="this.style.visibility=\'hidden\';" v-touch="tap: doShowProfile" />'
+      + '<img class="tweeticon" v-attr="src: tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" v-touch="tap: doShowProfile" />'
     + '</section>'
     + '<section class="tweetright">'
       + '<section class="tweetmeta">'
@@ -63,7 +65,7 @@ var template = '<li class="tweetcontainer"><div class="tweet" v-on="contextmenu:
 
 var Tweet = Vue.extend({
   replace: true,
-  props: ['username', 'now'],
+  props: ['username', 'now', 'view'],
   template: template,
   filters: {
     at: function (name) {
@@ -108,7 +110,7 @@ var Tweet = Vue.extend({
     },
     doQuote: function (event) {
       var tweetUrl = 'https://twitter.com/'
-        + this.tweet.screenName
+        + this.tweet.screenname
         + '/status/'
         + this.tweet.id;
 
@@ -122,7 +124,7 @@ var Tweet = Vue.extend({
     },
     doShowInBrowser: function (event) {
       var tweetUrl = 'https://twitter.com/'
-        + this.tweet.screenName
+        + this.tweet.screenname
         + '/status/'
         + this.tweet.id;
 
@@ -148,6 +150,9 @@ var Tweet = Vue.extend({
         // Avoid firing on wrong elements
         this.$dispatch('showThread', this.tweet);
       }
+    },
+    loadMissing: function (event) {
+      this.$dispatch('loadSince', this.tweet.id);
     }
   },
 });

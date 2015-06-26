@@ -5,16 +5,14 @@ var detectViewport = require('../directives/detectViewport');
 Vue.use(detectViewport);
 require('./tweet');
 
-var defaultLength = 50;
-
-var template = '<ul class="tweets timeline" v-on="scroll: scroll">'
-    + '<component is="tweet" v-repeat="tweet: tweets" username="{{ username }}" now="{{ now }}" track-by="id" v-transition="keepScroll"></component>'
+var template = '<ul class="tweets timeline">'
+    + '<component is="tweet" v-repeat="tweet: tweets" view="{{ view }}" username="{{ username }}" now="{{ now }}" track-by="id"></component>'
     + '<div class="loader loader-inner ball-clip-rotate" v-detect-viewport><div></div></div>'
   + '</ul>';
 
 var Timeline = Vue.extend({
   replace: true,
-  props: ['tweets', 'username', 'now'],
+  props: ['tweets', 'username', 'now', 'view'],
   events: {
     'viewportenter': function (el) {
       el.style.height = 'auto';
@@ -27,33 +25,12 @@ var Timeline = Vue.extend({
     'viewportleave': function (el) {
       clearTimeout(this.loaderTimer);
       el.style.opacity = '1';
-    },
-    'hook:detached': function () {
-      this.rewind();
     }
   },
   template: template,
   methods: {
-    rewind: function () {
-      this.tweets = this.tweets.slice(0, defaultLength);
-    },
-    scroll: function (event) {
-      if (event.target.scrollTop < 64) {
-        this.rewind();
-      }
-    }
   },
   transitions: {
-    keepScroll: {
-      enter: function (el, done) {
-        var timelineEl = document.getElementsByClassName('timeline')[0];
-        if (el.offsetTop < 64 && timelineEl.scrollTop >= 64) {
-          timelineEl.scrollTop += el.scrollHeight;
-        }
-        done();
-      },
-      css: false
-    }
   }
 });
 

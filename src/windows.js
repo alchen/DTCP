@@ -153,6 +153,7 @@ var windows = {
   unloadTimeline: function unloadTimeline() {
     if (this.timeline) {
       this.timeline.unsubscribe();
+      this.timeline.close();
       this.timeline = undefined;
     }
   }

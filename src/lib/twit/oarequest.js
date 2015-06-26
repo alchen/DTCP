@@ -217,11 +217,11 @@ OARequest.prototype.keepAlive = function () {
     self.handleCloseEvent();
   });
 
-  // TODO: reconnect when internet is back
+  // reconnect when internet is back
   this.request.on('error', function (err) {
-    self.stop();
+    // self.stop();
 
-    self.emit('error', err);
+    self.emit('internet_error', err);
   });
   // send off the request
   this.request.end();
@@ -400,13 +400,13 @@ OARequest.prototype.end = function (callback) {
     }
 
     return callback(null, parsed, response);
-  }
+  };
 
   // make the http request and handle it before calling user's cb
   this.makeRequest(responseHandler);
 
   return this;
-}
+};
 
 /**
  * Send off the HTTP request, passing back the reply to @cb
