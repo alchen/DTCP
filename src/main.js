@@ -38,7 +38,10 @@ app.on('ready', function () {
 // Handle Events
 
 app.on('activate-with-no-open-windows', function () {
-  windows.getMainWindow().show();
+  var mainWindow = windows.getMainWindow();
+  if (mainWindow) {
+    mainWindow.show();
+  }
 });
 
 app.on('window-all-closed', function () {
@@ -48,6 +51,15 @@ app.on('window-all-closed', function () {
 app.on('before-quit', function () {
   global.willQuit = true;
   preferences.save();
+  windows.closeTweetWindows();
+});
+
+app.on('will-quit', function() {
+  console.log('Main: will quit');
+});
+
+app.on('quit', function () {
+  console.log('Main: quit');
 });
 
 ipc.on('verified', function (event, oauthToken, oauthTokenSecret, screenname) {
@@ -133,4 +145,3 @@ ipc.on('delete', function (event, tweetId) {
   console.log('Main: delete ' + tweetId);
   timeline.deleteTweet(tweetId);
 });
-

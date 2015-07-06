@@ -19,7 +19,7 @@ var options = {
 
 var Tweet = function (tweet, screenname) {
   // Accommodate different type of events
-  this.type = 'tweet';
+  this.isTweet = true;
 
   // Tweet status
   if (tweet.retweeted_status) {
@@ -27,7 +27,12 @@ var Tweet = function (tweet, screenname) {
       this.retweetId = tweet.id_str;
       this.isRetweeted = true;
     } else {
-      this.retweetedBy = [tweet.user.name];
+      this.retweetedBy = [
+        {
+          name: tweet.user.name,
+          screenname: tweet.user.screen_name
+        }
+      ];
     }
     tweet = tweet.retweeted_status;
   }
@@ -44,12 +49,6 @@ var Tweet = function (tweet, screenname) {
   this.isFavorited = tweet.favorited;
   this.retweetCount = tweet.retweet_count;
   this.favoriteCount = tweet.favorite_count;
-
-  // User info
-  this.screenname = tweet.user.screen_name;
-  this.name = tweet.user.name;
-  this.userId = tweet.user.id_str;
-  this.protected = tweet.user.protected;
 
   this.user = new User(tweet.user);
 

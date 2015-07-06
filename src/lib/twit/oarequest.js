@@ -6,8 +6,7 @@
 var EventEmitter = require('events').EventEmitter
   , querystring = require('querystring')
   , util = require('util')
-  , Parser = require('./parser')
-  , Auth = require('./auth');
+  , Parser = require('./parser');
 
 // set of status codes where we don't attempt reconnects
 var STATUS_CODES_TO_ABORT_ON = [ 400, 401, 403, 404, 406, 410, 422 ];
@@ -77,6 +76,7 @@ OARequest.prototype.persist = function () {
     else if (msg.warning)         { self.emit('warning', msg); }
     else if (msg.status_withheld) { self.emit('status_withheld', msg); }
     else if (msg.user_withheld)   { self.emit('user_withheld', msg); }
+    else if (msg.user_delete)     { self.emit('user_delete', msg); }
     else if (msg.friends || msg.friends_str) { self.emit('friends', msg); }
     else if (msg.direct_message)  { self.emit('direct_message', msg); }
     else if (msg.event)           {

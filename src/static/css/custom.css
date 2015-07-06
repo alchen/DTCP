@@ -25,6 +25,16 @@ body {
   }
 }
 
+@-webkit-keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
 @-webkit-keyframes slideInLeft {
   0% {
     -webkit-transform: translate3d(-100%, 0, 0);
@@ -229,15 +239,31 @@ a {
   -webkit-animation: fadeIn .7s;
 }
 
+@-webkit-keyframes compress {
+  0% {
+    max-height: 1.5rem;
+  }
+
+  100% {
+    max-height: 0;
+  }
+}
+
 .gap {
   background-color: #eee;
   text-transform: uppercase;
   font-size: .625rem;
   text-align: center;
-  padding: .375rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
   color: #777;
   border-bottom: 1px solid #ddd;
   cursor: pointer;
+  overflow: hidden;
+}
+
+.gap-leave {
+  -webkit-animation: compress .3s;
 }
 
 .tweet {
@@ -295,15 +321,36 @@ a {
   background-size: cover;
 }
 
+.profilemetaright .relationship {
+  display: inline-block;
+  width: 5rem;
+  background-color: #5af;
+  border-radius: .25rem;
+  text-align: center;
+  color: #fff;
+  padding: .25rem;
+  box-shadow: 0 0 3px #ccc;
+  vertical-align: top;
+  -webkit-animation: fadeIn .2s;
+  cursor: pointer;
+}
+
+.profilemetaright .names {
+  display: inline-block;
+  width: calc(100% - 5rem);
+}
+
 .profilemetaright .name {
   font-weight: bold;
   font-size: 1rem;
   color: #333;
+  display: block;
 }
 
 .profilemetaright .screenname {
   color: #777;
   font-size: 0.6875rem;
+  display: block;
 }
 
 .profilemetacontent {
@@ -496,7 +543,7 @@ a {
   display: inline-block;
   height: 1rem;
   overflow: hidden;
-  width: 2rem; 
+  width: 2rem;
 }
 
 .tweettime {
@@ -509,7 +556,7 @@ a {
 
 .fattweettime {
   /*margin-top: .75rem;*/
-  
+
 }
 
 .fattweetretweet {

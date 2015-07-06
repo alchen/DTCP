@@ -9,6 +9,8 @@ require('../view/components/timeline');
 require('../view/components/thread');
 var moment = require('moment');
 
+Vue.config.debug = true;
+
 var timelines;
 var defaultLength = 50;
 
@@ -81,6 +83,7 @@ ipc.on('initialLoad', function (screenname) {
         home: [],
         mentions: []
       },
+      users: {},
       now: moment()
     },
     methods: {
@@ -90,8 +93,11 @@ ipc.on('initialLoad', function (screenname) {
           this.rewind(this.topFrame.view);
         }
       },
-      rewind: function (timeline) {
+      rewind: function () {
+        var bottomFrame = this.frames[0];
+        var timeline = bottomFrame.view;
         this.tweets[timeline] = this.tweets[timeline].slice(0, defaultLength);
+        bottomFrame.tweets = this.tweets[timeline];
       },
       popTweet: function (timeline) {
         return this.tweets[timeline].pop();
@@ -108,12 +114,12 @@ ipc.on('initialLoad', function (screenname) {
         if (this.frames.length === 1 && this.frames[0].view === timeline) {
           this.scrollToTop();
         } else if (this.topFrame.view !== timeline) {
-          this.rewind(this.frames[0].view);
-          this.frames = [ {
+          this.rewind();
+          this.frames = [{
             is: 'timeline',
             view: timeline,
             tweets: this.tweets[timeline]
-          } ];
+          }];
         }
       },
       notify: function (timeline, tweet) {
@@ -149,7 +155,7 @@ ipc.on('initialLoad', function (screenname) {
           percentage = ( timeLapsed / speed );
           percentage = ( percentage > 1 ) ? 1 : percentage;
           position = startLocation + ( distance * easing(percentage) );
-          requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () {
             target.scrollTop = Math.floor(position);
           });
           if (target.scrollTop === 0) {
@@ -165,7 +171,7 @@ ipc.on('initialLoad', function (screenname) {
       addTweet: function (target, tweet, push) {
         var self = this;
 
-        this.updateTweet(tweet);
+        tweet = this.updateTweet(tweet);
 
         var oldTweet = _.find(this.tweets[target], function (old) {
           return old.id === tweet.id;
@@ -180,33 +186,31 @@ ipc.on('initialLoad', function (screenname) {
         }
       },
       addFiller: function (target, tweets) {
-        _.each(tweets, this.updateTweet);
+        var self = this;
 
         var oldTweet;
         var timeline = this.tweets[target];
-        var sinceId = tweets[tweets.length - 1];
+        var sinceTweet = tweets[0];
 
-        var index = _.findIndex(timeline, function (oldTweet) {
-          return oldTweet.id === sinceId;
+        var index = _.findIndex(timeline, function (tweet) {
+          return tweet.id === sinceTweet.id;
         });
 
-        // tweets is reversed
+        // tweets is already reversed
         _.each(tweets, function (tweet) {
-          if (index < 0) {
-            _.find(timeline, function (old) {
-              return old.id === tweet.id;
-            });
-            if (!oldTweet) {
-              timeline.unshift(tweet);
-            }
-          } else if (tweet.id === timeline[index].id) {
+          tweet = self.updateTweet(tweet);
+          if (index >= 0 && tweet.id === timeline[index].id) {
             index--;
           } else {
-            _.find(timeline, function (old) {
+            oldTweet = _.find(timeline, function (old) {
               return old.id === tweet.id;
             });
             if (!oldTweet) {
-              timeline.unshift(tweet);
+              if (index <= 0) {
+                timeline.unshift(tweet);
+              } else {
+                timeline.splice(index, 0, tweet);
+              }
             }
           }
         });
@@ -239,6 +243,22 @@ ipc.on('initialLoad', function (screenname) {
             updateTimeline(frame.tweets);
           }
         });
+
+        tweet.user = this.updateProfile(tweet.user);
+        if (tweet.quote) {
+          tweet.quote.user = this.updateProfile(tweet.quote.user);
+        }
+
+        return tweet;
+      },
+      updateProfile: function (user) {
+        if (this.users[user.screenname]) {
+          _.assign(this.users[user.screenname], user);
+        } else {
+          this.users[user.screenname] = user;
+        }
+
+        return this.users[user.screenname];
       },
       deleteTweet: function (tweetId) {
         _.each(this.tweets, function (timeline) {
@@ -316,7 +336,7 @@ ipc.on('initialLoad', function (screenname) {
         self.now = moment();
         if (self.topFrame.profile
           && self.topFrame.profile.screenname === user.screenname) {
-          self.topFrame.profile = user;
+          self.topFrame.profile = self.updateProfile(user);
         }
       });
 
@@ -324,7 +344,7 @@ ipc.on('initialLoad', function (screenname) {
         self.now = moment();
         if (self.topFrame.profile
           && self.topFrame.profile.screenname === user.screenname) {
-          self.topFrame.profile = user;
+          self.topFrame.profile = self.updateProfile(user);
           self.topFrame.tweets = self.topFrame.tweets.concat(tweets);
         }
       });

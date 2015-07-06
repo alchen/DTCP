@@ -33,16 +33,11 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
     self.timeline.setFriends(friendsMsg.friends_str);
 
     // We just connected or we are reconnected
-    var gaps = self.timeline.insertGap();
-    _.each(gaps, function (tweet) {
-      self.send('updateTweet', tweet);
-    });
+    self.insertGap();
   });
 
   this.stream.on('tweet', function (tweet) {
     tweet = new Tweet(tweet, self.screenname);
-
-    console.log('Stream: tweet ' + tweet.id);
 
     tweet = self.timeline.addTweet(tweet);
 
@@ -61,7 +56,7 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
   this.stream.on('favorite', function (favoriteMessage) {
     if (favoriteMessage.source.screen_name === self.screenname) {
       // user favorites a tweet
-      var tweet = self.timeline.favoriteTweet(new Tweet(favoriteMessage.target_object));
+      var tweet = self.timeline.favoriteTweet(new Tweet(favoriteMessage.target_object, self.screenname));
       if (tweet) {
         self.send('updateTweet', tweet);
       }
@@ -73,7 +68,7 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
   this.stream.on('unfavorite', function (unfavoriteMessage) {
     if (unfavoriteMessage.source.screen_name === self.screenname) {
       // user favorites a tweet
-      var tweet = self.timeline.unfavoriteTweet(new Tweet(unfavoriteMessage.target_object));
+      var tweet = self.timeline.unfavoriteTweet(new Tweet(unfavoriteMessage.target_object, self.screenname));
       if (tweet) {
         self.send('updateTweet', tweet);
       }
@@ -82,11 +77,24 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
     }
   });
 
+  this.stream.on('error', function (err) {
+    console.log('Stream: critical error');
+    console.log(err);
+  });
+
   this.stream.on('internet_error', function (err) {
     console.log('Stream: internet is down.');
     console.log(err);
   });
 }
+
+Stream.prototype.insertGap = function () {
+  var self = this;
+  var gaps = this.timeline.insertGap();
+  _.each(gaps, function (tweet) {
+    self.send('updateTweet', tweet);
+  });
+};
 
 Stream.prototype.subscribe = function subscribe(window) {
   console.log('Stream: subscribe');
@@ -105,10 +113,32 @@ Stream.prototype.close = function () {
 };
 
 Stream.prototype.send = function () {
+  var cloneTweet = function (tweet) {
+      var newTweet = _.cloneDeep(tweet);
+      newTweet.user = _.cloneDeep(tweet.user);
+      if (tweet.quote) {
+        newTweet.quote.user = _.cloneDeep(tweet.quote.user);
+      }
+      return newTweet;
+  };
+
   if (this.subscriber) {
     var payload = _.map(arguments, function (part) {
-      return _.cloneDeep(part);
+      return _.cloneDeep(part, function (i) {
+        if (_.isArray(i)) {
+          return _.map(i, function (j) {
+            return _.cloneDeep(j, function (k) {
+              if (k && k.isTweet) {
+                return cloneTweet(k);
+              }
+            });
+          });
+        } else if (i && i.isTweet) {
+          return cloneTweet(i);
+        }
+      });
     });
+
     this.subscriber.webContents.send.apply(this.subscriber.webContents, payload);
   }
 };
@@ -135,12 +165,7 @@ Stream.prototype.saveTweets = function saveTweets(timeline, rawTweets) {
 };
 
 Stream.prototype.sendTweets = function (timeline, maxId) {
-  var payload;
-  if (timeline === 'home') {
-    payload = this.timeline.getHome(maxId).slice(0, sendThreshold);
-  } else if (timeline === 'mentions') {
-    payload = this.timeline.getMentions(maxId).slice(0, sendThreshold);
-  }
+  var payload = this.timeline.get(timeline, maxId).slice(0, sendThreshold);
 
   this.send('newTweets', timeline, payload);
 };
@@ -167,12 +192,7 @@ Stream.prototype.loadSince = function (timeline, sinceId) {
 Stream.prototype.loadMore = function (timeline, maxId) {
   var self = this;
 
-  var payload;
-  if (timeline === 'home') {
-    payload = this.timeline.getHome(maxId);
-  } else if (timeline === 'mentions') {
-    payload = this.timeline.getMentions(maxId);
-  }
+  var payload = this.timeline.get(timeline, maxId);
   var payloadSize = _.size(payload);
   var options = { count: loadThreshold };
 
@@ -243,7 +263,6 @@ Stream.prototype.loadUser = function loadUser(screenname, maxId) {
 };
 
 Stream.prototype.findContext = function findContext(tweetId) {
-  console.log('Stream: find context');
   var self = this;
   var tweet = this.timeline.findTweet(tweetId);
   var pretext = this.timeline.findPretext(tweet);
@@ -251,7 +270,7 @@ Stream.prototype.findContext = function findContext(tweetId) {
   if (_.size(pretext) === 0 && tweet.inReplyTo) {
     this.T.get('statuses/show/' + tweet.inReplyTo, {include_my_retweet: true}, function (err, data, response) {
       if (!err) {
-        var tweet = new Tweet(data);
+        var tweet = new Tweet(data, self.screenname);
         self.timeline.saveTweet(tweet);
 
         self.send('newPretext', [tweet]);
@@ -314,7 +333,7 @@ Stream.prototype.unretweet = function unretweet(tweetId) {
     self.T.post('statuses/destroy/' + retweetId, function (err, data, response) {
       if (!err) {
         console.log('REST: unretweeted');
-        tweet = self.timeline.unretweetTweet(new Tweet(data));
+        tweet = self.timeline.unretweetTweet(new Tweet(data, self.screenname));
         self.send('updateTweet', tweet);
       }
     });
@@ -330,7 +349,7 @@ Stream.prototype.unretweet = function unretweet(tweetId) {
       if (!err) {
         console.log('REST: retrieved retweetId');
 
-        tweet = new Tweet(data);
+        tweet = new Tweet(data, self.screenname);
         self.timeline.saveTweet(tweet);
         destroyRetweet(tweet.retweetId);
       }

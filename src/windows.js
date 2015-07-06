@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var shell = require('shell');
 var BrowserWindow = require('browser-window');
 
@@ -15,10 +16,23 @@ var windows = {
   findWindowFromWebContents: function findWindowFromWebContents(webContents) {
     return BrowserWindow.fromWebContents(webContents);
   },
+  closeTweetWindows: function () {
+    _.each(newTweetWindows, function (w) {
+      w.close();
+    });
+    newTweetWindows = [];
+
+    _.each(newTweetWindowsInUse, function (w) {
+      w.close();
+    });
+    newTweetWindowsInUse = [];
+  },
   createNewTweetWindow: function createNewTweetWindow() {
     var newWindow = new BrowserWindow({
       width: 320,
       height: 144,
+      'min-width': 144,
+      'min-height': 100,
       fullscreen: false,
       'accept-first-mouse': false,
       'always-on-top': true,
@@ -34,13 +48,11 @@ var windows = {
     });
 
     newWindow.on('closed', function() {
-      // TODO check for existence
-      // should remove corresponding listeners
       var index = newTweetWindowsInUse.indexOf(this);
       if (index !== -1) {
         newTweetWindowsInUse.splice(index, 1);
       }
-      while (newTweetWindows.length < 2) {
+      while (!global.willQuit && newTweetWindows.length < 2) {
         createNewTweetWindow();
       }
     });
@@ -130,11 +142,9 @@ var windows = {
     });
 
     mainWindow.on('focus', function () {
-      console.log('Main: gains focuse');
     });
 
     mainWindow.on('blur', function () {
-      console.log('Main: loses focuse');
     });
 
     while (newTweetWindows.length < 2) {

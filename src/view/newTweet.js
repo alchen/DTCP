@@ -22,7 +22,7 @@ ipc.on('pretext', function (replyTo, pretext, frontFocus) {
         return 140 - twitterText.getTweetLength(this.rawTweet);
       },
       formattedTweet: function () {
-        return twitterText.autoLink(this.rawTweet, {
+        return twitterText.autoLink(twitterText.htmlEscape(this.rawTweet), {
           usernameIncludeSymbol: true
         });
       }

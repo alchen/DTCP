@@ -21,12 +21,13 @@ var Timeline = function (screenname) {
 
 Timeline.prototype.insertGap = function () {
   var gaps = [];
+
   if (this.home.length > 0) {
-    this.home[0].homeGap = true;
+    this.home[0].gaps.home = true;
     gaps.push(this.home[0]);
   }
   if (this.mentions.length > 0) {
-    this.mentions[0].mentionsGap = true;
+    this.mentions[0].gaps.mentions = true;
     gaps.push(this.mentions[0]);
   }
 
@@ -37,13 +38,8 @@ Timeline.prototype.closeGap = function (timeline, sinceId, newTweets) {
   var self = this;
   var oldTweets, hash;
 
-  if (timeline === 'home') {
-    oldTweets = this.home;
-    hash = this.hash.home;
-  } else if (timeline === 'mentions') {
-    oldTweets = this.mentions;
-    hash = this.hash.mentions;
-  }
+  oldTweets = this[timeline];
+  hash = this.hash[timeline];
 
   var local = _.map(newTweets, function (newTweet) {
     return self.saveTweet(newTweet);
@@ -54,18 +50,20 @@ Timeline.prototype.closeGap = function (timeline, sinceId, newTweets) {
   });
 
   local.push(oldTweets[index]);
-  local[0].gap = true;
+  local[0].gaps[timeline] = true;
 
   _.each(local.reverse(), function (tweet) {
-    if (index < 0) {
-      oldTweets.unshift(tweet);
-    } else if (tweet.id === oldTweets[index].id) {
+    if (index >= 0 && tweet.id === oldTweets[index].id) {
       oldTweets[index].gaps[timeline] = false;
       index--;
-    } else {
-      oldTweets.splice(index, 0, tweet);
+    } else if (!hash[tweet.id]) {
+      if (index <= 0) {
+        oldTweets.unshift(tweet);
+      } else {
+        oldTweets.splice(index, 0, tweet);
+      }
+      hash[tweet.id] = tweet;
     }
-    hash[tweet.id] = tweet;
   });
 
   return local;
@@ -120,13 +118,9 @@ Timeline.prototype.unfavoriteTweet = function (tweet) {
 };
 
 Timeline.prototype.unretweetTweet = function (tweet) {
-  var self = this;
   tweet = this.saveTweet(tweet);
   tweet.isRetweeted = false;
-  tweet.retweetedBy = _.filter(tweet.retweetedBy, function (name) {
-    return name !== self.screenname;
-  });
-  if (tweet.retweetedBy.length === 0) {
+  if (tweet.retweetedBy && tweet.retweetedBy.length === 0) {
     tweet.retweetedBy = null;
   }
 
@@ -141,19 +135,11 @@ Timeline.prototype.findUser = function (screenname) {
   return this.users[screenname];
 };
 
-Timeline.prototype.getHome = function (maxId, sinceId) {
+Timeline.prototype.get = function (timeline, maxId, sinceId) {
   if (maxId || sinceId) {
-    return this.sliceTweets(this.home, maxId, sinceId);
+    return this.sliceTweets(this[timeline], maxId, sinceId);
   } else {
-    return this.home;
-  }
-};
-
-Timeline.prototype.getMentions = function (maxId, sinceId) {
-  if (maxId || sinceId) {
-    return this.sliceTweets(this.mentions, maxId, sinceId);
-  } else {
-    return this.mentions;
+    return this[timeline];
   }
 };
 
@@ -178,12 +164,20 @@ Timeline.prototype.mergeTweet = function (dstTweet, srcTweet) {
 };
 
 Timeline.prototype.saveUser = function (user) {
-  this.users[user.screenname] = user;
-  return user;
+  if (this.users[user.screenname]) {
+    _.assign(this.users[user.screenname], user);
+  } else {
+    this.users[user.screenname] = user;
+  }
+
+  return this.users[user.screenname];
 };
 
 Timeline.prototype.saveTweet = function (tweet) {
-  this.users[tweet.user.screenname] = tweet.user;
+  if (tweet.quote) {
+    this.saveTweet(tweet.quote);
+  }
+  tweet.user = this.saveUser(tweet.user);
 
   var oldTweet = this.tweets[tweet.id];
   if (oldTweet) {

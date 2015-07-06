@@ -17,10 +17,12 @@ var Thread = Vue.extend({
   props: ['base', 'pretext', 'replies', 'username', 'now'],
   events: {
     showThread: function (tweet) {
-      this.pretext = [];
-      this.replies = [];
-      this.base = tweet;
-      this.findContext();
+      if (tweet.id !== this.base.id) {
+        this.pretext = [];
+        this.replies = [];
+        this.base = tweet;
+        this.findContext();
+      }
       return false;
     },
     newPretext: function (tweets) {

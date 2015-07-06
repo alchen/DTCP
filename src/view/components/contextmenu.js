@@ -3,35 +3,35 @@
 var remote = require('remote');
 var Menu = remote.require('menu');
 
-var contextTemplate = [
-  {
-    label: 'Reply...',
-  },
-  {
-    label: 'Retweet',
-  },
-  {
-    label: 'Quote Tweet...',
-  },
-  {
-    label: 'Favorite',
-  },
-  {
-    type: 'separator'
-  },
-  {
-    label: 'Delete Tweet',
-  },
-  {
-    type: 'separator'
-  },
-  {
-    label: 'View on Twitter.com',
-  }
-];
-
 module.exports = {
-  build: function (vm) {
+  tweet: function (vm) {
+    var contextTemplate = [
+      {
+        label: 'Reply...',
+      },
+      {
+        label: 'Retweet',
+      },
+      {
+        label: 'Quote Tweet...',
+      },
+      {
+        label: 'Favorite',
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Delete Tweet',
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'View on Twitter.com',
+      }
+    ];
+
     contextTemplate[0].click = vm.doReply;
     contextTemplate[1].click = vm.doRetweet;
     contextTemplate[2].click = vm.doQuote;
@@ -39,21 +39,58 @@ module.exports = {
     contextTemplate[5].click = vm.doDelete;
     contextTemplate[7].click = vm.doShowInBrowser;
 
-    if (vm.tweet.protected) {
+    // Disable retweet and quote for protected user
+    if (vm.tweet.user.isProtected) {
       contextTemplate[1].enabled = false;
       contextTemplate[2].enabled = false;
-    } else {
-      contextTemplate[1].enabled = true;
-      contextTemplate[2].enabled = true;
     }
 
-    if (vm.tweet.screenname !== vm.username) {
+    // Disable delete if not posted by current user
+    if (vm.tweet.user.screenname !== vm.username) {
       contextTemplate[5].enabled = false;
-    } else {
-      contextTemplate[5].enabled = true;
+    }
+
+    if (vm.tweet.isRetweeted) {
+      contextTemplate[1].label = 'Undo Retweet';
+    }
+
+    if (vm.tweet.isFavorited) {
+     contextTemplate[3].label = 'Undo Favorite';
+    }
+
+    return Menu.buildFromTemplate(contextTemplate);
+  },
+  profile: function (vm) {
+    var contextTemplate = [
+      {
+        label: 'Public Reply',
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'Follow',
+        enabled: false
+      },
+      {
+        label: 'Block',
+        enabled: false
+      },
+      {
+        type: 'separator'
+      },
+      {
+        label: 'View on Twitter.com',
+      }
+    ];
+
+    contextTemplate[0].click = vm.doReply;
+    contextTemplate[5].click = vm.doShowInBrowser;
+
+    if (vm.user.isFollowing) {
+      contextTemplate[2].label = 'Unfollow';
     }
 
     return Menu.buildFromTemplate(contextTemplate);
   }
 };
-

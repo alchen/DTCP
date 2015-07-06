@@ -1,18 +1,25 @@
 'use strict';
 
 var Vue = require('vue');
+var ipc = require('ipc');
+var remote = require('remote');
+var shell = require('shell');
+var contextmenu = require('./contextmenu');
 require('./timeline');
 
 var template = '<section class="profile">'
-    + '<section class="profilemeta">'
+    + '<section class="profilemeta" v-on="contextmenu: rightclick">'
       + '<section class="profilebackground" v-if="user.profileBackground" v-style="background-image: \'url(\' + user.profileBackground + \')\'"></section>'
       + '<section class="profilemetacontent"">'
         + '<section class="profilemetaleft">'
           + '<a v-attr="href: user.originalIcon" target="_blank" class="profileiconlink"><img class="tweeticon" v-attr="src: user.biggerIcon" onerror="this.style.visibility=\'hidden\';" /></a>'
         + '</section>'
         + '<section class="profilemetaright">'
-          + '<section class="name" v-text="user.name"></section>'
-          + '<section class="screenname" v-text="user.screenname | at"></section>'
+          + '<section class="names">'
+            + '<span class="name" v-text="user.name"></span>'
+            + '<span class="screenname" v-text="user.screenname | at"></span>'
+          + '</section>'
+          + '<section class="relationship" v-touch="tap: toggleFollow" v-if="user.isFollowing === true" v-text="relationship"></section>'
           + '<section class="profiletext" v-text="user.description"></section>'
           + '<section class="profilelocation" v-text="user.location"></section>'
           + '<section class="profileurl"><a v-attr="href: user.expandedUrl" v-text="user.expandedUrl"></a></section>'
@@ -37,9 +44,31 @@ var Profile = Vue.extend({
     }
   },
   computed: {
+    relationship: function () {
+      return this.user.isFollowing ? 'Following' : 'Follow';
+    }
   },
   methods: {
-  },
+    toggleFollow: function () {
+      console.log('This is supposed to do something');
+    },
+    rightclick: function (event) {
+      var menu = contextmenu.profile(this);
+      menu.popup(remote.getCurrentWindow());
+      event.preventDefault();
+    },
+    doReply: function (event) {
+      var mentions = [this.user.screenname];
+
+      ipc.send('reply', null, mentions);
+    },
+    doShowInBrowser: function (event) {
+      var profileUrl = 'https://twitter.com/'
+        + this.user.screenname;
+
+      shell.openExternal(profileUrl);
+    },
+  }
 });
 
 Vue.component('profile', Profile);

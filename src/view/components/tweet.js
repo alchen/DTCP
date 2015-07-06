@@ -11,7 +11,7 @@ var shell = require('shell');
 var _ = require('lodash');
 
 var template = '<li class="tweetcontainer">'
-  + '<div class="gap" v-if="tweet.gaps[view]" v-touch="tap: loadMissing">Load missing tweets</div>'
+  + '<div class="gap" v-if="tweet.gaps[view]" v-touch="tap: loadMissing" v-transition="gap">Load missing tweets</div>'
   + '<div class="tweet" v-on="contextmenu: rightclick" v-touch="tap: leftclick">'
     + '<section class="tweetleft">'
       + '<img class="tweeticon" v-attr="src: tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" v-touch="tap: doShowProfile" />'
@@ -19,24 +19,25 @@ var template = '<li class="tweetcontainer">'
     + '<section class="tweetright">'
       + '<section class="tweetmeta">'
         + '<section class="tweetmetaleft">'
-          + '<span class="name" v-text="tweet.name" v-touch="tap: doShowProfile"></span>'
+          + '<span class="name" v-text="tweet.user.name" v-touch="tap: doShowProfile"></span>'
           + '&nbsp;'
-          + '<span class="screenname" v-text="tweet.screenname | at" v-touch="tap: doShowProfile"></span>'
+          + '<span class="screenname" v-text="tweet.user.screenname | at" v-touch="tap: doShowProfile"></span>'
         + '</section>'
         + '<section class="tweetmetaright">'
           + '<span class="tweettime" v-text="timeFrom" v-if="!tweet.isFavorited"></span>'
           + '<span class="tweetindicator iconic tweetbuttonicon" data-glyph="star" v-if="tweet.isFavorited"></span>'
           + '<ul class="tweetactions">'
             + '<li class="tweetaction" v-on="click: doReply"><button class="tweetbutton"><span class="iconic tweetbuttonicon" data-glyph="share"></span></button></li>'
-            + '<li class="tweetaction" v-on="click: doRetweet"><button class="tweetbutton" v-class="disabledbutton: tweet.protected, activetweetbutton: tweet.isRetweeted"><span class="iconic tweetbuttonicon" data-glyph="loop-circular"></span></button></li>'
-            + '<li class="tweetaction" v-on="click: doQuote"><button class="tweetbutton" v-class="disabledbutton: tweet.protected"><span class="iconic tweetbuttonicon" data-glyph="double-quote-serif-left"></span></button></li>'
+            + '<li class="tweetaction" v-on="click: doRetweet"><button class="tweetbutton" v-class="disabledbutton: tweet.user.isProtected, activetweetbutton: tweet.isRetweeted"><span class="iconic tweetbuttonicon" data-glyph="loop-circular"></span></button></li>'
+            + '<li class="tweetaction" v-on="click: doQuote"><button class="tweetbutton" v-class="disabledbutton: tweet.user.isProtected"><span class="iconic tweetbuttonicon" data-glyph="double-quote-serif-left"></span></button></li>'
             + '<li class="tweetaction" v-on="click: doFavorite"><button class="tweetbutton" v-class="activetweetbutton: tweet.isFavorited"><span class="iconic tweetbuttonicon" data-glyph="star"></span></button></li>'
           + '</ul>'
         + '</section>'
       + '</section>'
       + '<section class="tweettext" v-html="tweet.status"></section>'
       + '<section class="tweetretweet" v-if="tweet.retweetedBy || tweet.isRetweeted">'
-        + '<span class="iconic retweeticon" data-glyph="loop-square"></span><span class="retweetname" v-if="tweet.retweetedBy" v-text="tweet.retweetedBy"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>'
+        + '<span class="iconic retweeticon" data-glyph="loop-square"></span>'
+        + '<span class="retweetname" v-if="tweet.retweetedBy" v-text="lastRetweetedBy.name" v-touch="tap: doShowScreenname(lastRetweetedBy.screenname)"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>'
       + '</section>'
       + '<section class="tweetmedia" v-if="tweet.media">'
         + '<ul class="tweetimagelist">'
@@ -45,11 +46,11 @@ var template = '<li class="tweetcontainer">'
           + '</li>'
         + '</ul>'
       + '</section>'
-      + '<section class="quotedtweet" v-if="tweet.quote">'
+      + '<section class="quotedtweet" v-if="tweet.quote" v-touch="tap: quoteclick">'
         + '<section class="quotedmeta">'
-          + '<span class="name" v-text="tweet.quote.name"></span>'
+          + '<span class="name" v-text="tweet.quote.user.name"></span>'
           + '&nbsp;'
-          + '<span class="screenname" v-text="tweet.quote.screenname | at"></span>'
+          + '<span class="screenname" v-text="tweet.quote.user.screenname | at"></span>'
         + '</section>'
         + '<section class="quotedtext" v-html="tweet.quote.status"></section>'
         + '<section class="tweetmedia" v-if="tweet.quote.media">'
@@ -73,6 +74,9 @@ var Tweet = Vue.extend({
     }
   },
   computed: {
+    lastRetweetedBy: function () {
+      return this.tweet.retweetedBy[this.tweet.retweetedBy.length - 1];
+    },
     timeFrom: function () {
       var createdAt = moment(new Date(this.tweet.createdAt));
       var now = this.now;
@@ -101,7 +105,7 @@ var Tweet = Vue.extend({
       var mentions = _.filter(this.tweet.mentions, function (k) {
         return k !== self.username;
       });
-      mentions.unshift(this.tweet.screenname);
+      mentions.unshift(this.tweet.user.screenname);
 
       ipc.send('reply', this.tweet.id, mentions);
     },
@@ -110,7 +114,7 @@ var Tweet = Vue.extend({
     },
     doQuote: function (event) {
       var tweetUrl = 'https://twitter.com/'
-        + this.tweet.screenname
+        + this.tweet.user.screenname
         + '/status/'
         + this.tweet.id;
 
@@ -124,31 +128,58 @@ var Tweet = Vue.extend({
     },
     doShowInBrowser: function (event) {
       var tweetUrl = 'https://twitter.com/'
-        + this.tweet.screenname
+        + this.tweet.user.screenname
         + '/status/'
         + this.tweet.id;
 
       shell.openExternal(tweetUrl);
     },
+    doShowScreenname: function (screenname) {
+      this.$dispatch('showScreenname', screenname);
+    },
     doShowProfile: function () {
       this.$dispatch('showProfile', this.tweet.user);
     },
     rightclick: function (event) {
-      var menu = contextmenu.build(this);
+      var menu = contextmenu.tweet(this);
       menu.popup(remote.getCurrentWindow());
       event.preventDefault();
     },
     leftclick: function (event) {
+      if (event.target.tagName === 'SECTION') {
+          var el = event.target;
+          do {
+            if (el.classList.contains('quotedtweet')) {
+              return;
+            }
+            el = el.parentElement;
+          }
+          while (el);
+      }
+
       if (event.target.tagName === 'A') {
         var screenname = event.target.getAttribute('data-screen-name');
         if (screenname) {
-          this.$dispatch('showScreenname', screenname);
+          this.doShowScreenname(screenname);
         }
       } else if (event.target.tagName !== 'SPAN'
         && event.target.tagName !== 'BUTTON'
         && event.target.tagName !== 'IMG') {
         // Avoid firing on wrong elements
         this.$dispatch('showThread', this.tweet);
+      }
+    },
+    quoteclick: function (event) {
+      if (event.target.tagName === 'A') {
+        var screenname = event.target.getAttribute('data-screen-name');
+        if (screenname) {
+          this.doShowScreenname(screenname);
+        }
+      } else if (event.target.tagName !== 'SPAN'
+        && event.target.tagName !== 'BUTTON'
+        && event.target.tagName !== 'IMG') {
+        // Avoid firing on wrong elements
+        this.$dispatch('showThread', this.tweet.quote);
       }
     },
     loadMissing: function (event) {
