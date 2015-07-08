@@ -57,10 +57,10 @@ Timeline.prototype.closeGap = function (timeline, sinceId, newTweets) {
       oldTweets[index].gaps[timeline] = false;
       index--;
     } else if (!hash[tweet.id]) {
-      if (index <= 0) {
+      if (index < 0) {
         oldTweets.unshift(tweet);
       } else {
-        oldTweets.splice(index, 0, tweet);
+        oldTweets.splice(index + 1, 0, tweet);
       }
       hash[tweet.id] = tweet;
     }
@@ -156,7 +156,7 @@ Timeline.prototype.mergeTweet = function (dstTweet, srcTweet) {
   dstTweet.isRetweeted = srcTweet.isRetweeted || dstTweet.isRetweeted;
   if (dstTweet.retweetedBy && srcTweet.retweetedBy) {
     dstTweet.retweetedBy = _.uniq((dstTweet.retweetedBy || []).concat(srcTweet.retweetedBy || []));
-  } else {
+  } else if (dstTweet.retweetedBy || srcTweet.retweetedBy) {
     dstTweet.retweetedBy = srcTweet.retweetedBy || dstTweet.retweetedBy;
   }
 
@@ -175,7 +175,7 @@ Timeline.prototype.saveUser = function (user) {
 
 Timeline.prototype.saveTweet = function (tweet) {
   if (tweet.quote) {
-    this.saveTweet(tweet.quote);
+    tweet.quote = this.saveTweet(tweet.quote);
   }
   tweet.user = this.saveUser(tweet.user);
 
@@ -211,26 +211,14 @@ Timeline.prototype.addTweet = function (newTweet) {
   return tweet;
 };
 
-Timeline.prototype.pushHome = function (newTweets) {
+Timeline.prototype.push = function (timeline, newTweets) {
   var self = this;
   _.each(newTweets, function (newTweet) {
     var tweet = self.saveTweet(newTweet);
 
-    if (!self.hash.home[tweet.id]) {
-      self.home.push(tweet);
-      self.hash.home[tweet.id] = tweet;
-    }
-  });
-};
-
-Timeline.prototype.pushMentions = function (newTweets) {
-  var self = this;
-  _.each(newTweets, function (newTweet) {
-    var tweet = self.saveTweet(newTweet);
-
-    if (!self.hash.mentions[tweet.id]) {
-      self.mentions.push(tweet);
-      self.hash.mentions[tweet.id] = tweet;
+    if (!self.hash[timeline][tweet.id]) {
+      self[timeline].push(tweet);
+      self.hash[timeline][tweet.id] = tweet;
     }
   });
 };

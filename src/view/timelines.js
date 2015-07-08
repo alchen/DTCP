@@ -41,7 +41,7 @@ ipc.on('initialLoad', function (screenname) {
           pretext: [],
           replies: []
         };
-        this.frames.push(newFrame);
+        this.pushFrame(newFrame);
       },
       showProfile: function (user) {
         if (this.topFrame.profile && this.topFrame.profile.screenname === user.screenname) {
@@ -53,7 +53,7 @@ ipc.on('initialLoad', function (screenname) {
           profile: user,
           tweets: []
         };
-        this.frames.push(newFrame);
+        this.pushFrame(newFrame);
       },
       showScreenname: function (screenname) {
         if (this.topFrame.profile && this.topFrame.profile.screenname === screenname) {
@@ -65,7 +65,7 @@ ipc.on('initialLoad', function (screenname) {
           profile: {screenname: screenname},
           tweets: []
         };
-        this.frames.push(newFrame);
+        this.pushFrame(newFrame);
         ipc.send('loadScreenname', screenname);
       }
     },
@@ -87,6 +87,11 @@ ipc.on('initialLoad', function (screenname) {
       now: moment()
     },
     methods: {
+      pushFrame: function (newFrame) {
+        if(!_.isEqual(newFrame, this.topFrame)) {
+          this.frames.push(newFrame);
+        }
+      },
       scroll: function (event) {
         if (event.target.scrollTop === 0
           && (this.topFrame.view === 'home' || this.topFrame.view === 'mentions')) {
@@ -206,10 +211,10 @@ ipc.on('initialLoad', function (screenname) {
               return old.id === tweet.id;
             });
             if (!oldTweet) {
-              if (index <= 0) {
+              if (index < 0) {
                 timeline.unshift(tweet);
               } else {
-                timeline.splice(index, 0, tweet);
+                timeline.splice(index + 1, 0, tweet);
               }
             }
           }

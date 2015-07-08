@@ -8,8 +8,6 @@ var Tweet = require('./models/tweet');
 var User = require('./models/user');
 var Timeline = require('./models/timeline');
 
-var sendThreshold = 50;
-var loadThreshold = 100;
 
 function Stream (oauthToken, oauthTokenSecret, screenname) {
   var self = this;
@@ -29,15 +27,14 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
   });
 
   this.stream.on('friends', function (friendsMsg) {
-    console.log('Stream: friend');
     self.timeline.setFriends(friendsMsg.friends_str);
 
     // We just connected or we are reconnected
     self.insertGap();
   });
 
-  this.stream.on('tweet', function (tweet) {
-    tweet = new Tweet(tweet, self.screenname);
+  this.stream.on('tweet', function (rawTweet) {
+    var tweet = new Tweet(rawTweet, self.screenname);
 
     tweet = self.timeline.addTweet(tweet);
 
@@ -97,12 +94,10 @@ Stream.prototype.insertGap = function () {
 };
 
 Stream.prototype.subscribe = function subscribe(window) {
-  console.log('Stream: subscribe');
   this.subscriber = window;
 };
 
 Stream.prototype.unsubscribe = function unsubscribe() {
-  console.log('Stream: unsubscribe');
   this.subscriber = null;
 };
 
@@ -155,17 +150,11 @@ Stream.prototype.saveTweets = function saveTweets(timeline, rawTweets) {
     return new Tweet(rawTweet, self.screenname);
   });
 
-  if (timeline === 'home') {
-    this.timeline.pushHome(tweets);
-  } else if (timeline === 'mentions') {
-    this.timeline.pushMentions(tweets);
-  } else {
-    // users?
-  }
+  this.timeline.push(timeline, tweets);
 };
 
 Stream.prototype.sendTweets = function (timeline, maxId) {
-  var payload = this.timeline.get(timeline, maxId).slice(0, sendThreshold);
+  var payload = this.timeline.get(timeline, maxId).slice(0, config.sendThreshold);
 
   this.send('newTweets', timeline, payload);
 };
@@ -176,7 +165,7 @@ Stream.prototype.sendFiller = function (timeline, filler) {
 
 Stream.prototype.loadSince = function (timeline, sinceId) {
   var self = this;
-  var options = { count: loadThreshold, since_id: sinceId };
+  var options = { count: config.loadThreshold, since_id: sinceId };
 
   this.T.get('statuses/' + timeline + '_timeline', options, function (err, rawTweets, response) {
     if (!err) {
@@ -194,14 +183,14 @@ Stream.prototype.loadMore = function (timeline, maxId) {
 
   var payload = this.timeline.get(timeline, maxId);
   var payloadSize = _.size(payload);
-  var options = { count: loadThreshold };
+  var options = { count: config.loadThreshold };
 
-  if (payloadSize > loadThreshold) {
-    this.send('newTweets', timeline, payload.slice(0, sendThreshold));
+  if (payloadSize > config.loadThreshold) {
+    this.send('newTweets', timeline, payload.slice(0, config.sendThreshold));
   } else {
-    var immediate = payloadSize < sendThreshold ? false : true;
+    var immediate = payloadSize < config.sendThreshold ? false : true;
     if (immediate) {
-      this.send('newTweets', timeline, payload.slice(0, sendThreshold));
+      this.send('newTweets', timeline, payload.slice(0, config.sendThreshold));
     }
     if (payloadSize > 0) {
       options.max_id = payload[payloadSize - 1].id;
@@ -238,7 +227,7 @@ Stream.prototype.loadScreenname = function (screenname) {
 
 Stream.prototype.loadUser = function loadUser(screenname, maxId) {
   var self = this;
-  var options = {screen_name: screenname, count: loadThreshold};
+  var options = {screen_name: screenname, count: config.loadThreshold};
 
   if (maxId) {
     options.max_id = maxId;
