@@ -4,10 +4,10 @@ var Vue = require('vue');
 var Tweet = require('./tweet');
 var moment = require('moment');
 
-var template = '<li class="tweetcontainer"><div class="tweet fattweet" v-on="contextmenu: rightclick" v-touch="tap: leftclick">'
-    + '<section class="fattweetmeta">'
+var template = '<li class="tweetcontainer"><div class="tweet fattweet" v-on="contextmenu: rightclick, click: leftclick">'
+    + '<section class="fattweetmeta" v-on="click: doShowProfile">'
       + '<section class="fattweetmetaleft">'
-        + '<img class="tweeticon" v-attr="src: tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" v-touch="tap: doShowProfile" />'
+        + '<img class="tweeticon" v-attr="src: tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" />'
       + '</section>'
       + '<section class="fattweetmetaright">'
         + '<section class="name" v-text="tweet.user.name"></section>'
@@ -17,7 +17,7 @@ var template = '<li class="tweetcontainer"><div class="tweet fattweet" v-on="con
     + '<section class="tweettext" v-html="tweet.status"></section>'
     + '<section class="fattweetretweet" v-if="tweet.retweetedBy">'
       + '<span class="iconic retweeticon" data-glyph="loop-square"></span>'
-      + '<span class="retweetname" v-if="tweet.retweetedBy" v-text="lastRetweetedBy.name" v-touch="tap: doShowScreenname(lastRetweetedBy.screenname)"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>'
+      + '<span class="retweetname" v-if="tweet.retweetedBy" v-text="lastRetweetedBy.name" v-on="click: doShowScreenname(lastRetweetedBy.screenname)"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>'
     + '</section>'
     + '<section class="fattweetbottommeta">'
       + '<span class="fattweettime" v-text="formattedTime"></span>'
@@ -31,7 +31,7 @@ var template = '<li class="tweetcontainer"><div class="tweet fattweet" v-on="con
         + '</li>'
       + '</ul>'
     + '</section>'
-    + '<section class="quotedtweet" v-if="tweet.quote" v-touch="tap: quoteclick">'
+    + '<section class="quotedtweet" v-if="tweet.quote" v-on="click: quoteclick">'
       + '<section class="quotedmeta">'
         + '<span class="name" v-text="tweet.quote.user.name"></span>'
         + '&nbsp;'
@@ -50,7 +50,7 @@ var template = '<li class="tweetcontainer"><div class="tweet fattweet" v-on="con
       + '<li class="fattweetaction" v-on="click: doReply"><button class="tweetbutton"><span class="iconic tweetbuttonicon" data-glyph="share"></span></button></li>'
       + '<li class="fattweetaction" v-on="click: doRetweet"><button class="tweetbutton" v-class="disabledbutton: tweet.user.isProtected, activetweetbutton: tweet.isRetweeted"><span class="iconic tweetbuttonicon" data-glyph="loop-circular"></span></button></li>'
       + '<li class="fattweetaction" v-on="click: doQuote"><button class="tweetbutton" v-class="disabledbutton: tweet.user.isProtected"><span class="iconic tweetbuttonicon" data-glyph="double-quote-serif-left"></span></button></li>'
-      + '<li class="fattweetaction" v-on="click: doFavorite"><button class="tweetbutton" v-class="activetweetbutton: tweet.isFavorited" on-tap="favorite:{{ id_str }}"><span class="iconic tweetbuttonicon" data-glyph="star"></span></button></li>'
+      + '<li class="fattweetaction" v-on="click: doFavorite"><button class="tweetbutton" v-class="activetweetbutton: tweet.isFavorited"><span class="iconic tweetbuttonicon" data-glyph="star"></span></button></li>'
     + '</ul>'
   + '</div></li>';
 

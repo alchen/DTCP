@@ -1,13 +1,12 @@
 {
   "name": "DTCP",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Desktop Twitter Client Project",
   "main": "src/main.js",
   "private": true,
   "scripts": {
-    "start": "electron .",
-    "test": "NODE_ENV=test node node_modules/mocha/bin/mocha --harmony --reporter spec --recursive",
-    "coverage": "node node_modules/istanbul/lib/cli.js cover -x \"src/lib/**/*.js\" node_modules/mocha/bin/_mocha -- --harmony --reporter spec --recursive"
+    "start": "./node_modules/.bin/electron .",
+    "test": "./node_modules/.bin/istanbul instrument src --output instrumented && ./node_modules/.bin/electron spec --ci"
   },
   "repository": {
     "type": "git",
@@ -21,11 +20,14 @@
   "homepage": "https://github.com/alchen/DTCP#readme",
   "devDependencies": {
     "asar": "^0.7.2",
+    "basic-auth": "^1.0.3",
     "chai": "^3.0.0",
     "del": "^1.2.0",
-    "electron-prebuilt": "^0.29.1",
+    "electron-prebuilt": "^0.29.2",
     "electron-rebrand": "^1.1.1",
     "electron-rebuild": "^0.2.2",
+    "formidable": "^1.0.17",
+    "graceful-fs": "^4.1.2",
     "gulp": "^3.9.0",
     "gulp-if": "^1.2.5",
     "gulp-minify-css": "^1.2.0",
@@ -35,8 +37,12 @@
     "istanbul": "^0.3.17",
     "mocha": "^2.2.5",
     "proxyquire": "^1.6.0",
+    "q": "^1.4.1",
     "rcedit": "^0.3.0",
-    "sinon": "^1.15.4"
+    "runas": "^2.0.0",
+    "sinon": "^1.15.4",
+    "temp": "^0.8.3",
+    "walkdir": "0.0.10"
   },
   "dependencies": {
     "node-notifier": "^4.2.1",
@@ -53,7 +59,6 @@
     "shellwords": "^0.1.0",
     "twitter-text": "^1.12.0",
     "vue": "^0.12.7",
-    "vue-touch": "^0.1.2",
     "which": "^1.1.1"
   }
 }

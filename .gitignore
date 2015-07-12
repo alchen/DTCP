@@ -33,3 +33,4 @@ base
 dist
 
 coverage
+instrumented

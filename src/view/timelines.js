@@ -88,7 +88,8 @@ ipc.on('initialLoad', function (screenname) {
     },
     methods: {
       pushFrame: function (newFrame) {
-        if(!_.isEqual(newFrame, this.topFrame)) {
+        if ((newFrame.base && newFrame.base !== this.topFrame.base)
+          || (newFrame.profile && newFrame.profile !== this.topFrame.profile)) {
           this.frames.push(newFrame);
         }
       },

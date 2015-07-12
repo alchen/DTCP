@@ -40,8 +40,6 @@
     "afterEach",
     "suite",
     "setup",
-    "test",
-    "document",
-    "window"
+    "test"
   ]
 }

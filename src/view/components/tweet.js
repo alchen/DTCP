@@ -1,8 +1,6 @@
 'use strict';
 
 var Vue = require('vue');
-var vueTouch = require('vue-touch');
-Vue.use(vueTouch);
 var moment = require('moment');
 var remote = require('remote');
 var contextmenu = require('./contextmenu');
@@ -11,17 +9,17 @@ var shell = require('shell');
 var _ = require('lodash');
 
 var template = '<li class="tweetcontainer">'
-  + '<div class="gap" v-if="tweet.gaps[view]" v-touch="tap: loadMissing" v-transition="gap">Load missing tweets</div>'
-  + '<div class="tweet" v-on="contextmenu: rightclick" v-touch="tap: leftclick">'
+  + '<div class="gap" v-if="tweet.gaps[view]" v-on="click: loadMissing" v-transition="gap"><span class="iconic" data-glyph="chevron-top" aria-hidden="true"></span> Load missing tweets</div>'
+  + '<div class="tweet" v-on="contextmenu: rightclick, click: leftclick">'
     + '<section class="tweetleft">'
-      + '<img class="tweeticon" v-attr="src: tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" v-touch="tap: doShowProfile" />'
+      + '<img class="tweeticon" v-attr="src: tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" v-on="click: doShowProfile" />'
     + '</section>'
     + '<section class="tweetright">'
       + '<section class="tweetmeta">'
         + '<section class="tweetmetaleft">'
-          + '<span class="name" v-text="tweet.user.name" v-touch="tap: doShowProfile"></span>'
+          + '<span class="name" v-text="tweet.user.name" v-on="click: doShowProfile"></span>'
           + '&nbsp;'
-          + '<span class="screenname" v-text="tweet.user.screenname | at" v-touch="tap: doShowProfile"></span>'
+          + '<span class="screenname" v-text="tweet.user.screenname | at" v-on="click: doShowProfile"></span>'
         + '</section>'
         + '<section class="tweetmetaright">'
           + '<span class="tweettime" v-text="timeFrom" v-if="!tweet.isFavorited"></span>'
@@ -37,7 +35,7 @@ var template = '<li class="tweetcontainer">'
       + '<section class="tweettext" v-html="tweet.status"></section>'
       + '<section class="tweetretweet" v-if="tweet.retweetedBy || tweet.isRetweeted">'
         + '<span class="iconic retweeticon" data-glyph="loop-square"></span>'
-        + '<span class="retweetname" v-if="tweet.retweetedBy" v-text="lastRetweetedBy.name" v-touch="tap: doShowScreenname(lastRetweetedBy.screenname)"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>'
+        + '<span class="retweetname" v-if="tweet.retweetedBy" v-text="lastRetweetedBy.name" v-on="click: doShowScreenname(lastRetweetedBy.screenname)"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>'
       + '</section>'
       + '<section class="tweetmedia" v-if="tweet.media">'
         + '<ul class="tweetimagelist">'
@@ -46,7 +44,7 @@ var template = '<li class="tweetcontainer">'
           + '</li>'
         + '</ul>'
       + '</section>'
-      + '<section class="quotedtweet" v-if="tweet.quote" v-touch="tap: quoteclick">'
+      + '<section class="quotedtweet" v-if="tweet.quote" v-on="click: quoteclick">'
         + '<section class="quotedmeta">'
           + '<span class="name" v-text="tweet.quote.user.name"></span>'
           + '&nbsp;'

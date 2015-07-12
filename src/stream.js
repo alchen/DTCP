@@ -1,6 +1,6 @@
 'use strict';
 
-var Twit = require('./lib/twit');
+var Twit = require('../lib/twit');
 var _ = require('lodash');
 var config = require('./config');
 

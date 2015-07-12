@@ -4,8 +4,8 @@ var chai = require('chai');
 chai.should();
 var _ = require('lodash');
 
-var Timeline = require('../../../src/models/timeline');
-var Tweet = require('../../../src/models/tweet');
+var Timeline = require('../../../instrumented/models/timeline');
+var Tweet = require('../../../instrumented/models/tweet');
 
 var screenname = '17th';
 var tweetJson = require('../../fixtures/tweet.json');

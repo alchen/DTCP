@@ -18,10 +18,10 @@ var twitStub = function () {
     get: function () {}
   };
 };
-var Stream = proxyquire('../../../src/stream', { './lib/twit': twitStub });
+var Stream = proxyquire('../../../instrumented/stream', { '../lib/twit': twitStub });
 
-var config = require('../../../src/config');
-var Tweet = require('../../../src/models/tweet');
+var config = require('../../../instrumented/config');
+var Tweet = require('../../../instrumented/models/tweet');
 
 var screenname = '17th';
 var mentionJson = require('../../fixtures/mention.json');
@@ -162,6 +162,8 @@ describe('Stream', function () {
       var filler = tweets.slice(0, 11);
       var target = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
       target[0].gaps[timeline] = true;
+      var gap = new Tweet(tweetsJson[10], screenname);
+      gap.gaps[timeline] = true;
 
       var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
         callback(null, tweetsJson.slice(0, 10), null);
@@ -170,14 +172,14 @@ describe('Stream', function () {
       var webContentsMock = sinon.mock(subscriberStub.webContents);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newFiller', timeline, filler);
+      webContentsMock.expects('send').calledWith('updateTweet', gap);
 
       stream.timeline.push('home', tweets.slice(10));
-      var gaps = stream.timeline.insertGap();
-      gaps.should.have.length(1);
+      stream.insertGap();
       _.each(tweets.slice(3, 5).reverse(), function (tweet) {
         stream.timeline.addTweet(tweet);
       });
-      stream.loadSince(timeline, gaps[0].id);
+      stream.loadSince(timeline, gap.id);
 
       getStub.called.should.equal(true);
       webContentsMock.verify();

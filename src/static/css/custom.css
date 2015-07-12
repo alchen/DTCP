@@ -262,6 +262,11 @@ a {
   overflow: hidden;
 }
 
+.gap .iconic::before {
+  font-size: .5rem;
+  margin-right: .25rem;
+}
+
 .gap-leave {
   -webkit-animation: compress .3s;
 }
@@ -402,6 +407,10 @@ a {
   font-weight: lighter;
 }
 
+.names,
+.profiletext,
+.profilelocation,
+.profileurl,
 .fattweet .tweettext,
 .fattweet .quotedtext {
   -webkit-user-select: text;

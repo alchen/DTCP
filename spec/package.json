@@ -1,0 +1,7 @@
+{
+  "name": "dtcp-test",
+  "productName": "DTCP Test",
+  "main": "static/main.js",
+  "version": "0.1.0",
+  "private": true
+}
