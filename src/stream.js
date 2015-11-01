@@ -8,8 +8,7 @@ var Tweet = require('./models/tweet');
 var User = require('./models/user');
 var Timeline = require('./models/timeline');
 
-
-function Stream (oauthToken, oauthTokenSecret, screenname) {
+function Stream(oauthToken, oauthTokenSecret, screenname) {
   var self = this;
 
   this.T = new Twit({
@@ -33,6 +32,28 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
     self.insertGap();
   });
 
+  this.stream.on('follow', function (followMsg) {
+    var source = new User(followMsg.source);
+    var target = new User(followMsg.target);
+
+    if (source.screenname === self.screenname) {
+      target.isFollowing = true;
+      target = self.timeline.saveUser(target);
+      self.send('newProfileUser', target);
+    }
+  });
+
+  this.stream.on('unfollow', function (unfollowMsg) {
+    var source = new User(unfollowMsg.source);
+    var target = new User(unfollowMsg.target);
+
+    if (source.screenname === self.screenname) {
+      target.isFollowing = false;
+      target = self.timeline.saveUser(target);
+      self.send('newProfileUser', target);
+    }
+  });
+
   this.stream.on('tweet', function (rawTweet) {
     var tweet = new Tweet(rawTweet, self.screenname);
 
@@ -53,7 +74,9 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
   this.stream.on('favorite', function (favoriteMessage) {
     if (favoriteMessage.source.screen_name === self.screenname) {
       // user favorites a tweet
-      var tweet = self.timeline.favoriteTweet(new Tweet(favoriteMessage.target_object, self.screenname));
+      var tweet = self.timeline.favoriteTweet(
+        new Tweet(favoriteMessage.target_object, self.screenname)
+      );
       if (tweet) {
         self.send('updateTweet', tweet);
       }
@@ -65,7 +88,9 @@ function Stream (oauthToken, oauthTokenSecret, screenname) {
   this.stream.on('unfavorite', function (unfavoriteMessage) {
     if (unfavoriteMessage.source.screen_name === self.screenname) {
       // user favorites a tweet
-      var tweet = self.timeline.unfavoriteTweet(new Tweet(unfavoriteMessage.target_object, self.screenname));
+      var tweet = self.timeline.unfavoriteTweet(
+        new Tweet(unfavoriteMessage.target_object, self.screenname)
+      );
       if (tweet) {
         self.send('updateTweet', tweet);
       }
@@ -109,12 +134,12 @@ Stream.prototype.close = function () {
 
 Stream.prototype.send = function () {
   var cloneTweet = function (tweet) {
-      var newTweet = _.cloneDeep(tweet);
-      newTweet.user = _.cloneDeep(tweet.user);
-      if (tweet.quote) {
-        newTweet.quote.user = _.cloneDeep(tweet.quote.user);
-      }
-      return newTweet;
+    var newTweet = _.cloneDeep(tweet);
+    newTweet.user = _.cloneDeep(tweet.user);
+    if (tweet.quote) {
+      newTweet.quote.user = _.cloneDeep(tweet.quote.user);
+    }
+    return newTweet;
   };
 
   if (this.subscriber) {
@@ -134,7 +159,10 @@ Stream.prototype.send = function () {
       });
     });
 
-    this.subscriber.webContents.send.apply(this.subscriber.webContents, payload);
+    this.subscriber.webContents.send.apply(
+      this.subscriber.webContents,
+      payload
+    );
   }
 };
 
@@ -154,7 +182,8 @@ Stream.prototype.saveTweets = function saveTweets(timeline, rawTweets) {
 };
 
 Stream.prototype.sendTweets = function (timeline, maxId) {
-  var payload = this.timeline.get(timeline, maxId).slice(0, config.sendThreshold);
+  var tweets = this.timeline.get(timeline, maxId);
+  var payload = tweets.slice(0, config.sendThreshold);
 
   this.send('newTweets', timeline, payload);
 };
@@ -165,9 +194,13 @@ Stream.prototype.sendFiller = function (timeline, filler) {
 
 Stream.prototype.loadSince = function (timeline, sinceId) {
   var self = this;
-  var options = { count: config.loadThreshold, since_id: sinceId };
+  var options = {
+    count: config.loadThreshold,
+    since_id: sinceId
+  };
 
-  this.T.get('statuses/' + timeline + '_timeline', options, function (err, rawTweets, response) {
+  this.T.get('statuses/' + timeline + '_timeline', options,
+  function (err, rawTweets, response) {
     if (!err) {
       var tweets = _.map(rawTweets, function (rawTweet) {
         return new Tweet(rawTweet, self.screenname);
@@ -183,7 +216,7 @@ Stream.prototype.loadMore = function (timeline, maxId) {
 
   var payload = this.timeline.get(timeline, maxId);
   var payloadSize = _.size(payload);
-  var options = { count: config.loadThreshold };
+  var options = {count: config.loadThreshold};
 
   if (payloadSize > config.loadThreshold) {
     this.send('newTweets', timeline, payload.slice(0, config.sendThreshold));
@@ -195,7 +228,8 @@ Stream.prototype.loadMore = function (timeline, maxId) {
     if (payloadSize > 0) {
       options.max_id = payload[payloadSize - 1].id;
     }
-    this.T.get('statuses/' + timeline + '_timeline', options, function (err, rawTweets, response) {
+    this.T.get('statuses/' + timeline + '_timeline', options,
+    function (err, rawTweets, response) {
       if (!err) {
         self.saveTweets(timeline, rawTweets);
         if (!immediate) { // hasn't been sent
@@ -233,7 +267,8 @@ Stream.prototype.loadUser = function loadUser(screenname, maxId) {
     options.max_id = maxId;
   }
 
-  this.T.get('statuses/user_timeline', options, function (err, rawTweets, response) {
+  this.T.get('statuses/user_timeline', options,
+  function (err, rawTweets, response) {
     if (!err) {
       var tweets = _.map(rawTweets, function (rawTweet) {
         return new Tweet(rawTweet, self.screenname);
@@ -242,8 +277,7 @@ Stream.prototype.loadUser = function loadUser(screenname, maxId) {
 
       var user = self.timeline.findUser(screenname);
       if (!user) {
-        // load another way
-        // this should only happen when there's no tweets for the user?
+        self.loadScreenname(screenname);
       } else {
         self.send('newProfile', user, payload);
       }
@@ -257,7 +291,8 @@ Stream.prototype.findContext = function findContext(tweetId) {
   var pretext = this.timeline.findPretext(tweet);
   var replies = this.timeline.findReplies(tweet);
   if (_.size(pretext) === 0 && tweet.inReplyTo) {
-    this.T.get('statuses/show/' + tweet.inReplyTo, {include_my_retweet: true}, function (err, data, response) {
+    this.T.get('statuses/show/' + tweet.inReplyTo, {include_my_retweet: true},
+    function (err, data, response) {
       if (!err) {
         var tweet = new Tweet(data, self.screenname);
         self.timeline.saveTweet(tweet);
@@ -298,7 +333,8 @@ Stream.prototype.favorite = function favorite(tweetId) {
 };
 
 Stream.prototype.unfavorite = function unfavorite(tweetId) {
-  this.T.post('favorites/destroy', {id: tweetId}, function (err, data, response) {
+  this.T.post('favorites/destroy', {id: tweetId},
+  function (err, data, response) {
     if (!err) {
       console.log('REST: unfavorited');
     }
@@ -334,7 +370,8 @@ Stream.prototype.unretweet = function unretweet(tweetId) {
     destroyRetweet(tweet.retweetId);
   } else {
     console.log('REST: retrieve unknown retweet');
-    this.T.get('statuses/show/' + tweetId, {include_my_retweet: true}, function (err, data, response) {
+    this.T.get('statuses/show/' + tweetId, {include_my_retweet: true},
+    function (err, data, response) {
       if (!err) {
         console.log('REST: retrieved retweetId');
 
@@ -354,6 +391,43 @@ Stream.prototype.deleteTweet = function deleteTweet(tweetId) {
       var deleteId = data.id_str;
       self.timeline.deleteTweet(deleteId);
       self.send('deleteTweet', deleteId);
+    } else {
+      console.log(err);
+    }
+  });
+};
+
+Stream.prototype.follow = function (screenname) {
+  var self = this;
+  this.T.post('friendships/create', {screen_name: screenname},
+  function (err, data, response) {
+    if (!err) {
+      console.log('REST: followed');
+      var user = new User(data);
+      if (user.isProtected) {
+        user.isFollowing = false;
+        user.isPending = true;
+      } else {
+        user.isFollowing = true;
+      }
+      user = self.timeline.saveUser(user);
+      self.send('newProfileUser', user);
+    } else {
+      console.log(err);
+    }
+  });
+};
+
+Stream.prototype.unfollow = function (screenname) {
+  var self = this;
+  this.T.post('friendships/destroy', {screen_name: screenname},
+  function (err, data, response) {
+    if (!err) {
+      console.log('REST: unfollowed');
+      var user = new User(data);
+      user.isFollowing = false;
+      user = self.timeline.saveUser(user);
+      self.send('newProfileUser', user);
     } else {
       console.log(err);
     }

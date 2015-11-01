@@ -15,36 +15,36 @@
         <section class="headeractions">
           <ul class="navlist">
             <li class="navicon">
-              <button class="navbutton" v-on="click: compose"><span class="iconic" data-glyph="pencil"></span></button>
+              <button class="navbutton" @click="compose"><span class="iconic" data-glyph="pencil"></span></button>
             </li>
           </ul>
         </section>
         <nav class="nav">
           <ul class="navlist">
             <li class="navicon" v-if="frames.length > 1">
-              <button class="navbutton" v-on="click: back"><span class="iconic" data-glyph="carriage-return"></span></button>
+              <button class="navbutton" @click="back"><span class="iconic" data-glyph="carriage-return"></span></button>
             </li>
             <li class="navicon">
-              <button class="navbutton" v-class="activenavbutton: topFrame.view === 'home'" v-on="click: changeTimeline('home')"><span class="iconic" data-glyph="home"></span></button>
+              <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'home' }" @click="changeTimeline('home')"><span class="iconic" data-glyph="home"></span></button>
             </li>
             <li class="navicon">
-              <button class="navbutton" v-class="activenavbutton: topFrame.view === 'mentions'" v-on="click: changeTimeline('mentions')"><span class="iconic" data-glyph="people"></span></button>
+              <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'mentions' }" @click="changeTimeline('mentions')"><span class="iconic" data-glyph="people"></span></button>
             </li>
           </ul>
         </nav>
       </header>
       <section class="frames">
-        <div class="frame" v-repeat="frames" v-style="z-index: ($index + 1)" v-on="scroll: scroll" v-transition="frame">
+        <div class="frame" v-for="frame in frames" :style="{ zIndex: ($index + 1) }" @scroll="scroll" transition="frame">
           <component
-            is="{{is}}"
-            view="{{view}}"
-            tweets="{{tweets}}"
-            username="{{screenname}}"
-            user="{{profile}}"
-            base="{{@ base}}"
-            pretext="{{@ pretext}}"
-            replies="{{@ replies}}"
-            now="{{now}}"
+            :is="frame.is"
+            :view="frame.view"
+            :tweets="frame.tweets"
+            :user="frame.profile"
+            :base.sync="frame.base"
+            :pretext.sync="frame.pretext"
+            :replies.sync="frame.replies"
+            :username="screenname"
+            :now="now"
           ></component>
         </div>
       </section>

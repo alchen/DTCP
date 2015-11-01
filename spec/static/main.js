@@ -16,50 +16,50 @@ process.port = 0;  // will be used by crash-reporter spec.
 app.commandLine.appendSwitch('js-flags', '--expose_gc');
 app.commandLine.appendSwitch('ignore-certificate-errors');
 
-ipc.on('message', function(event, arg) {
+ipc.on('message', function (event, arg) {
   event.sender.send('message', arg);
 });
 
-ipc.on('console.log', function(event, args) {
+ipc.on('console.log', function (event, args) {
   console.log.apply(console, args);
 });
 
-ipc.on('console.error', function(event, args) {
+ipc.on('console.error', function (event, args) {
   console.log.apply(console, args);
 });
 
-ipc.on('process.exit', function(event, code) {
+ipc.on('process.exit', function (event, code) {
   process.exit(code);
 });
 
-ipc.on('coverage', function(event, json) {
+ipc.on('coverage', function (event, json) {
   var coverageFolder = path.join(__dirname, '../../coverage/');
   var coverageFile = path.join(coverageFolder, 'coverage.json');
   mkdirp.sync(coverageFolder);
   fs.writeFileSync(coverageFile, json);
 });
 
-ipc.on('eval', function(event, script) {
+ipc.on('eval', function (event, script) {
   event.returnValue = eval(script);
 });
 
-ipc.on('echo', function(event, msg) {
+ipc.on('echo', function (event, msg) {
   event.returnValue = msg;
 });
 
 if (process.argv[2] === '--ci') {
   process.removeAllListeners('uncaughtException');
-  process.on('uncaughtException', function(error) {
+  process.on('uncaughtException', function (error) {
     console.error(error, error.stack);
     process.exit(1);
   });
 }
 
-app.on('window-all-closed', function() {
+app.on('window-all-closed', function () {
   app.quit();
 });
 
-app.on('ready', function() {
+app.on('ready', function () {
   var template = [
     {
       label: 'Atom',
@@ -67,7 +67,7 @@ app.on('ready', function() {
         {
           label: 'Quit',
           accelerator: 'CommandOrControl+Q',
-          click: function(item, window) { app.quit(); }
+          click: function (item, window) { app.quit(); }
         },
       ],
     },
@@ -115,16 +115,16 @@ app.on('ready', function() {
         {
           label: 'Reload',
           accelerator: 'CommandOrControl+R',
-          click: function(item, window) { window.restart(); }
+          click: function (item, window) { window.restart(); }
         },
         {
           label: 'Enter Fullscreen',
-          click: function(item, window) { window.setFullScreen(true); }
+          click: function (item, window) { window.setFullScreen(true); }
         },
         {
           label: 'Toggle DevTools',
           accelerator: 'Alt+CommandOrControl+I',
-          click: function(item, window) { window.toggleDevTools(); }
+          click: function (item, window) { window.toggleDevTools(); }
         },
       ]
     },
@@ -138,7 +138,7 @@ app.on('ready', function() {
         {
           label: 'Close',
           accelerator: 'CommandOrControl+W',
-          click: function(item, window) { window.close(); }
+          click: function (item, window) { window.close(); }
         },
       ]
     },
@@ -146,9 +146,6 @@ app.on('ready', function() {
 
   var menu = Menu.buildFromTemplate(template);
   app.setApplicationMenu(menu);
-
-  // Test if using protocol module would crash.
-  require('protocol').registerProtocol('test-if-crashes', function() {});
 
   window = new BrowserWindow({
     title: 'Electron Tests',
@@ -160,13 +157,15 @@ app.on('ready', function() {
     },
   });
   window.loadUrl('file://' + __dirname + '/index.html');
-  window.on('unresponsive', function() {
+  window.on('unresponsive', function () {
     var chosen = dialog.showMessageBox(window, {
       type: 'warning',
       buttons: ['Close', 'Keep Waiting'],
       message: 'Window is not responsing',
       detail: 'The window is not responding. Would you like to force close it or just keep waiting?'
     });
-    if (chosen === 0) window.destroy();
+    if (chosen === 0) {
+      window.destroy();
+    }
   });
 });

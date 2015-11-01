@@ -1,3 +1,4 @@
+/*jslint browser:true*/
 'use strict';
 
 var notifier = require('node-notifier');
@@ -10,6 +11,7 @@ require('../view/components/thread');
 var moment = require('moment');
 
 Vue.config.debug = true;
+Vue.config.strict = true;
 
 var timelines;
 var defaultLength = 50;
@@ -44,11 +46,12 @@ ipc.on('initialLoad', function (screenname) {
         this.pushFrame(newFrame);
       },
       showProfile: function (user) {
-        if (this.topFrame.profile && this.topFrame.profile.screenname === user.screenname) {
+        if (this.topFrame.profile &&
+          this.topFrame.profile.screenname === user.screenname) {
           return;
         }
         var newFrame = {
-          is: 'profile',
+          is: 'profileComponent',
           view: 'profile',
           profile: user,
           tweets: []
@@ -56,7 +59,8 @@ ipc.on('initialLoad', function (screenname) {
         this.pushFrame(newFrame);
       },
       showScreenname: function (screenname) {
-        if (this.topFrame.profile && this.topFrame.profile.screenname === screenname) {
+        if (this.topFrame.profile &&
+          this.topFrame.profile.screenname === screenname) {
           return;
         }
         var newFrame = {
@@ -88,14 +92,15 @@ ipc.on('initialLoad', function (screenname) {
     },
     methods: {
       pushFrame: function (newFrame) {
-        if ((newFrame.base && newFrame.base !== this.topFrame.base)
-          || (newFrame.profile && newFrame.profile !== this.topFrame.profile)) {
+        if ((newFrame.base && newFrame.base !== this.topFrame.base) ||
+          (newFrame.profile && newFrame.profile !== this.topFrame.profile)) {
           this.frames.push(newFrame);
         }
       },
       scroll: function (event) {
-        if (event.target.scrollTop === 0
-          && (this.topFrame.view === 'home' || this.topFrame.view === 'mentions')) {
+        if (event.target.scrollTop === 0 &&
+          (this.topFrame.view === 'home' ||
+          this.topFrame.view === 'mentions')) {
           this.rewind(this.topFrame.view);
         }
       },
@@ -147,20 +152,23 @@ ipc.on('initialLoad', function (screenname) {
         var delay = 16;
 
         var easing = function (time) {
-          return time < 0.5 ? 8 * time * time * time * time : 1 - 8 * (--time) * time * time * time;
+          return time < 0.5 ?
+           8 * time * time * time * time :
+           1 - 8 * (--time) * time * time * time;
         };
 
         var animation;
         var startLocation = target.scrollTop;
         var distance = -startLocation;
         var timeLapsed = 0;
-        var percentage, position;
+        var percentage;
+        var position;
 
         var step = function () {
           timeLapsed += 16;
-          percentage = ( timeLapsed / speed );
-          percentage = ( percentage > 1 ) ? 1 : percentage;
-          position = startLocation + ( distance * easing(percentage) );
+          percentage = (timeLapsed / speed);
+          percentage = (percentage > 1) ? 1 : percentage;
+          position = startLocation + (distance * easing(percentage));
           window.requestAnimationFrame(function () {
             target.scrollTop = Math.floor(position);
           });
@@ -245,6 +253,9 @@ ipc.on('initialLoad', function (screenname) {
           if (frame.base) {
             updateTimeline(frame.pretext);
             updateTimeline(frame.replies);
+            if (frame.base.id === tweet.id) {
+              self.mergeTweet(frame.base, tweet);
+            }
           } else if (frame.profile) {
             updateTimeline(frame.tweets);
           }
@@ -273,7 +284,7 @@ ipc.on('initialLoad', function (screenname) {
           });
 
           if (index !== -1) {
-            timeline.$remove(index);
+            timeline.splice(index, 1);
           }
         });
       },
@@ -281,7 +292,8 @@ ipc.on('initialLoad', function (screenname) {
         var el = document.getElementsByClassName('frame')[0];
         var toBottom =  el.scrollTop < 64 ? 0 : el.scrollHeight - el.scrollTop;
         this.$nextTick(function () {
-          el.scrollTop = toBottom ? el.scrollHeight - toBottom + (offset || 0) : 0;
+          el.scrollTop = toBottom ?
+            el.scrollHeight - toBottom + (offset || 0) : 0;
         });
       }
     },
@@ -340,17 +352,19 @@ ipc.on('initialLoad', function (screenname) {
 
       ipc.on('newProfileUser', function (user) {
         self.now = moment();
-        if (self.topFrame.profile
-          && self.topFrame.profile.screenname === user.screenname) {
-          self.topFrame.profile = self.updateProfile(user);
+        user = self.updateProfile(user);
+        if (self.topFrame.profile &&
+          self.topFrame.profile.screenname === user.screenname) {
+          self.topFrame.profile = user;
         }
       });
 
       ipc.on('newProfile', function (user, tweets) {
         self.now = moment();
-        if (self.topFrame.profile
-          && self.topFrame.profile.screenname === user.screenname) {
-          self.topFrame.profile = self.updateProfile(user);
+        user = self.updateProfile(user);
+        if (self.topFrame.profile &&
+          self.topFrame.profile.screenname === user.screenname) {
+          self.topFrame.profile = user;
           self.topFrame.tweets = self.topFrame.tweets.concat(tweets);
         }
       });

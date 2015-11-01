@@ -249,6 +249,16 @@ a {
   }
 }
 
+@-webkit-keyframes expand {
+  0% {
+    max-height: 0;
+  }
+
+  100% {
+    max-height: 1.5rem;
+  }
+}
+
 .gap {
   background-color: #eee;
   text-transform: uppercase;
@@ -265,6 +275,10 @@ a {
 .gap .iconic::before {
   font-size: .5rem;
   margin-right: .25rem;
+}
+
+.gap-enter {
+  -webkit-animation: expand .3s;
 }
 
 .gap-leave {

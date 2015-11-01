@@ -55,7 +55,7 @@ module.exports = {
     }
 
     if (vm.tweet.isFavorited) {
-     contextTemplate[3].label = 'Undo Favorite';
+      contextTemplate[3].label = 'Undo Favorite';
     }
 
     return Menu.buildFromTemplate(contextTemplate);

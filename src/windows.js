@@ -43,11 +43,11 @@ var windows = {
     newWindow.loadUrl('file://' + __dirname + '/static/newTweet.html');
     newTweetWindows.push(newWindow);
 
-    newWindow.on('close', function() {
+    newWindow.on('close', function () {
       newWindow.hide();
     });
 
-    newWindow.on('closed', function() {
+    newWindow.on('closed', function () {
       var index = newTweetWindowsInUse.indexOf(this);
       if (index !== -1) {
         newTweetWindowsInUse.splice(index, 1);
@@ -59,7 +59,8 @@ var windows = {
   },
   getNewTweetWindow: function getNewTweetWindow(replyTo, pretext, frontFocus) {
     var newWindow;
-    var x, y;
+    var x;
+    var y;
     var newWindowWidth = 320;
     var margin = 40;
     var mainBounds = mainWindow.getBounds();

@@ -7,11 +7,11 @@ Vue.use(detectViewport);
 require('./fatTweet');
 require('./tweet');
 
-var template = '<ul class="thread timeline">'
-    + '<component is="tweet" v-repeat="tweet: pretext"  username="{{ username }}" now="{{ now }}" track-by="id"></component>'
-    + '<component is="fatTweet" tweet="{{ base }}" username="{{ username }}" now="{{ now }}"></component>'
-    + '<component is="tweet" v-repeat="tweet: replies"  username="{{ username }}" now="{{ now }}" track-by="id"></component>'
-  + '</ul>';
+var template = '<ul class="thread timeline">' +
+    '<component is="tweetComponent" v-for="tweet in pretext" :tweet="tweet" :username="username" :now="now" track-by="id"></component>' +
+    '<component is="fatTweet" :tweet="base" :username="username" :now="now"></component>' +
+    '<component is="tweetComponent" v-for="tweet in replies"  :username="username" :now="now" track-by="id"></component>' +
+  '</ul>';
 
 var Thread = Vue.extend({
   props: ['base', 'pretext', 'replies', 'username', 'now'],

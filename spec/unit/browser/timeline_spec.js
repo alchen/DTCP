@@ -67,13 +67,13 @@ describe('Timeline', function () {
 
     var tweet = new Tweet(tweetJson, screenname);
     tweet.retweetedBy = [{
-      name: '17th'
-    }];
+      name: '17th',
+    },];
 
     var copy = new Tweet(tweetJson, screenname);
     copy.retweetedBy = [{
-      name: 'uinoka'
-    }];
+      name: 'uinoka',
+    },];
 
     timeline.addTweet(tweet);
     timeline.addTweet(copy);
@@ -244,6 +244,7 @@ describe('Timeline', function () {
     _.each(tweets.slice(3, 5).reverse(), function (tweet) {
       timeline.addTweet(tweet);
     });
+
     timeline.get('home').should.have.length(12);
     timeline.get('home')[2].gaps.home.should.equal(true);
 

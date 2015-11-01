@@ -3,7 +3,8 @@
 var _ = require('lodash');
 var app = require('app');
 var ipc = require('ipc');
-var windows, menu;
+var windows;
+var menu;
 
 var preferences = require('./preferences');
 var update = require('./update');
@@ -54,7 +55,7 @@ app.on('before-quit', function () {
   windows.closeTweetWindows();
 });
 
-app.on('will-quit', function() {
+app.on('will-quit', function () {
   console.log('Main: will quit');
 });
 
@@ -144,4 +145,14 @@ ipc.on('retweet', function (event, tweetId, positive, retweetId) {
 ipc.on('delete', function (event, tweetId) {
   console.log('Main: delete ' + tweetId);
   timeline.deleteTweet(tweetId);
+});
+
+ipc.on('follow', function (event, screenname, isFollowing) {
+  if (isFollowing) {
+    console.log('Main: unfollow ' + screenname);
+    timeline.unfollow(screenname);
+  } else {
+    console.log('Main: follow ' + screenname);
+    timeline.follow(screenname);
+  }
 });

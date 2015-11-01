@@ -36,7 +36,8 @@ Timeline.prototype.insertGap = function () {
 
 Timeline.prototype.closeGap = function (timeline, sinceId, newTweets) {
   var self = this;
-  var oldTweets, hash;
+  var oldTweets;
+  var hash;
 
   oldTweets = this[timeline];
   hash = this.hash[timeline];
@@ -155,7 +156,9 @@ Timeline.prototype.mergeTweet = function (dstTweet, srcTweet) {
   dstTweet.retweetId = srcTweet.retweetId || dstTweet.retweetId;
   dstTweet.isRetweeted = srcTweet.isRetweeted || dstTweet.isRetweeted;
   if (dstTweet.retweetedBy && srcTweet.retweetedBy) {
-    dstTweet.retweetedBy = _.uniq((dstTweet.retweetedBy || []).concat(srcTweet.retweetedBy || []));
+    var retweetedBy = (dstTweet.retweetedBy || [])
+      .concat(srcTweet.retweetedBy || []);
+    dstTweet.retweetedBy = _.uniq(retweetedBy);
   } else if (dstTweet.retweetedBy || srcTweet.retweetedBy) {
     dstTweet.retweetedBy = srcTweet.retweetedBy || dstTweet.retweetedBy;
   }
@@ -203,7 +206,8 @@ Timeline.prototype.addTweet = function (newTweet) {
     this.hash.home[tweet.id] = tweet;
   }
 
-  if (!this.hash.mentions[tweet.id] && tweet.mentionsScreenname(this.screenname)) {
+  if (!this.hash.mentions[tweet.id] &&
+    tweet.mentionsScreenname(this.screenname)) {
     this.mentions.unshift(tweet);
     this.hash.mentions[tweet.id] = tweet;
   }

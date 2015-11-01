@@ -16,39 +16,42 @@ var oauth = new OAuth.OAuth(
 
 var Vue = require('vue');
 
-var promptTemplate = '<div class="prompt">'
-    + '<button class="promptbutton signinbutton" v-on="click: authenticate">Sign in with Twitter</button>'
-    + '<section class="prompterror" v-if="error" v-text="error"></section>'
-  + '</div>';
+var promptTemplate = '<div class="prompt">' +
+    '<button class="promptbutton signinbutton" @click="authenticate">Sign in with Twitter</button>' +
+    '<section class="prompterror" v-if="error" v-text="error"></section>' +
+  '</div>';
 
-var verifyTemplate = '<div class="prompt">'
-    + '<input class="pininput" type="text" v-model="pin" placeholder="Enter PIN" />'
-    + '<button class="promptbutton backbutton" v-on="click: back">Back</button>'
-    + '<button class="promptbutton verifybutton" v-on="click: verify">Verify</button>'
-    + '<section class="prompterror" v-if="error" v-text="error"></section>'
-  + '</div>';
+var verifyTemplate = '<div class="prompt">' +
+    '<input class="pininput" type="text" v-model="pin" placeholder="Enter PIN" />' +
+    '<button class="promptbutton backbutton" @click="back">Back</button>' +
+    '<button class="promptbutton verifybutton" @click="verify">Verify</button>' +
+    '<section class="prompterror" v-if="error" v-text="error"></section>' +
+  '</div>';
 
-var successTemplate = '<div class="prompt">'
-    + '<button class="promptbutton verifiedbutton">Verified!</button>'
-  + '</div>';
+var successTemplate = '<div class="prompt">' +
+    '<button class="promptbutton verifiedbutton">Verified!</button>' +
+  '</div>';
 
 var prompt = new Vue({
   el: '#content',
   data: {
     stage: 'prompt',
-    pin: '',
-    error: null,
     oauthToken: null,
     oauthTokenSecret: null
   },
   events: {
-
+    setStage: function (target) {
+      this.stage = target;
+    }
   },
   components: {
     prompt: {
       replace: true,
-      inherit: true,
       template: promptTemplate,
+      data: function () {
+        return {error: null};
+      },
+      props: ['oauthToken', 'oauthTokenSecret'],
       methods: {
         authenticate: function () {
           var self = this;
@@ -61,9 +64,8 @@ var prompt = new Vue({
               self.oauthToken = oauthToken;
               self.oauthTokenSecret = oauthTokenSecret;
               var authenticateUrl = 'https://twitter.com/oauth/authenticate?oauth_token=' + oauthToken;
-              self.authenticateUrl = authenticateUrl;
               shell.openExternal(authenticateUrl);
-              self.stage = 'verify';
+              self.$dispatch('setStage', 'verify');
             }
           });
         }
@@ -71,22 +73,28 @@ var prompt = new Vue({
     },
     verify: {
       replace: true,
-      inherit: true,
       template: verifyTemplate,
+      data: function () {
+        return {
+          error: null,
+          pin: ''
+        };
+      },
+      props: ['oauthToken', 'oauthTokenSecret'],
       methods: {
         back: function () {
-          this.stage = 'prompt';
+          this.$dispatch('setStage', 'prompt');
         },
         verify: function () {
           var self = this;
-          oauth.getOAuthAccessToken(this.oauthToken, this.oauthTokenSecret, this.pin, 
-            function(error, oauthAccessToken, oauthAccessTokenSecret, results) {
-              if (error){
+          oauth.getOAuthAccessToken(this.oauthToken, this.oauthTokenSecret, this.pin,
+            function (error, oauthAccessToken, oauthAccessTokenSecret, results) {
+              if (error) {
                 console.log('Renderer: verification err ' + error);
                 self.error = 'Is internet down?';
               } else {
                 self.error = null;
-                self.stage = 'success';
+                self.$dispatch('setStage', 'success');
                 setTimeout(function () {
                   ipc.send(
                     'verified',
@@ -96,7 +104,8 @@ var prompt = new Vue({
                   );
                 }, 777);
               }
-          });
+            }
+          );
         }
       }
     },
@@ -106,6 +115,5 @@ var prompt = new Vue({
     }
   }
 });
-
 
 module.exports = prompt;

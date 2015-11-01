@@ -18,14 +18,18 @@ var twitStub = function () {
     get: function () {}
   };
 };
-var Stream = proxyquire('../../../instrumented/stream', { '../lib/twit': twitStub });
+var Stream = proxyquire('../../../instrumented/stream', {'../lib/twit': twitStub});
 
 var config = require('../../../instrumented/config');
 var Tweet = require('../../../instrumented/models/tweet');
+var User = require('../../../instrumented/models/user');
 
 var screenname = '17th';
 var mentionJson = require('../../fixtures/mention.json');
 var tweetsJson = require('../../fixtures/tweets.json');
+var userJson = require('../../fixtures/user.json');
+var followJson = require('../../fixtures/follow.json');
+var unfollowJson = require('../../fixtures/unfollow.json');
 
 describe('Stream', function () {
   describe('events', function () {
@@ -43,7 +47,7 @@ describe('Stream', function () {
       var tweet = new Tweet(mentionJson, screenname);
 
       sinon.spy(stream.timeline, 'addTweet');
-      var subscriberStub = { webContents: { send: function () {} } };
+      var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newTweet', 'home', tweet);
@@ -59,16 +63,52 @@ describe('Stream', function () {
       var stream = new Stream('', '', screenname);
       var tweet = new Tweet(mentionJson, screenname);
 
-      var subscriberStub = { webContents: { send: function () {} } };
+      var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('deleteTweet', tweet.id);
 
       stream.timeline.addTweet(tweet);
-      streamStub.emit('delete', { delete: { status: { id_str: tweet.id } } });
+      streamStub.emit('delete', {delete: {status: {id_str: tweet.id}}});
 
       webContentsMock.verify();
       should.not.exist(stream.timeline.findTweet(tweet.id));
+    });
+
+    it('should follow user', function () {
+      var stream = new Stream('', '', screenname);
+      var user = new User(userJson);
+      user.isFollowing = true;
+
+      var subscriberStub = {webContents: {send: function () {}}};
+      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      stream.subscribe(subscriberStub);
+      webContentsMock.expects('send').calledWith('newProfileUser', user);
+
+      stream.timeline.saveUser(new User(userJson));
+      should.exist(stream.timeline.findUser(user.screenname));
+      streamStub.emit('follow', followJson);
+
+      webContentsMock.verify();
+      stream.timeline.findUser(user.screenname).isFollowing.should.equal(true);
+    });
+
+    it('should unfollow user', function () {
+      var stream = new Stream('', '', screenname);
+      var user = new User(userJson);
+      user.isFollowing = false;
+
+      var subscriberStub = {webContents: {send: function () {}}};
+      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      stream.subscribe(subscriberStub);
+      webContentsMock.expects('send').calledWith('newProfileUser', user);
+
+      stream.timeline.saveUser(new User(userJson));
+      should.exist(stream.timeline.findUser(user.screenname));
+      streamStub.emit('unfollow', unfollowJson);
+
+      webContentsMock.verify();
+      stream.timeline.findUser(user.screenname).isFollowing.should.equal(false);
     });
   });
 
@@ -88,7 +128,7 @@ describe('Stream', function () {
       });
       sinon.spy(stream, 'saveTweets');
       sinon.spy(stream, 'sendTweets');
-      var subscriberStub = { webContents: { send: function () {} } };
+      var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newTweets', timeline, tweets);
@@ -114,7 +154,7 @@ describe('Stream', function () {
       });
       sinon.spy(stream, 'saveTweets');
       sinon.spy(stream, 'sendTweets');
-      var subscriberStub = { webContents: { send: function () {} } };
+      var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newTweets', timeline, tweets.slice(0, config.sendThreshold));
@@ -138,7 +178,7 @@ describe('Stream', function () {
       });
       sinon.spy(stream, 'saveTweets');
       sinon.spy(stream, 'sendTweets');
-      var subscriberStub = { webContents: { send: function () {} } };
+      var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newTweets', timeline, tweets.slice(0, 5));
@@ -168,7 +208,7 @@ describe('Stream', function () {
       var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
         callback(null, tweetsJson.slice(0, 10), null);
       });
-      var subscriberStub = { webContents: { send: function () {} } };
+      var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newFiller', timeline, filler);
@@ -185,5 +225,9 @@ describe('Stream', function () {
       webContentsMock.verify();
       stream.timeline.get(timeline).should.deep.equal(target);
     });
+  });
+
+  describe('user', function () {
+
   });
 });

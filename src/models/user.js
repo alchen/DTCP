@@ -18,7 +18,8 @@ var User = function (user) {
   this.description = user.description;
   this.url = user.url;
 
-  this.expandedUrl = user.url && user.entities ? user.entities.url.urls[0].expanded_url : null;
+  this.expandedUrl = user.url && user.entities ?
+    user.entities.url.urls[0].expanded_url : null;
   this.location = user.location;
 
   this.followersCount = user.followers_count;
@@ -29,6 +30,7 @@ var User = function (user) {
 
   this.isProtected = user.protected;
   this.isFollowing = user.following;
+  this.isPending = user.follow_request_sent;
 };
 
 module.exports = User;

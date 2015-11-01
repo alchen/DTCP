@@ -5,10 +5,10 @@ var detectViewport = require('../directives/detectViewport');
 Vue.use(detectViewport);
 require('./tweet');
 
-var template = '<ul class="tweets timeline">'
-    + '<component is="tweet" v-repeat="tweet: tweets" view="{{ view }}" username="{{ username }}" now="{{ now }}" track-by="id"></component>'
-    + '<div class="loader loader-inner ball-clip-rotate" v-detect-viewport><div></div></div>'
-  + '</ul>';
+var template = '<ul class="tweets timeline">' +
+    '<component is="tweetComponent" v-for="tweet in tweets" :tweet="tweet" :view="view" :username="username" :now="now" track-by="id"></component>' +
+    '<div class="loader loader-inner ball-clip-rotate" v-detect-viewport><div></div></div>' +
+  '</ul>';
 
 var Timeline = Vue.extend({
   replace: true,
@@ -25,6 +25,18 @@ var Timeline = Vue.extend({
     'viewportleave': function (el) {
       clearTimeout(this.loaderTimer);
       el.style.opacity = '1';
+    },
+    'showScreenname': function () {
+      return true;
+    },
+    'showProfile': function () {
+      return true;
+    },
+    'showThread': function () {
+      return true;
+    },
+    'loadSince': function () {
+      return true;
     }
   },
   template: template,

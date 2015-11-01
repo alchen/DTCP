@@ -13,12 +13,12 @@
     <div id="content">
       <div class="newtweet">
         <section class="newtweettext">
-          <textarea class="newrawtweet" v-on="keyup: escape | key 'esc', input: updateTweet" v-model="rawTweet" lazy autofocus="true"></textarea>
+          <textarea class="newrawtweet" @keyup.esc="escape" @input="updateTweet" v-model="rawTweet" lazy autofocus="true"></textarea>
           <section class="newformattedtweet" v-html="formattedTweet"></section>
         </section>
         <section class="newtweetmeta">
           <span class="remaining" v-text="remainingLength"></span>
-          <button class="newtweetbutton" v-class="activenewtweetbutton: isValid" v-on="click: sendTweet">Tweet</button>
+          <button class="newtweetbutton" :class="{ activenewtweetbutton: isValid }" @click="sendTweet">Tweet</button>
         </section>
       </div>
     </div>
