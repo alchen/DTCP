@@ -1,6 +1,6 @@
 {
   "name": "DTCP",
-  "version": "0.2.5",
+  "version": "0.2.8",
   "description": "Desktop Twitter Client Project",
   "main": "src/main.js",
   "private": true,

@@ -2,7 +2,7 @@
 'use strict';
 
 var notifier = require('node-notifier');
-var ipc = require('ipc');
+var ipc = require('electron').ipcRenderer;
 var _ = require('lodash');
 var Vue = require('vue');
 require('../view/components/profile');
@@ -16,7 +16,7 @@ Vue.config.strict = true;
 var timelines;
 var defaultLength = 50;
 
-ipc.on('initialLoad', function (screenname) {
+ipc.on('initialLoad', function (event, screenname) {
   timelines = new Vue({
     el: '#content',
     computed: {
@@ -64,7 +64,7 @@ ipc.on('initialLoad', function (screenname) {
           return;
         }
         var newFrame = {
-          is: 'profile',
+          is: 'profileComponent',
           view: 'profile',
           profile: {screenname: screenname},
           tweets: []
@@ -145,11 +145,12 @@ ipc.on('initialLoad', function (screenname) {
           });
         }
       },
-      scrollToTop: function () {
+      scrollTo: function (destination, speed) {
+        var self = this;
         var frames = document.getElementsByClassName('frame');
-        var target = frames[frames.length - 1];
-        var speed = 300;
+        var currentFrame = frames[frames.length - 1];
         var delay = 16;
+        speed = typeof speed !== 'undefined' ? speed : 300;
 
         var easing = function (time) {
           return time < 0.5 ?
@@ -157,9 +158,8 @@ ipc.on('initialLoad', function (screenname) {
            1 - 8 * (--time) * time * time * time;
         };
 
-        var animation;
-        var startLocation = target.scrollTop;
-        var distance = -startLocation;
+        var startLocation = currentFrame.scrollTop;
+        var distance = destination - startLocation;
         var timeLapsed = 0;
         var percentage;
         var position;
@@ -170,14 +170,40 @@ ipc.on('initialLoad', function (screenname) {
           percentage = (percentage > 1) ? 1 : percentage;
           position = startLocation + (distance * easing(percentage));
           window.requestAnimationFrame(function () {
-            target.scrollTop = Math.floor(position);
+            currentFrame.scrollTop = Math.floor(position);
           });
-          if (target.scrollTop === 0) {
-            clearInterval(animation);
+          if (currentFrame.scrollTop === destination) {
+            clearInterval(self.animation);
           }
         };
-
-        animation = setInterval(step, delay);
+        clearInterval(self.animation);
+        this.animation = setInterval(step, delay);
+      },
+      scrollToTop: function () {
+        var top = 0;
+        this.scrollTo(top);
+      },
+      scrollToNextTweet: function () {
+        var frames = document.getElementsByClassName('frame');
+        var currentFrame = frames[frames.length - 1];
+        var tweetContainers = currentFrame.getElementsByClassName('tweetcontainer');
+        var bottomTweet = _.find(tweetContainers, function (el) {
+          return el.getBoundingClientRect().top >= currentFrame.getBoundingClientRect().bottom;
+        });
+        if (bottomTweet) {
+          this.scrollTo(currentFrame.scrollTop  + bottomTweet.getBoundingClientRect().bottom - currentFrame.getBoundingClientRect().bottom);
+        }
+      },
+      scrollToPreviousTweet: function () {
+        var frames = document.getElementsByClassName('frame');
+        var currentFrame = frames[frames.length - 1];
+        var tweetContainers = currentFrame.getElementsByClassName('tweetcontainer');
+        var topTweet = _.findLast(tweetContainers, function (el) {
+          return el.getBoundingClientRect().top < currentFrame.offsetTop;
+        });
+        if (topTweet) {
+          this.scrollTo(currentFrame.scrollTop + topTweet.getBoundingClientRect().top - currentFrame.offsetTop);
+        }
       },
       mergeTweet: function (dstTweet, srcTweet) {
         _.assign(dstTweet, srcTweet);
@@ -278,13 +304,28 @@ ipc.on('initialLoad', function (screenname) {
         return this.users[user.screenname];
       },
       deleteTweet: function (tweetId) {
-        _.each(this.tweets, function (timeline) {
+        var self = this;
+        var removeTweet = function (timeline) {
           var index = _.findIndex(timeline, function (old) {
             return old.id === tweetId;
           });
 
           if (index !== -1) {
             timeline.splice(index, 1);
+          }
+        };
+
+        _.each(this.tweets, removeTweet);
+
+        _.each(this.frames, function (frame) {
+          if (frame.base) {
+            removeTweet(frame.pretext);
+            removeTweet(frame.replies);
+            if (frame.base.id === tweetId) {
+              self.back();
+            }
+          } else if (frame.profile) {
+            removeTweet(frame.tweets);
           }
         });
       },
@@ -305,23 +346,30 @@ ipc.on('initialLoad', function (screenname) {
         self.now = moment();
       }, 60 * 1000);
 
-      document.onkeyup = function (event) {
+      var throttledScrollToNextTweet = _.throttle(self.scrollToNextTweet, 350);
+      var throttledScrollToPreviousTweet = _.throttle(self.scrollToPreviousTweet, 350);
+
+      document.onkeydown = function (event) {
         if (event.keyCode === 27) { // ESC
           self.back();
+        } else if (event.keyCode === 74) { // j
+          throttledScrollToNextTweet();
+        } else if (event.keyCode === 75) { // k
+          throttledScrollToPreviousTweet();
         }
       };
 
-      ipc.on('deleteTweet', function (tweetId) {
+      ipc.on('deleteTweet', function (event, tweetId) {
         self.now = moment();
         self.deleteTweet(tweetId);
       });
 
-      ipc.on('updateTweet', function (tweet) {
+      ipc.on('updateTweet', function (event, tweet) {
         self.now = moment();
         self.updateTweet(tweet);
       });
 
-      ipc.on('newTweet', function (timeline, tweet) {
+      ipc.on('newTweet', function (event, timeline, tweet) {
         self.now = moment();
         self.addTweet(timeline, tweet);
         self.notify(timeline, tweet);
@@ -331,7 +379,7 @@ ipc.on('initialLoad', function (screenname) {
         });
       });
 
-      ipc.on('newTweets', function (timeline, tweets) {
+      ipc.on('newTweets', function (event, timeline, tweets) {
         if (!tweets || !tweets.length) {
           return;
         }
@@ -341,7 +389,7 @@ ipc.on('initialLoad', function (screenname) {
         });
       });
 
-      ipc.on('newFiller', function (timeline, tweets) {
+      ipc.on('newFiller', function (event, timeline, tweets) {
         if (!tweets || !tweets.length) {
           return;
         }
@@ -350,7 +398,7 @@ ipc.on('initialLoad', function (screenname) {
         self.keepPosition();
       });
 
-      ipc.on('newProfileUser', function (user) {
+      ipc.on('newProfileUser', function (event, user) {
         self.now = moment();
         user = self.updateProfile(user);
         if (self.topFrame.profile &&
@@ -359,7 +407,7 @@ ipc.on('initialLoad', function (screenname) {
         }
       });
 
-      ipc.on('newProfile', function (user, tweets) {
+      ipc.on('newProfile', function (event, user, tweets) {
         self.now = moment();
         user = self.updateProfile(user);
         if (self.topFrame.profile &&
@@ -369,11 +417,11 @@ ipc.on('initialLoad', function (screenname) {
         }
       });
 
-      ipc.on('newPretext', function (tweets) {
+      ipc.on('newPretext', function (event, tweets) {
         self.$broadcast('newPretext', tweets);
       });
 
-      ipc.on('newReplies', function (tweets) {
+      ipc.on('newReplies', function (event, tweets) {
         self.$broadcast('newReplies', tweets);
       });
     },

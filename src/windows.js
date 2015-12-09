@@ -6,7 +6,6 @@ var BrowserWindow = require('browser-window');
 
 var mainWindow;
 var newTweetWindows = [];
-var newTweetWindowsInUse = [];
 
 var atomScreen = require('screen');
 var windows = {
@@ -21,26 +20,20 @@ var windows = {
       w.close();
     });
     newTweetWindows = [];
-
-    _.each(newTweetWindowsInUse, function (w) {
-      w.close();
-    });
-    newTweetWindowsInUse = [];
   },
   createNewTweetWindow: function createNewTweetWindow() {
     var newWindow = new BrowserWindow({
       width: 320,
       height: 144,
-      'min-width': 144,
-      'min-height': 100,
+      minWidth: 144,
+      minHeight: 100,
       fullscreen: false,
-      'accept-first-mouse': false,
-      'always-on-top': true,
-      // resizable: false,
-      'use-content-size': true,
+      acceptFirstMouse: false,
+      alwaysOnTop: true,
+      useContentSize: true,
       show: false
     });
-    newWindow.loadUrl('file://' + __dirname + '/static/newTweet.html');
+    newWindow.loadURL('file://' + __dirname + '/static/newTweet.html');
     newTweetWindows.push(newWindow);
 
     newWindow.on('close', function () {
@@ -48,14 +41,13 @@ var windows = {
     });
 
     newWindow.on('closed', function () {
-      var index = newTweetWindowsInUse.indexOf(this);
+      var index = newTweetWindows.indexOf(this);
       if (index !== -1) {
-        newTweetWindowsInUse.splice(index, 1);
-      }
-      while (!global.willQuit && newTweetWindows.length < 2) {
-        createNewTweetWindow();
+        newTweetWindows.splice(index, 1);
       }
     });
+
+    return newWindow;
   },
   getNewTweetWindow: function getNewTweetWindow(replyTo, pretext, frontFocus) {
     var newWindow;
@@ -79,32 +71,22 @@ var windows = {
       y = mainBounds.y + margin;
     }
 
-    if (newTweetWindows.length === 0) {
-      this.createNewTweetWindow();
-      newWindow = newTweetWindows.pop();
-      newTweetWindowsInUse.push(newWindow);
+    newWindow = this.createNewTweetWindow();
 
-      newWindow.webContents.on('did-finish-load', function () {
-        newWindow.webContents.send('pretext', replyTo, pretext, frontFocus);
-        newWindow.setPosition(x, y);
-        newWindow.show();
-      });
-    } else {
-      newWindow = newTweetWindows.pop();
-      newTweetWindowsInUse.push(newWindow);
+    newWindow.webContents.on('did-finish-load', function () {
       newWindow.webContents.send('pretext', replyTo, pretext, frontFocus);
       newWindow.setPosition(x, y);
       newWindow.show();
-    }
+    });
   },
   createMainWindow: function createMainWindow(timeline) {
     mainWindow = new BrowserWindow({
       width: 400,
       height: 640,
-      'min-width': 272,
-      'min-height': 64,
+      minWidth: 272,
+      minHeight: 64,
       fullscreen: false,
-      'accept-first-mouse': false,
+      acceptFirstMouse: false,
       show: false
     });
 
@@ -121,6 +103,9 @@ var windows = {
 
     mainWindow.webContents.on('new-window', function (event, url) {
       console.log('Main: new window requested for ' + url);
+      if (_.startsWith(url, 'https://pbs.twimg.com/media/')) {
+        url += ':large';
+      }
       shell.openExternal(url);
       event.preventDefault();
     });
@@ -154,12 +139,12 @@ var windows = {
   },
   loadPrompt: function loadPrompt() {
     this.unloadTimeline();
-    mainWindow.loadUrl('file://' + __dirname + '/static/prompt.html');
+    mainWindow.loadURL('file://' + __dirname + '/static/prompt.html');
   },
   loadTimeline: function loadTimeline(timeline) {
     timeline.subscribe(mainWindow);
     this.timeline = timeline;
-    mainWindow.loadUrl('file://' + __dirname + '/static/index.html');
+    mainWindow.loadURL('file://' + __dirname + '/static/index.html');
   },
   unloadTimeline: function unloadTimeline() {
     if (this.timeline) {

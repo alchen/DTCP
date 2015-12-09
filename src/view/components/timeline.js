@@ -25,18 +25,6 @@ var Timeline = Vue.extend({
     'viewportleave': function (el) {
       clearTimeout(this.loaderTimer);
       el.style.opacity = '1';
-    },
-    'showScreenname': function () {
-      return true;
-    },
-    'showProfile': function () {
-      return true;
-    },
-    'showThread': function () {
-      return true;
-    },
-    'loadSince': function () {
-      return true;
     }
   },
   template: template,

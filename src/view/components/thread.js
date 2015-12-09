@@ -1,6 +1,6 @@
 'use strict';
 
-var ipc = require('ipc');
+var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
 var detectViewport = require('../directives/detectViewport');
 Vue.use(detectViewport);
@@ -10,7 +10,7 @@ require('./tweet');
 var template = '<ul class="thread timeline">' +
     '<component is="tweetComponent" v-for="tweet in pretext" :tweet="tweet" :username="username" :now="now" track-by="id"></component>' +
     '<component is="fatTweet" :tweet="base" :username="username" :now="now"></component>' +
-    '<component is="tweetComponent" v-for="tweet in replies"  :username="username" :now="now" track-by="id"></component>' +
+    '<component is="tweetComponent" v-for="tweet in replies" :tweet="tweet" :username="username" :now="now" track-by="id"></component>' +
   '</ul>';
 
 var Thread = Vue.extend({

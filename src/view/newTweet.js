@@ -1,12 +1,12 @@
 'use strict';
 
-var ipc = require('ipc');
+var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
 var twitterText = require('twitter-text');
 
 var newTweet;
 
-ipc.on('pretext', function (replyTo, pretext, frontFocus) {
+ipc.on('pretext', function (event, replyTo, pretext, frontFocus) {
   newTweet = new Vue({
     el: '#content',
     data: {

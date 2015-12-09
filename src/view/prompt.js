@@ -1,6 +1,6 @@
 'use strict';
 
-var ipc = require('ipc');
+var ipc = require('electron').ipcRenderer;
 var shell = require('shell');
 var config = require('../config');
 var OAuth = require('oauth');

@@ -1,7 +1,7 @@
 'use strict';
 
 var Vue = require('vue');
-var ipc = require('ipc');
+var ipc = require('electron').ipcRenderer;
 var remote = require('remote');
 var shell = require('shell');
 var contextmenu = require('./contextmenu');
@@ -39,21 +39,6 @@ var Profile = Vue.extend({
   props: ['user', 'tweets', 'username', 'now'],
   template: template,
   events: {
-    'showScreenname': function () {
-      return true;
-    },
-    'showProfile': function () {
-      return true;
-    },
-    'showThread': function () {
-      return true;
-    },
-    'loadSince': function () {
-      return true;
-    },
-    'loadMore': function () {
-      return true;
-    }
   },
   filters: {
     at: function (name) {

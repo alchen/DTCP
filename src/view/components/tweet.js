@@ -4,7 +4,7 @@ var Vue = require('vue');
 var moment = require('moment');
 var remote = require('remote');
 var contextmenu = require('./contextmenu');
-var ipc = require('ipc');
+var ipc = require('electron').ipcRenderer;
 var shell = require('shell');
 var _ = require('lodash');
 

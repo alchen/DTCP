@@ -2,25 +2,17 @@
 
 var _ = require('lodash');
 var app = require('app');
-var ipc = require('ipc');
+var ipc = require('electron').ipcMain;
 var windows;
 var menu;
 
 var preferences = require('./preferences');
-var update = require('./update');
 var Timeline = require('./stream');
 var timeline;
 // var timeline = new Timeline();
 
 app.on('ready', function () {
   global.willQuit = false;
-
-  // Check for updates
-  update.check(function (err, status) {
-    if (!err && status) {
-      // update.download();
-    }
-  });
 
   // Set up windows
   windows = require('./windows');
@@ -38,7 +30,7 @@ app.on('ready', function () {
 
 // Handle Events
 
-app.on('activate-with-no-open-windows', function () {
+app.on('activate', function () {
   var mainWindow = windows.getMainWindow();
   if (mainWindow) {
     mainWindow.show();
