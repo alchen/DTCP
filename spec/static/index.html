@@ -1,7 +1,7 @@
+<!DOCTYPE html>
 <html>
 <head>
-  <meta name="referrer" content="always">
-  <link href="../node_modules/mocha/mocha.css" rel="stylesheet">
+  <title>DTCP</title>
 </head>
 <body>
 
@@ -24,7 +24,7 @@
     require('remote').getCurrentWindow().inspectElement(e.clientX, e.clientY);
   }
   // require('coffee-script/register');  // Supports .coffee tests.
-  var ipc = require('ipc');
+  var ipc = require('electron').ipcRenderer;
   // Rediret all output to browser.
   if (isCi) {
     global.__defineGetter__('console', function() {
