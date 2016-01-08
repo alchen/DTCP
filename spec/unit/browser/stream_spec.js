@@ -18,7 +18,7 @@ var twitStub = function () {
     get: function () {}
   };
 };
-var Stream = proxyquire('../../../instrumented/stream', {'../lib/twit': twitStub});
+var Stream = proxyquire('../../../instrumented/models/stream', {'../../lib/twit': twitStub});
 
 var config = require('../../../instrumented/config');
 var Tweet = require('../../../instrumented/models/tweet');
@@ -34,7 +34,7 @@ var unfollowJson = require('../../fixtures/unfollow.json');
 describe('Stream', function () {
   describe('events', function () {
     it('should emit friend message on creation', function () {
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       sinon.spy(stream.timeline, 'setFriends');
 
       streamStub.emit('friends', ['1', '2', '3']);
@@ -43,7 +43,7 @@ describe('Stream', function () {
     });
 
     it('should accept streamed tweet', function () {
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       var tweet = new Tweet(mentionJson, screenname);
 
       sinon.spy(stream.timeline, 'addTweet');
@@ -60,7 +60,7 @@ describe('Stream', function () {
     });
 
     it('should delete tweet', function () {
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       var tweet = new Tweet(mentionJson, screenname);
 
       var subscriberStub = {webContents: {send: function () {}}};
@@ -76,7 +76,7 @@ describe('Stream', function () {
     });
 
     it('should follow user', function () {
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       var user = new User(userJson);
       user.isFollowing = true;
 
@@ -94,7 +94,7 @@ describe('Stream', function () {
     });
 
     it('should unfollow user', function () {
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       var user = new User(userJson);
       user.isFollowing = false;
 
@@ -120,13 +120,13 @@ describe('Stream', function () {
 
     it('should load more timeline from API when empty', function () {
       var timeline = 'home';
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       var tweets = _.map(tweetsJson.slice(15), function (tweet) { return new Tweet(tweet, screenname); });
 
       var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
         callback(null, tweetsJson.slice(15), null);
       });
-      sinon.spy(stream, 'saveTweets');
+      sinon.spy(stream, 'saveTweetsToTimeline');
       sinon.spy(stream, 'sendTweets');
       var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
@@ -136,9 +136,9 @@ describe('Stream', function () {
       stream.loadMore(timeline);
 
       getStub.calledOnce.should.equal(true);
-      stream.saveTweets.calledOnce.should.equal(true);
+      stream.saveTweetsToTimeline.calledOnce.should.equal(true);
       stream.sendTweets.calledOnce.should.equal(true);
-      stream.saveTweets.calledWithExactly(timeline, tweetsJson.slice(15)).should.equal(true);
+      stream.saveTweetsToTimeline.calledWithExactly(timeline, tweetsJson.slice(15)).should.equal(true);
       stream.sendTweets.calledWithExactly(timeline, undefined).should.equal(true);
       stream.timeline.get(timeline).should.deep.equal(tweets);
       webContentsMock.verify();
@@ -146,13 +146,13 @@ describe('Stream', function () {
 
     it('should send directly if cached above send threshold', function () {
       var timeline = 'home';
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
 
       var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
         callback(null, tweetsJson, null);
       });
-      sinon.spy(stream, 'saveTweets');
+      sinon.spy(stream, 'saveTweetsToTimeline');
       sinon.spy(stream, 'sendTweets');
       var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
@@ -163,20 +163,20 @@ describe('Stream', function () {
       stream.loadMore(timeline);
 
       getStub.called.should.equal(false);
-      stream.saveTweets.calledOnce.should.equal(false);
+      stream.saveTweetsToTimeline.calledOnce.should.equal(false);
       stream.sendTweets.calledOnce.should.equal(false);
       webContentsMock.verify();
     });
 
     it('should send immediate but also load if cached between load and send thresholds', function () {
       var timeline = 'home';
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
 
       var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
         callback(null, tweetsJson.slice(5), null);
       });
-      sinon.spy(stream, 'saveTweets');
+      sinon.spy(stream, 'saveTweetsToTimeline');
       sinon.spy(stream, 'sendTweets');
       var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
@@ -187,7 +187,7 @@ describe('Stream', function () {
       stream.loadMore(timeline);
 
       getStub.called.should.equal(true);
-      stream.saveTweets.calledOnce.should.equal(true);
+      stream.saveTweetsToTimeline.calledOnce.should.equal(true);
       stream.sendTweets.calledOnce.should.equal(false);
       webContentsMock.verify();
       stream.timeline.get(timeline).should.deep.equal(tweets);
@@ -197,7 +197,7 @@ describe('Stream', function () {
   describe('load since', function () {
     it('should close gap and send filler', function () {
       var timeline = 'home';
-      var stream = new Stream('', '', screenname);
+      var stream = new Stream('access', 'secret', screenname);
       var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
       var filler = tweets.slice(0, 11);
       var target = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
