@@ -6,7 +6,7 @@ var twitterText = require('twitter-text');
 
 var newTweet;
 
-ipc.on('pretext', function (event, replyTo, pretext, frontFocus) {
+ipc.on('pretext', function (event, screenname, replyTo, pretext, frontFocus) {
   newTweet = new Vue({
     el: '#content',
     data: {
@@ -34,7 +34,7 @@ ipc.on('pretext', function (event, replyTo, pretext, frontFocus) {
       },
       sendTweet: function (event) {
         if (this.isValid) {
-          ipc.send('sendTweet', this.rawTweet, this.replyTo);
+          ipc.send('sendTweet', screenname, this.rawTweet, this.replyTo);
         }
       },
       updateTweet: function (event) {

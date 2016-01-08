@@ -8,7 +8,7 @@ var path = require('path');
 
 var filePath = path.join(config.preferencePath, 'preferences.json');
 
-var excludeMethods = function excludeMethods(key, value) {
+var excludeMethods = function (key, value) {
   if (key === 'save' || key === 'load') {
     return undefined;
   } else {
@@ -18,11 +18,12 @@ var excludeMethods = function excludeMethods(key, value) {
 
 var preferences = {
   authenticated: false,
-  save: function save(preferences) {
+  accounts: {},
+  save: function (preferences) {
     mkdirp.sync(config.preferencePath);
     fs.writeFileSync(filePath, JSON.stringify(this, excludeMethods, 2));
   },
-  load: function load() {
+  load: function () {
     try {
       _.assign(this, JSON.parse(fs.readFileSync(filePath, 'utf8')));
     } catch (e) {

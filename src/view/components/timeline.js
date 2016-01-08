@@ -7,7 +7,7 @@ require('./tweet');
 
 var template = '<ul class="tweets timeline">' +
     '<component is="tweetComponent" v-for="tweet in tweets" :tweet="tweet" :view="view" :username="username" :now="now" track-by="id"></component>' +
-    '<div class="loader loader-inner ball-clip-rotate" v-detect-viewport><div></div></div>' +
+    '<div class="loader loader-inner ball-clip-rotate tweetcontainer" v-detect-viewport><div></div></div>' +
   '</ul>';
 
 var Timeline = Vue.extend({

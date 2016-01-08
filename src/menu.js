@@ -44,6 +44,7 @@ module.exports = {
               label: 'Log out',
               click: function () {
                 preferences.authenticated = false;
+                preferences.accounts = {};
                 windows.loadPrompt();
               }
             },
@@ -68,7 +69,7 @@ module.exports = {
               accelerator: 'Command+N',
               click: function () {
                 if (preferences.authenticated) {
-                  windows.getNewTweetWindow();
+                  windows.requestComposer();
                 }
               }
             },

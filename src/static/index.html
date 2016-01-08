@@ -7,7 +7,7 @@
     <meta name="keywords" content="" />
     <link rel="stylesheet" href="css/normalize.css" />
     <link rel="stylesheet" href="css/iconic-glyphs.css" />
-    <link rel="stylesheet" href="css/custom.css" />
+    <link rel="stylesheet" href="css/bundle.css" />
   </head>
   <body>
     <div id="content">
@@ -15,7 +15,7 @@
         <section class="headeractions">
           <ul class="navlist">
             <li class="navicon">
-              <button class="navbutton" @click="compose"><span class="iconic" data-glyph="pencil"></span></button>
+              <img :src="bundle[screenname].users[screenname].biggerIcon" v-if="bundle[screenname]" class="navusericon" @click="showSwitches" />
             </li>
           </ul>
         </section>
@@ -28,27 +28,22 @@
               <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'home' }" @click="changeTimeline('home')"><span class="iconic" data-glyph="home"></span></button>
             </li>
             <li class="navicon">
-              <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'mentions' }" @click="changeTimeline('mentions')"><span class="iconic" data-glyph="people"></span></button>
+              <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'mentions' }" @click="changeTimeline('mentions')"><span class="iconic" data-glyph="chat"></span></button>
+            </li>
+            <li class="navicon">
+              <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'messages' }" @click="changeTimeline('messages')"><span class="iconic" data-glyph="envelope-closed"></span></button>
+            </li>
+            <li class="navicon">
+              <button class="navbutton" :class="{ activenavbutton: (topFrame.view === 'profile' && topFrame.profile && topFrame.profile.screenname === screenname) }" @click="changeTimeline('user')"><span class="iconic" data-glyph="person"></span></button>
+            </li>
+            <li class="navicon">
+              <button class="navbutton" @click="compose"><span class="iconic" data-glyph="pencil"></span></button>
             </li>
           </ul>
         </nav>
       </header>
-      <section class="frames">
-        <div class="frame" v-for="frame in frames" :style="{ zIndex: ($index + 1) }" @scroll="scroll" transition="frame">
-          <component
-            :is="frame.is"
-            :view="frame.view"
-            :tweets="frame.tweets"
-            :user="frame.profile"
-            :base.sync="frame.base"
-            :pretext.sync="frame.pretext"
-            :replies.sync="frame.replies"
-            :username="screenname"
-            :now="now"
-          ></component>
-        </div>
-      </section>
+      <component is="frames" :frames.sync="frames" :screenname="screenname" :now="now"></component>
     </div>
-    <script src="../view/timelines.js"></script>
+    <script src="../view/index.js"></script>
   </body>
 </html>

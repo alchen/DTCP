@@ -13,7 +13,10 @@ var User = function (user) {
   this.icon = user.profile_image_url_https;
   this.biggerIcon = this.icon.replace('_normal', '_bigger');
   this.originalIcon = this.icon.replace('_normal', '');
-  this.profileBackground = user.profile_banner_url;
+
+  if (user.profile_banner_url) {
+    this.profileBackground = user.profile_banner_url + '/600x200';
+  }
 
   this.description = user.description;
   this.url = user.url;

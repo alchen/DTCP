@@ -14,7 +14,7 @@ var template = '<ul class="thread timeline">' +
   '</ul>';
 
 var Thread = Vue.extend({
-  props: ['base', 'pretext', 'replies', 'username', 'now'],
+  props: ['base', 'pretext', 'replies', 'username', 'now', 'view'],
   events: {
     showThread: function (tweet) {
       if (tweet.id !== this.base.id) {
@@ -41,7 +41,7 @@ var Thread = Vue.extend({
   },
   methods: {
     findContext: function () {
-      ipc.send('findContext', this.base.id);
+      ipc.send('findContext', this.username, this.base.id);
     },
     scrollToFat: function () {
       var el = document.getElementsByClassName('fattweet')[0];

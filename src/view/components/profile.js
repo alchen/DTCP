@@ -19,7 +19,7 @@ var template = '<section class="profile">' +
             '<span class="name" v-text="user.name"></span>' +
             '<span class="screenname" v-text="user.screenname | at"></span>' +
           '</section>' +
-          '<section class="relationship" @click="toggleFollow" v-text="relationship" v-if="this.user.isFollowing !== null"></section>' +
+          '<section class="relationship" v-bind:class="{\'following\': this.user.isFollowing, \'pending\': this.user.isPending, \'self\': this.user.screenname == username }" @click="toggleFollow" v-text="relationship" v-if="this.user.isFollowing !== null"></section>' +
           '<section class="profiletext" v-text="user.description"></section>' +
           '<section class="profilelocation" v-text="user.location"></section>' +
           '<section class="profileurl"><a :href="user.expandedUrl" v-text="user.expandedUrl" target="_blank"></a></section>' +
@@ -36,7 +36,7 @@ var template = '<section class="profile">' +
 
 var Profile = Vue.extend({
   replace: true,
-  props: ['user', 'tweets', 'username', 'now'],
+  props: ['user', 'tweets', 'username', 'now', 'view'],
   template: template,
   events: {
   },
@@ -58,11 +58,14 @@ var Profile = Vue.extend({
   },
   methods: {
     toggleFollow: function () {
-      ipc.send(
-        'follow',
-        this.user.screenname,
-        this.user.isFollowing || this.user.isPending
-      );
+      if (!this.user.isPending) {
+        ipc.send(
+          this.username,
+          'follow',
+          this.user.screenname,
+          this.user.isFollowing || this.user.isPending
+        );
+      }
     },
     rightclick: function (event) {
       var menu = contextmenu.profile(this);
@@ -72,7 +75,7 @@ var Profile = Vue.extend({
     doReply: function (event) {
       var mentions = [this.user.screenname];
 
-      ipc.send('reply', null, mentions);
+      ipc.send('reply', this.username, null, mentions);
     },
     doShowInBrowser: function (event) {
       var profileUrl = 'https://twitter.com/' + this.user.screenname;

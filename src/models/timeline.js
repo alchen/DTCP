@@ -12,11 +12,13 @@ var Timeline = function (screenname) {
   this.tweets = {};
   this.hash = {
     home: {},
-    mentions: {}
+    mentions: {},
+    messages: {}
   };
 
   this.home = [];
   this.mentions = [];
+  this.messages = [];
 };
 
 Timeline.prototype.insertGap = function () {
@@ -196,6 +198,32 @@ Timeline.prototype.saveTweets = function (tweets) {
   return _.map(tweets, function (tweet) {
     return self.saveTweet(tweet);
   });
+};
+
+Timeline.prototype.saveMessage = function (message) {
+  message.sender = this.saveUser(message.sender);
+  message.recipient = this.saveUser(message.recipient);
+
+  var oldMessage = this.hash.messages[message.id];
+  if (!oldMessage) {
+    this.hash.messages[message.id] = message;
+    this.messages.push(message);
+  }
+
+  return this.hash.messages[message.id];
+};
+
+Timeline.prototype.saveMessages = function (messages) {
+  var self = this;
+  _.each(messages, function (message) {
+    return self.saveMessage(message);
+  });
+
+  return this.messages;
+};
+
+Timeline.prototype.getMessages = function () {
+  return this.messages;
 };
 
 Timeline.prototype.addTweet = function (newTweet) {

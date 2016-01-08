@@ -60,7 +60,17 @@ var Tweet = function (tweet, screenname) {
 
   this.media = (tweet.extended_entities ?
     _.map(tweet.extended_entities.media, function (k) {
-      return k.media_url_https;
+      if (k.type === 'photo') {
+        return {
+          url: k.media_url_https,
+          display: k.media_url_https
+        };
+      } else {
+        return {
+          url: k.media_url_https,
+          display: k.expanded_url
+        };
+      }
     }) : null
   );
 

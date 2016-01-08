@@ -21,6 +21,9 @@ var windows = {
     });
     newTweetWindows = [];
   },
+  requestComposer: function () {
+    this.getMainWindow().webContents.send('requestComposer');
+  },
   createNewTweetWindow: function createNewTweetWindow() {
     var newWindow = new BrowserWindow({
       width: 320,
@@ -49,7 +52,7 @@ var windows = {
 
     return newWindow;
   },
-  getNewTweetWindow: function getNewTweetWindow(replyTo, pretext, frontFocus) {
+  getNewTweetWindow: function getNewTweetWindow(screenname, replyTo, pretext, frontFocus) {
     var newWindow;
     var x;
     var y;
@@ -74,28 +77,21 @@ var windows = {
     newWindow = this.createNewTweetWindow();
 
     newWindow.webContents.on('did-finish-load', function () {
-      newWindow.webContents.send('pretext', replyTo, pretext, frontFocus);
+      newWindow.webContents.send('pretext', screenname, replyTo, pretext, frontFocus);
       newWindow.setPosition(x, y);
       newWindow.show();
     });
   },
-  createMainWindow: function createMainWindow(timeline) {
+  createMainWindow: function createMainWindow(streams) {
     mainWindow = new BrowserWindow({
       width: 400,
       height: 640,
-      minWidth: 272,
+      minWidth: 304,
       minHeight: 64,
       fullscreen: false,
       acceptFirstMouse: false,
       show: false
     });
-
-    // TODO authenticate
-    if (timeline) {
-      this.loadTimeline(timeline);
-    } else {
-      this.loadPrompt();
-    }
 
     mainWindow.webContents.on('did-finish-load', function () {
       mainWindow.show();
@@ -104,7 +100,7 @@ var windows = {
     mainWindow.webContents.on('new-window', function (event, url) {
       console.log('Main: new window requested for ' + url);
       if (_.startsWith(url, 'https://pbs.twimg.com/media/')) {
-        url += ':large';
+        url += ':orig';
       }
       shell.openExternal(url);
       event.preventDefault();
@@ -133,24 +129,30 @@ var windows = {
     mainWindow.on('blur', function () {
     });
 
-    while (newTweetWindows.length < 2) {
-      this.createNewTweetWindow();
+    // TODO authenticate
+    if (!_.isEmpty(streams)) {
+      this.loadTimeline(streams);
+    } else {
+      this.loadPrompt();
     }
   },
-  loadPrompt: function loadPrompt() {
+  loadPrompt: function () {
     this.unloadTimeline();
     mainWindow.loadURL('file://' + __dirname + '/static/prompt.html');
   },
-  loadTimeline: function loadTimeline(timeline) {
-    timeline.subscribe(mainWindow);
-    this.timeline = timeline;
+  loadTimeline: function (streams) {
+    this.streams = streams;
+    _.each(streams, function (stream) {
+      stream.subscribe(mainWindow);
+    });
     mainWindow.loadURL('file://' + __dirname + '/static/index.html');
   },
-  unloadTimeline: function unloadTimeline() {
-    if (this.timeline) {
-      this.timeline.unsubscribe();
-      this.timeline.close();
-      this.timeline = undefined;
+  unloadTimeline: function () {
+    if (this.streams) {
+      _.each(this.streams, function (stream, screenname) {
+        stream.unsubscribe(mainWindow);
+        delete this.streams[screenname];
+      }, this);
     }
   }
 };

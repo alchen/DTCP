@@ -4,7 +4,7 @@ var Vue = require('vue');
 var Tweet = require('./tweet');
 var moment = require('moment');
 
-var template = '<li class="tweetcontainer"><div class="tweet fattweet" @contextmenu="rightclick" @click="leftclick">' +
+var template = '<li class="tweetcontainer" data-tweet-id="{{tweet.id}}"><div class="tweet fattweet" @contextmenu="rightclick" @click="leftclick">' +
     '<section class="fattweetmeta" @click="doShowProfile">' +
       '<section class="fattweetmetaleft">' +
         '<img class="tweeticon" :src="tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" />' +
@@ -27,7 +27,7 @@ var template = '<li class="tweetcontainer"><div class="tweet fattweet" @contextm
     '<section class="tweetmedia" v-if="tweet.media">' +
       '<ul class="tweetimagelist">' +
         '<li class="tweetimagebox" :style="{ width: \'calc(100% / \' + tweet.media.length + \')\' }" v-for="media in tweet.media">' +
-          '<a class="tweetimagelink" target="_blank" :style="{ backgroundImage: \'url(\' + media + \':small)\' }" :href="media" v-text="media"></a>' +
+          '<a class="tweetimagelink" target="_blank" :style="{ backgroundImage: \'url(\' + media.url + \':small)\' }" :href="media.display" v-text="media.display"></a>' +
         '</li>' +
       '</ul>' +
     '</section>' +
@@ -41,7 +41,7 @@ var template = '<li class="tweetcontainer"><div class="tweet fattweet" @contextm
       '<section class="tweetmedia" v-if="tweet.quote.media">' +
         '<ul class="tweetimagelist">' +
           '<li class="tweetimagebox" :style="{ width: \'calc(100% / \' + tweet.quote.media.length + \')\' }" v-for="media in tweet.quote.media">' +
-            '<a class="tweetimagelink" target="_blank" :style="{ backgroundImage: \'url(\' + media + \':small)\' }" :href="media" v-text="media"></a>' +
+            '<a class="tweetimagelink" target="_blank" :style="{ backgroundImage: \'url(\' + media.url + \':small)\' }" :href="media.display" v-text="media.display"></a>' +
           '</li>' +
         '</ul>' +
       '</section>' +

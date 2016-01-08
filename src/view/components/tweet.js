@@ -8,7 +8,7 @@ var ipc = require('electron').ipcRenderer;
 var shell = require('shell');
 var _ = require('lodash');
 
-var template = '<li class="tweetcontainer">' +
+var template = '<li class="tweetcontainer" data-tweet-id="{{tweet.id}}">' +
   '<div class="gap" v-if="tweet.gaps[view]" @click="loadMissing" transition="gap"><span class="iconic" data-glyph="chevr@top" aria-hidden="true"></span> Load missing tweets</div>' +
   '<div class="tweet" @contextmenu="rightclick" @click="leftclick">' +
     '<section class="tweetleft">' +
@@ -40,7 +40,7 @@ var template = '<li class="tweetcontainer">' +
       '<section class="tweetmedia" v-if="tweet.media">' +
         '<ul class="tweetimagelist">' +
           '<li class="tweetimagebox" :style="{ width: \'calc(100% / \' + tweet.media.length + \')\' }" v-for="media in tweet.media">' +
-            '<a class="tweetimagelink" target="_blank" :style="{ backgroundImage: \'url(\' + media + \':small)\' }" :href="media" v-text="media"></a>' +
+            '<a class="tweetimagelink" target="_blank" :style="{ backgroundImage: \'url(\' + media.url + \':small)\' }" :href="media.display" v-text="media.display"></a>' +
           '</li>' +
         '</ul>' +
       '</section>' +
@@ -54,7 +54,7 @@ var template = '<li class="tweetcontainer">' +
         '<section class="tweetmedia" v-if="tweet.quote.media">' +
           '<ul class="tweetimagelist">' +
             '<li class="tweetimagebox" :style="{ width: \'calc(100% / \' + tweet.quote.media.length + \')\' }"  v-for="media in tweet.quote.media">' +
-              '<a class="tweetimagelink" target="_blank" :style="{ backgroundImage: \'url(\' + media + \':small)\' }" :href="media" v-text="media"></a>' +
+              '<a class="tweetimagelink" target="_blank" :style="{ backgroundImage: \'url(\' + media.url + \':small)\' }" :href="media.display" v-text="media.display"></a>' +
             '</li>' +
           '</ul>' +
         '</section>' +
@@ -105,10 +105,10 @@ var Tweet = Vue.extend({
       });
       mentions.unshift(this.tweet.user.screenname);
 
-      ipc.send('reply', this.tweet.id, mentions);
+      ipc.send('reply', this.username, this.tweet.id, mentions);
     },
     doRetweet: function (event) {
-      ipc.send('retweet', this.tweet.id, !this.tweet.isRetweeted);
+      ipc.send('retweet', this.username, this.tweet.id, !this.tweet.isRetweeted);
     },
     doQuote: function (event) {
       var tweetUrl = 'https://twitter.com/' +
@@ -116,13 +116,13 @@ var Tweet = Vue.extend({
         '/status/' +
         this.tweet.id;
 
-      ipc.send('quote', this.tweet.id, tweetUrl);
+      ipc.send('quote', this.username, this.tweet.id, tweetUrl);
     },
     doFavorite: function (event) {
-      ipc.send('favorite', this.tweet.id, !this.tweet.isFavorited);
+      ipc.send('favorite', this.username, this.tweet.id, !this.tweet.isFavorited);
     },
     doDelete: function (event) {
-      ipc.send('delete', this.tweet.id);
+      ipc.send('delete', this.username, this.tweet.id);
     },
     doShowInBrowser: function (event) {
       var tweetUrl = 'https://twitter.com/' +
@@ -148,6 +148,7 @@ var Tweet = Vue.extend({
         var el = event.target;
         do {
           if (el.classList.contains('quotedtweet')) {
+            // because this is handled separately in quoteclick() below
             return;
           }
           el = el.parentElement;

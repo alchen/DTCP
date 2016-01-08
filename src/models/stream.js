@@ -1,12 +1,13 @@
 'use strict';
 
-var Twit = require('../lib/twit');
+var Twit = require('../../lib/twit');
 var _ = require('lodash');
-var config = require('./config');
+var config = require('../config');
 
-var Tweet = require('./models/tweet');
-var User = require('./models/user');
-var Timeline = require('./models/timeline');
+var Tweet = require('./tweet');
+var Message = require('./message');
+var User = require('./user');
+var Timeline = require('./timeline');
 
 function Stream(oauthToken, oauthTokenSecret, screenname) {
   var self = this;
@@ -32,6 +33,20 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
     self.insertGap();
   });
 
+  this.stream.on('direct_message', function (rawMessage) {
+    // Because perspectival attributes (following, follow_request_sent, and notifications) always return false.
+    // https://dev.twitter.com/streaming/overview/messages-types#Direct_Messages
+    delete rawMessage.direct_message.sender.following;
+    delete rawMessage.direct_message.sender.follow_request_sent;
+    delete rawMessage.direct_message.recipient.following;
+    delete rawMessage.direct_message.recipient.follow_request_sent;
+
+    var newMessage = new Message(rawMessage.direct_message);
+    var payload = self.timeline.saveMessages([newMessage]);
+
+    self.send('newMessages', self.screenname, payload);
+  });
+
   this.stream.on('follow', function (followMsg) {
     var source = new User(followMsg.source);
     var target = new User(followMsg.target);
@@ -39,7 +54,7 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
     if (source.screenname === self.screenname) {
       target.isFollowing = true;
       target = self.timeline.saveUser(target);
-      self.send('newProfileUser', target);
+      self.send('newProfileUser', self.screenname, target);
     }
   });
 
@@ -50,7 +65,7 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
     if (source.screenname === self.screenname) {
       target.isFollowing = false;
       target = self.timeline.saveUser(target);
-      self.send('newProfileUser', target);
+      self.send('newProfileUser', self.screenname, target);
     }
   });
 
@@ -59,16 +74,16 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
 
     tweet = self.timeline.addTweet(tweet);
 
-    self.send('newTweet', 'home', tweet);
+    self.send('newTweet', self.screenname, 'home', tweet);
     if (tweet.mentionsScreenname(screenname)) {
-      self.send('newTweet', 'mentions', tweet);
+      self.send('newTweet', self.screenname, 'mentions', tweet);
     }
   });
 
   this.stream.on('delete', function (deleteMessage) {
     var deleteId = deleteMessage.delete.status.id_str;
     self.timeline.deleteTweet(deleteId);
-    self.send('deleteTweet', deleteId);
+    self.send('deleteTweet', self.screenname, deleteId);
   });
 
   this.stream.on('favorite', function (favoriteMessage) {
@@ -78,7 +93,7 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
         new Tweet(favoriteMessage.target_object, self.screenname)
       );
       if (tweet) {
-        self.send('updateTweet', tweet);
+        self.send('updateTweet', self.screenname, tweet);
       }
     } else {
       // user's tweet is favorited
@@ -92,10 +107,10 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
         new Tweet(unfavoriteMessage.target_object, self.screenname)
       );
       if (tweet) {
-        self.send('updateTweet', tweet);
+        self.send('updateTweet', self.screenname, tweet);
       }
     } else {
-      // user's tweet is favorited
+      // user's tweet is unfavorited
     }
   });
 
@@ -114,15 +129,15 @@ Stream.prototype.insertGap = function () {
   var self = this;
   var gaps = this.timeline.insertGap();
   _.each(gaps, function (tweet) {
-    self.send('updateTweet', tweet);
+    self.send('updateTweet', self.screenname, tweet);
   });
 };
 
-Stream.prototype.subscribe = function subscribe(window) {
+Stream.prototype.subscribe = function (window) {
   this.subscriber = window;
 };
 
-Stream.prototype.unsubscribe = function unsubscribe() {
+Stream.prototype.unsubscribe = function () {
   this.subscriber = null;
 };
 
@@ -142,6 +157,14 @@ Stream.prototype.send = function () {
     return newTweet;
   };
 
+  var cloneMessage = function (message) {
+    var newMessage = _.cloneDeep(message);
+    newMessage.sender = _.cloneDeep(message.sender);
+    newMessage.recipient = _.cloneDeep(message.recipient);
+
+    return newMessage;
+  };
+
   if (this.subscriber) {
     var payload = _.map(arguments, function (part) {
       return _.cloneDeep(part, function (i) {
@@ -150,11 +173,15 @@ Stream.prototype.send = function () {
             return _.cloneDeep(j, function (k) {
               if (k && k.isTweet) {
                 return cloneTweet(k);
+              } else if (k && k.isMessage) {
+                return cloneMessage(k);
               }
             });
           });
         } else if (i && i.isTweet) {
           return cloneTweet(i);
+        } else if (i && i.isMessage) {
+          return cloneMessage(i);
         }
       });
     });
@@ -167,12 +194,11 @@ Stream.prototype.send = function () {
 };
 
 Stream.prototype.initialLoad = function initialLoad() {
-  var screenname = this.screenname;
-
-  this.send('initialLoad', screenname);
+  this.send('initialLoad', this.screenname);
 };
 
-Stream.prototype.saveTweets = function saveTweets(timeline, rawTweets) {
+// Save tweets to a timeline
+Stream.prototype.saveTweetsToTimeline = function (timeline, rawTweets) {
   var self = this;
   var tweets = _.map(rawTweets, function (rawTweet) {
     return new Tweet(rawTweet, self.screenname);
@@ -185,11 +211,11 @@ Stream.prototype.sendTweets = function (timeline, maxId) {
   var tweets = this.timeline.get(timeline, maxId);
   var payload = tweets.slice(0, config.sendThreshold);
 
-  this.send('newTweets', timeline, payload);
+  this.send('newTweets', this.screenname, timeline, payload);
 };
 
 Stream.prototype.sendFiller = function (timeline, filler) {
-  this.send('newFiller', timeline, filler);
+  this.send('newFiller', this.screenname, timeline, filler);
 };
 
 Stream.prototype.loadSince = function (timeline, sinceId) {
@@ -219,11 +245,11 @@ Stream.prototype.loadMore = function (timeline, maxId) {
   var options = {count: config.loadThreshold};
 
   if (payloadSize > config.loadThreshold) {
-    this.send('newTweets', timeline, payload.slice(0, config.sendThreshold));
+    this.send('newTweets', this.screenname, timeline, payload.slice(0, config.sendThreshold));
   } else {
     var immediate = payloadSize < config.sendThreshold ? false : true;
     if (immediate) {
-      this.send('newTweets', timeline, payload.slice(0, config.sendThreshold));
+      this.send('newTweets', this.screenname, timeline, payload.slice(0, config.sendThreshold));
     }
     if (payloadSize > 0) {
       options.max_id = payload[payloadSize - 1].id;
@@ -231,7 +257,7 @@ Stream.prototype.loadMore = function (timeline, maxId) {
     this.T.get('statuses/' + timeline + '_timeline', options,
     function (err, rawTweets, response) {
       if (!err) {
-        self.saveTweets(timeline, rawTweets);
+        self.saveTweetsToTimeline(timeline, rawTweets);
         if (!immediate) { // hasn't been sent
           self.sendTweets(timeline, maxId);
         }
@@ -246,17 +272,16 @@ Stream.prototype.loadScreenname = function (screenname) {
   var user = self.timeline.findUser(screenname);
 
   if (user) {
-    this.send('newProfileUser', user);
-  } else {
-    this.T.get('users/show', options, function (err, rawUser, response) {
-      if (!err) {
-        var user = self.timeline.saveUser(new User(rawUser));
-        self.send('newProfileUser', user);
-      } else {
-        // because user has been suspended and etc.
-      }
-    });
+    this.send('newProfileUser', this.screenname, user);
   }
+  this.T.get('users/show', options, function (err, rawUser, response) {
+    if (!err) {
+      var user = self.timeline.saveUser(new User(rawUser));
+      self.send('newProfileUser', self.screenname, user);
+    } else {
+      // because user has been suspended and etc.
+    }
+  });
 };
 
 Stream.prototype.loadUser = function loadUser(screenname, maxId) {
@@ -279,10 +304,52 @@ Stream.prototype.loadUser = function loadUser(screenname, maxId) {
       if (!user) {
         self.loadScreenname(screenname);
       } else {
-        self.send('newProfile', user, payload);
+        self.send('newProfile', self.screenname, user, payload);
       }
     }
   });
+};
+
+Stream.prototype.loadMessages = function () {
+  var self = this;
+  var options = {count: config.loadThreshold};
+
+  self.send('newMessages', self.screenname, self.timeline.getMessages());
+
+  var loadMessagesFromRemote = function () {
+    this.T.get('direct_messages', options,
+    function (err, rawMessages, response) {
+      if (!err) {
+        var messages = _.map(rawMessages, function (rawMessage) {
+          return new Message(rawMessage);
+        });
+        var payload = self.timeline.saveMessages(messages);
+
+        self.send('newMessages', self.screenname, payload);
+      }
+    });
+
+    this.T.get('direct_messages/sent', options,
+    function (err, rawMessages, response) {
+      if (!err) {
+        var messages = _.map(rawMessages, function (rawMessage) {
+          return new Message(rawMessage);
+        });
+        var payload = self.timeline.saveMessages(messages);
+
+        self.send('newMessages', self.screenname, payload);
+      }
+    });
+  };
+
+  if (this.debouncedLoadMessages === undefined) {
+    this.debouncedLoadMessages = _.debounce(loadMessagesFromRemote, 30 * 1000, {
+      'leading': true,
+      'trailing': false
+    });
+  }
+
+  this.debouncedLoadMessages();
 };
 
 Stream.prototype.findContext = function findContext(tweetId) {
@@ -297,13 +364,13 @@ Stream.prototype.findContext = function findContext(tweetId) {
         var tweet = new Tweet(data, self.screenname);
         self.timeline.saveTweet(tweet);
 
-        self.send('newPretext', [tweet]);
+        self.send('newPretext', self.screenname, [tweet]);
       }
     });
   } else {
-    this.send('newPretext', pretext);
+    this.send('newPretext', this.screenname, pretext);
   }
-  this.send('newReplies', replies);
+  this.send('newReplies', this.screenname, replies);
 };
 
 Stream.prototype.sendTweet = function sendTweet(tweet, replyTo, sender) {
@@ -359,7 +426,7 @@ Stream.prototype.unretweet = function unretweet(tweetId) {
       if (!err) {
         console.log('REST: unretweeted');
         tweet = self.timeline.unretweetTweet(new Tweet(data, self.screenname));
-        self.send('updateTweet', tweet);
+        self.send('updateTweet', self.screenname, tweet);
       }
     });
   };
@@ -390,7 +457,7 @@ Stream.prototype.deleteTweet = function deleteTweet(tweetId) {
       console.log('REST: deleted');
       var deleteId = data.id_str;
       self.timeline.deleteTweet(deleteId);
-      self.send('deleteTweet', deleteId);
+      self.send('deleteTweet', self.screenname, deleteId);
     } else {
       console.log(err);
     }
@@ -411,7 +478,7 @@ Stream.prototype.follow = function (screenname) {
         user.isFollowing = true;
       }
       user = self.timeline.saveUser(user);
-      self.send('newProfileUser', user);
+      self.send('newProfileUser', self.screenname, user);
     } else {
       console.log(err);
     }
@@ -427,7 +494,7 @@ Stream.prototype.unfollow = function (screenname) {
       var user = new User(data);
       user.isFollowing = false;
       user = self.timeline.saveUser(user);
-      self.send('newProfileUser', user);
+      self.send('newProfileUser', self.screenname, user);
     } else {
       console.log(err);
     }
