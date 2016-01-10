@@ -12,10 +12,10 @@
   <body>
     <div id="content">
       <header class="headernav">
-        <section class="headeractions">
+        <section class="switchbutton">
           <ul class="navlist">
             <li class="navicon">
-              <img :src="bundle[screenname].users[screenname].biggerIcon" v-if="bundle[screenname]" class="navusericon" @click="showSwitches" />
+              <img :src="bundle[screenname].users[screenname].biggerIcon" v-if="bundle[screenname]" class="usericon" @click="showSwitches" />
             </li>
           </ul>
         </section>
@@ -24,17 +24,17 @@
             <li class="navicon" v-if="frames.length > 1">
               <button class="navbutton" @click="back"><span class="iconic" data-glyph="carriage-return"></span></button>
             </li>
-            <li class="navicon">
-              <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'home' }" @click="changeTimeline('home')"><span class="iconic" data-glyph="home"></span></button>
+            <li class="navicon" :class="{ active: topFrame.view === 'home', unread: bundle[screenname] && bundle[screenname].unread.home > 0 }">
+              <button class="navbutton" @click="changeTimeline('home')"><span class="iconic" data-glyph="home"></span></button>
             </li>
-            <li class="navicon">
-              <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'mentions' }" @click="changeTimeline('mentions')"><span class="iconic" data-glyph="chat"></span></button>
+            <li class="navicon" :class="{ active: topFrame.view === 'mentions', unread: bundle[screenname] && bundle[screenname].unread.mentions > 0 }">
+              <button class="navbutton" @click="changeTimeline('mentions')"><span class="iconic" data-glyph="chat"></span></button>
             </li>
-            <li class="navicon">
-              <button class="navbutton" :class="{ activenavbutton: topFrame.view === 'messages' }" @click="changeTimeline('messages')"><span class="iconic" data-glyph="envelope-closed"></span></button>
+            <li class="navicon" :class="{ active: topFrame.view === 'messages', unread: bundle[screenname] && bundle[screenname].unread.messages > 0 }">
+              <button class="navbutton" @click="changeTimeline('messages')"><span class="iconic" data-glyph="envelope-closed"></span></button>
             </li>
-            <li class="navicon">
-              <button class="navbutton" :class="{ activenavbutton: (topFrame.view === 'profile' && topFrame.profile && topFrame.profile.screenname === screenname) }" @click="changeTimeline('user')"><span class="iconic" data-glyph="person"></span></button>
+            <li class="navicon" :class="{ active: (topFrame.view === 'profile' && topFrame.profile && topFrame.profile.screenname === screenname) }">
+              <button class="navbutton" @click="changeTimeline('user')"><span class="iconic" data-glyph="person"></span></button>
             </li>
             <li class="navicon">
               <button class="navbutton" @click="compose"><span class="iconic" data-glyph="pencil"></span></button>

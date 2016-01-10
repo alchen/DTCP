@@ -29,6 +29,7 @@ var timeline = new Vue({
     }
   },
   data: {
+    blur: false,
     screenname: '',
     frames: [],
     bundle: {},
@@ -47,6 +48,9 @@ var timeline = new Vue({
       bottomFrame.tweets = this.bundle[this.screenname][timeline];
     },
     popTweet: function (screenname, timeline) {
+      if (!(screenname in this.bundle)) {
+        return;
+      }
       return this.bundle[screenname][timeline].pop();
     },
     compose: function () {
@@ -57,7 +61,26 @@ var timeline = new Vue({
         this.frames.pop();
       }
     },
+    updateBadge: function () {
+      var self = this;
+      var unreadNum = 0;
+      _.each(this.availableUsers, function (user) {
+        unreadNum += self.bundle[user.screenname].unread.home +
+          self.bundle[user.screenname].unread.mentions +
+          self.bundle[user.screenname].unread.messages;
+      });
+      ipc.send('updateBadge', '' + unreadNum);
+    },
     changeTimeline: function (timeline) {
+      if (timeline in this.bundle[this.screenname].unread) {
+        this.bundle[this.screenname].unread[timeline] = 0;
+        this.bundle[this.screenname].users[this.screenname].unread =
+          this.bundle[this.screenname].unread.home ||
+          this.bundle[this.screenname].unread.mentions ||
+          this.bundle[this.screenname].unread.messages;
+        this.updateBadge();
+      }
+
       if (this.frames.length === 1 && this.frames[0].view === timeline) {
         this.scrollToTop();
       } else if (timeline === 'user') {
@@ -85,8 +108,44 @@ var timeline = new Vue({
       }
     },
     notify: function (screenname, timeline, tweet) {
+      var self = this;
+      var newNotification;
+
+      if ((this.screenname !== screenname || this.topFrame.view !== timeline) && (timeline === 'mentions' || timeline === 'messages')) {
+        this.bundle[screenname].unread[timeline] += 1;
+        this.bundle[screenname].users[screenname].unread = true;
+        this.updateBadge();
+      }
+
       if (timeline === 'mentions') {
-        // notification
+        newNotification = new Notification('Mention from ' + tweet.user.screenname, {
+          body: tweet.rawStatus,
+          icon: tweet.user.biggerIcon,
+          data: {
+            screenname: screenname,
+            tweet: tweet
+          }
+        });
+
+        newNotification.onclick = function () {
+          self.switchUser(this.data.screenname);
+          self.$broadcast('showThread', this.data.tweet);
+          ipc.send('focus');
+        };
+      } else if (timeline === 'messages') {
+        newNotification = new Notification('Message from ' + tweet.sender.screenname, {
+          body: tweet.rawStatus,
+          icon: tweet.sender.biggerIcon,
+          data: {
+            screenname: screenname
+          }
+        });
+
+        newNotification.onclick = function () {
+          self.switchUser(this.data.screenname);
+          self.changeTimeline('messages');
+          ipc.send('focus');
+        };
       }
     },
     mergeTweet: function (dstTweet, srcTweet) {
@@ -158,11 +217,17 @@ var timeline = new Vue({
         home: [],
         mentions: [],
         messages: [],
-        users: {}
+        users: {},
+        unread: {
+          home: 0,
+          mentions: 0,
+          messages: 0
+        }
       });
       this.$set('bundle["' + screenname + '"].users["' + screenname + '"]', {
         screenname: screenname,
-        biggerIcon: undefined
+        biggerIcon: undefined,
+        unread: false
       });
       this.$set('availableUsers["' + screenname + '"]', this.bundle[screenname].users[screenname]);
 
@@ -301,9 +366,12 @@ var timeline = new Vue({
     keepPosition: function (offset) {
       var el = document.getElementsByClassName('frame')[0];
       var toBottom =  el.scrollTop < 64 ? 0 : el.scrollHeight - el.scrollTop;
+      var tweets = el.getElementsByClassName('tweetcontainer');
+      var lastTweetHeight = tweets.length > 1 ? tweets[tweets.length - 2].scrollHeight : 0;
+
       this.$nextTick(function () {
-        el.scrollTop = toBottom ?
-          el.scrollHeight - toBottom + (offset || 0) : 0;
+        var target = el.scrollHeight - Math.max(toBottom, 36 + 45 + el.getBoundingClientRect().height + lastTweetHeight) + (offset || 0);
+        el.scrollTop = toBottom ? target : 0;
       });
     },
     scrollToNextTweet: function () {
@@ -353,7 +421,9 @@ var timeline = new Vue({
       self.now = moment();
       self.addTweet(screenname, timeline, tweet);
       self.notify(screenname, timeline, tweet);
-      self.keepPosition();
+      if (self.screenname === screenname) {
+        self.keepPosition();
+      }
       self.$nextTick(function () {
         self.popTweet(screenname, timeline);
       });
@@ -375,7 +445,9 @@ var timeline = new Vue({
       }
       self.now = moment();
       self.addFiller(screenname, timeline, tweets);
-      self.keepPosition();
+      if (self.screenname === screenname) {
+        self.keepPosition();
+      }
     });
 
     ipc.on('newProfileUser', function (event, screenname, user) {
@@ -399,6 +471,12 @@ var timeline = new Vue({
 
     ipc.on('newMessages', function (event, screenname, messages) {
       self.saveMessages(screenname, messages);
+    });
+
+    ipc.on('newMessage', function (event, screenname, message) {
+      if (message.sender.screenname !== screenname) {
+        self.notify(screenname, 'messages', message);
+      }
     });
 
     ipc.on('newPretext', function (event, screenname, tweets) {

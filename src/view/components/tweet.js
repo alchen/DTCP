@@ -104,6 +104,7 @@ var Tweet = Vue.extend({
         return k !== self.username;
       });
       mentions.unshift(this.tweet.user.screenname);
+      mentions = _.unique(mentions);
 
       ipc.send('reply', this.username, this.tweet.id, mentions);
     },

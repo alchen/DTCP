@@ -8,10 +8,8 @@ var app = require('app');
 var ipc = require('electron').ipcMain;
 var dialog = require('dialog');
 var BrowserWindow = require('browser-window');
-var Menu = require('menu');
 
 var window = null;
-process.port = 0;  // will be used by crash-reporter spec.
 
 app.commandLine.appendSwitch('js-flags', '--expose_gc');
 app.commandLine.appendSwitch('ignore-certificate-errors');

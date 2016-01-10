@@ -57,6 +57,20 @@ app.on('quit', function () {
   console.log('Main: quit');
 });
 
+ipc.on('focus', function () {
+  windows.focusOnMainWindow();
+});
+
+ipc.on('updateBadge', function (event, target) {
+  if (process.platform !== 'darwin') {
+    return;
+  } else if (target === '0') {
+    app.dock.setBadge('');
+  } else {
+    app.dock.setBadge(target);
+  }
+});
+
 ipc.on('verified', function (event, oauthToken, oauthTokenSecret, screenname) {
   var newAccount = {
     oauthToken: oauthToken,

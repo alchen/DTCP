@@ -44,6 +44,7 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
     var newMessage = new Message(rawMessage.direct_message);
     var payload = self.timeline.saveMessages([newMessage]);
 
+    self.send('newMessage', self.screenname, newMessage);
     self.send('newMessages', self.screenname, payload);
   });
 

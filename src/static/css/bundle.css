@@ -131,15 +131,6 @@ a {
   100% {
     -webkit-transform: rotate(360deg) scale(1); } }
 
-.frame {
-  position: absolute;
-  top: 2.8125rem;
-  left: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  height: calc(100vh - 2.8125rem);
-  width: 100%; }
-
 .frame-enter {
   -webkit-animation: slideInLeft .2s;
   border-right: 1px solid #ccf; }
@@ -522,58 +513,7 @@ a {
   background-size: cover;
   background-position: center; }
 
-.headernav {
-  width: 100%;
-  overflow: hidden;
-  padding: .75rem;
-  border-bottom: .1rem solid #ccc;
-  background-color: #f6f6f6; }
-
-.headeractions {
-  float: left;
-  height: 1.25rem; }
-
-.headeractions .navicon {
-  float: left;
-  margin-right: .75rem; }
-
-.nav {
-  float: right;
-  height: 1.25rem; }
-
-.navlist {
-  list-style: none;
-  margin: 0;
-  padding: 0; }
-
-.nav .navicon {
-  float: left;
-  margin-left: .75rem; }
-
-.navbutton {
-  background: none;
-  border: none;
-  outline: none;
-  transition: all .2s;
-  height: 1.25rem; }
-
-.navusericon {
-  width: 1.75rem;
-  vertical-align: top;
-  border: 1px solid #eee;
-  border-radius: .25rem;
-  margin-top: -0.25rem;
-  box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2); }
-
 .logobutton {
-  cursor: default; }
-
-.navbutton:hover {
-  color: #6ac; }
-
-.activenavbutton,
-.activenavbutton:hover {
-  color: #08F;
   cursor: default; }
 
 .unreadmark {
@@ -779,12 +719,69 @@ svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconi
     transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
     opacity: 0; } }
 
-.headernav .navicon {
-  cursor: pointer; }
-  .headernav .navicon .navusericon {
-    width: 1.75rem;
-    height: 1.75rem;
-    background: #ccc; }
+.frame {
+  position: absolute;
+  top: 2.8125rem;
+  left: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: calc(100vh - 2.8125rem);
+  width: 100%; }
+
+.headernav {
+  width: 100%;
+  overflow: hidden;
+  height: 2.8125rem;
+  padding-top: .75rem;
+  padding-left: .75rem;
+  padding-right: .75rem;
+  border-bottom: .0625rem solid #ccc;
+  box-sizing: border-box;
+  background-color: #f6f6f6; }
+  .headernav .switchbutton .navlist {
+    float: left;
+    margin: 0;
+    padding: 0;
+    list-style: none; }
+    .headernav .switchbutton .navlist .usericon {
+      width: 1.75rem;
+      height: 1.75rem;
+      vertical-align: top;
+      border: 1px solid #eee;
+      border-radius: .25rem;
+      margin-top: -0.25rem;
+      box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
+      background: #ccc; }
+  .headernav .nav {
+    float: right;
+    height: 1.25rem; }
+    .headernav .nav .navlist {
+      list-style: none;
+      margin: 0;
+      padding: 0; }
+      .headernav .nav .navlist .navicon {
+        cursor: pointer;
+        position: relative;
+        float: left;
+        margin-left: .75rem; }
+        .headernav .nav .navlist .navicon .navbutton {
+          background: none;
+          border: none;
+          outline: none;
+          transition: all .2s;
+          height: 1.25rem; }
+          .headernav .nav .navlist .navicon .navbutton:hover {
+            color: #6ac; }
+        .headernav .nav .navlist .navicon.active .navbutton, .headernav .nav .navlist .navicon.active .navbutton:hover {
+          color: #08F;
+          cursor: default; }
+        .headernav .nav .navlist .navicon.unread:before {
+          content: '';
+          border: .1875rem solid #5ae;
+          position: absolute;
+          border-radius: .25rem;
+          bottom: -.375rem;
+          left: calc(50% - 0.1875rem); }
 
 .switches {
   height: calc(100vh - 2.8125rem);
@@ -795,7 +792,15 @@ svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconi
     list-style: none; }
     .switches .switchlist .switch {
       padding: .75rem;
-      cursor: pointer; }
+      cursor: pointer;
+      position: relative; }
+      .switches .switchlist .switch.unread:before {
+        content: '';
+        border: .1875rem solid #5ae;
+        position: absolute;
+        border-radius: .25rem;
+        top: calc(50% - .1875rem);
+        left: .375rem; }
       .switches .switchlist .switch:hover .text, .switches .switchlist .switch:hover .icon .iconic[data-glyph].iconic-md:before {
         color: #5ae; }
       .switches .switchlist .switch:hover .icon img {

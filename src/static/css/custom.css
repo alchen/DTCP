@@ -169,16 +169,6 @@ a {
   }
 }
 
-.frame {
-  position: absolute;
-  top: 2.8125rem;
-  left: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  height: calc(100vh - 2.8125rem);
-  width: 100%;
-}
-
 .frame-enter {
   -webkit-animation: slideInLeft .2s;
   border-right: 1px solid #ccf;
@@ -646,68 +636,7 @@ a {
   background-position: center;
 }
 
-.headernav {
-  width: 100%;
-  overflow:hidden;
-  padding: .75rem;
-  border-bottom: .1rem solid #ccc;
-  background-color: #f6f6f6;
-}
-
-.headeractions {
-  float: left;
-  height: 1.25rem;
-}
-
-.headeractions .navicon {
-  float: left;
-  margin-right: .75rem;
-}
-
-.nav {
-  float: right;
-  height: 1.25rem;
-}
-
-.navlist {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav .navicon {
-  float: left;
-  margin-left: .75rem;
-}
-
-.navbutton {
-  background: none;
-  border: none;
-  outline: none;
-  transition: all .2s;
-  height: 1.25rem;
-}
-
-.navusericon {
-  width: 1.75rem;
-  vertical-align: top;
-  border: 1px solid #eee;
-  border-radius: .25rem;
-  margin-top: -0.25rem;
-  box-shadow: 0 0 .125rem 0 rgba(0, 0, 0, 0.2);
-}
-
 .logobutton {
-  cursor: default;
-}
-
-.navbutton:hover {
-  color: #6ac;
-}
-
-.activenavbutton,
-.activenavbutton:hover {
-  color: #08F;
   cursor: default;
 }
 

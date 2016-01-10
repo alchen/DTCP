@@ -5,7 +5,7 @@ var Vue = require('vue');
 var template = '<div class="switches">' +
     '<div class="promptbackground"></div>' +
     '<ul class="switchlist">' +
-      '<li class="switch" v-for="account in accounts" @click="switchUser(account.screenname)">' +
+      '<li class="switch" v-for="account in accounts" @click="switchUser(account.screenname)" :class="{ unread: account.unread }">' +
         '<section class="icon"><img :src="account.biggerIcon" /></section>' +
         '<section class="text" v-text="account.screenname"></section>' +
       '</li>' +

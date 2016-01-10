@@ -147,6 +147,9 @@ var windows = {
     });
     mainWindow.loadURL('file://' + __dirname + '/static/index.html');
   },
+  focusOnMainWindow: function () {
+    mainWindow.show();
+  },
   unloadTimeline: function () {
     if (this.streams) {
       _.each(this.streams, function (stream, screenname) {

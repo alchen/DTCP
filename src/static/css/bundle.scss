@@ -7,19 +7,93 @@ $blue: #5ae;
 
 $lighter: #777;
 
-.headernav {
-  .navicon {
-    cursor: pointer;
+$header-height: 2.8125rem;
+$frame-height: calc(100vh - 2.8125rem);
 
-    .navusericon {
+.frame {
+  position: absolute;
+  top: $header-height;
+  left: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: $frame-height;
+  width: 100%;
+}
+
+.headernav {
+  width: 100%;
+  overflow: hidden;
+  height: $header-height;
+  padding-top: .75rem;
+  padding-left: .75rem;
+  padding-right: .75rem;
+  border-bottom: .0625rem solid #ccc;
+  box-sizing: border-box;;
+  background-color: #f6f6f6;
+
+  .switchbutton .navlist {
+    float: left;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    .usericon {
       width: 1.75rem;
       height: 1.75rem;
+      vertical-align: top;
+      border: 1px solid #eee;
+      border-radius: .25rem;
+      margin-top: -0.25rem;
+      box-shadow: 0 0 .125rem 0 rgba(0, 0, 0, 0.2);
       background: #ccc;
+    }
+  }
+
+  .nav {
+    float: right;
+    height: 1.25rem;
+
+    .navlist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      .navicon {
+        cursor: pointer;
+        position: relative;
+        float: left;
+        margin-left: .75rem;
+
+        .navbutton {
+          background: none;
+          border: none;
+          outline: none;
+          transition: all .2s;
+          height: 1.25rem;
+
+          &:hover {
+            color: #6ac;
+          }
+        }
+
+        &.active .navbutton, &.active .navbutton:hover {
+          color: #08F;
+          cursor: default;
+        }
+
+        &.unread:before {
+          content: '';
+          border: .1875rem solid #5ae;
+          position: absolute;
+          border-radius: .25rem;
+          bottom: -.375rem;
+          left: calc(50% - 0.1875rem);
+        }
+      }
     }
   }
 }
 
-$frame-height: calc(100vh - 2.8125rem);
 $switch-transition-time: .2s;
 
 .switches {
@@ -34,6 +108,16 @@ $switch-transition-time: .2s;
     .switch {
       padding: .75rem;
       cursor: pointer;
+      position: relative;
+
+      &.unread:before {
+        content: '';
+        border: .1875rem solid #5ae;
+        position: absolute;
+        border-radius: .25rem;
+        top: calc(50% - .1875rem);
+        left: .375rem;
+      }
 
       &:hover {
         .text, .icon .iconic[data-glyph].iconic-md:before {
