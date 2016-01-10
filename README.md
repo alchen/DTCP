@@ -4,6 +4,6 @@
 
 DTCP is an open source Twitter client for the desktop, and currently at a very early stage of development.
 
-[Download Beta](https://github.com/alchen/DTCP/releases/download/v0.4.0/DTCP.zip)
+[Download Beta](https://github.com/alchen/DTCP/releases/download/v0.4.1/DTCP.zip)
 
 ![](http://lab704.com/img/dtcp_1.png)
