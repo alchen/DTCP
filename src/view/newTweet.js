@@ -1,20 +1,39 @@
 'use strict';
 
+var _ = require('lodash');
 var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
 var twitterText = require('twitter-text');
 
+Vue.config.debug = true;
+Vue.config.strict = true;
+
 var newTweet;
 
-ipc.on('pretext', function (event, screenname, replyTo, pretext, frontFocus) {
+ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext, options) {
   newTweet = new Vue({
     el: '#content',
     data: {
-      rawTweet: pretext ? (!frontFocus ?  pretext + ' ' :  ' ' + pretext) : '',
+      rawTweet: pretext ? (!(options && options.frontFocus) ? pretext + ' ' : ' ' + pretext) : '',
       replyTo: replyTo,
-      frontFocus: frontFocus
+      frontFocus: options && options.frontFocus,
+      screenname: screenname,
+      availableUsers: availableUsers,
+      showingSwitches: false
     },
     computed: {
+      switchUsers: function () {
+        var self = this;
+        var users = _.filter(this.availableUsers, function (user) {
+          return user.screenname !== self.screenname;
+        });
+        users.unshift(this.availableUsers[this.screenname]);
+
+        return users;
+      },
+      composer: function () {
+        return this.availableUsers[this.screenname];
+      },
       isValid: function () {
         return twitterText.isValidTweetText(this.rawTweet);
       },
@@ -29,12 +48,22 @@ ipc.on('pretext', function (event, screenname, replyTo, pretext, frontFocus) {
       }
     },
     methods: {
+      showSwitches: function () {
+        this.showingSwitches = true;
+      },
+      dismiss: function () {
+        this.showingSwitches = false;
+      },
+      switchUser: function (screenname) {
+        this.screenname = screenname;
+        this.showingSwitches = false;
+      },
       escape: function () {
         ipc.send('stopComposing');
       },
       sendTweet: function (event) {
         if (this.isValid) {
-          ipc.send('sendTweet', screenname, this.rawTweet, this.replyTo);
+          ipc.send('sendTweet', this.screenname, this.rawTweet, this.replyTo);
         }
       },
       updateTweet: function (event) {
@@ -43,6 +72,8 @@ ipc.on('pretext', function (event, screenname, replyTo, pretext, frontFocus) {
     },
     compiled: function () {
       var self = this;
+
+      // Handle keyboard shortcut
       ipc.on('tweet', function () {
         self.sendTweet();
       });

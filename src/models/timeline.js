@@ -153,6 +153,10 @@ Timeline.prototype.setFriends = function (friendIds) {
   });
 };
 
+Timeline.prototype.isFriend = function (user) {
+  return this.friends[user.id];
+};
+
 Timeline.prototype.mergeTweet = function (dstTweet, srcTweet) {
   // Retweet status
   dstTweet.retweetId = srcTweet.retweetId || dstTweet.retweetId;
@@ -173,6 +177,12 @@ Timeline.prototype.saveUser = function (user) {
     _.assign(this.users[user.screenname], user);
   } else {
     this.users[user.screenname] = user;
+  }
+
+  if (this.users[user.screenname].isFollowing) {
+    this.friends[user.id] = true;
+  } else {
+    this.friends[user.id] = false;
   }
 
   return this.users[user.screenname];

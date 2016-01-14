@@ -1,0 +1,131 @@
+@import 'animate';
+@import 'base';
+
+$bg-color: #fff;
+$blue: #5ae;
+
+$lighter: #777;
+
+$switch-transition-time: .2s;
+
+.newtweet {
+  -webkit-animation: fadeIn .2s;
+
+  .newtweettext {
+    height: calc(100vh - 2.75rem);
+    position: relative;
+    word-break: break-all;
+    overflow: auto;
+    margin-left: 3.5rem;
+
+    .newrawtweet {
+      white-space: pre-wrap;
+      display: table;
+      width: 100%;
+      background-color: transparent;
+      border: none;
+      min-height: 100%;
+      font-size: .75rem;
+      padding: .75rem;
+      resize: none;
+      outline: none;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .newformattedtweet {
+      white-space: pre-wrap;
+      width: 100%;
+      background-color: transparent;
+      border: none;
+      height: 100%;
+      font-size: .75rem;
+      padding: .75rem;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+  }
+
+  .newtweetmeta {
+    background-color: #f4f7f9;
+    height: 2.75rem;
+    text-align: right;
+    padding: 0 .75rem;
+    border-top: 1px solid #ddd;
+
+    .composericon {
+      width: 3rem;
+      height: 3rem;
+      background: #fff;
+      border-radius: 0.5rem;
+      position: fixed;
+      left: .5rem;
+      top: .5rem;
+      box-shadow: 0 0 .125rem .125rem rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .remaining {
+      font-size: .75rem;
+      padding: 0 .75rem;
+      line-height: 2.75rem;
+      color: #aaa;
+    }
+
+    .newtweetbutton {
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: .25rem;
+      text-align: center;
+      padding: .5rem .75rem;
+      font-size: .75rem;
+      color: #aaa;
+      outline: none;
+      transition: all .1s;
+      cursor: default;
+
+      &.active {
+        color: #fff;
+        background-color: #69c;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .switches {
+    background-color: rgba(255, 255, 255, 0);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    .switchlist {
+      background-color: #efefef;
+      box-shadow: 0 0 0.5rem 0.125rem rgba(0, 0, 0, 0.2);
+      margin: .25rem;
+      padding: .25rem;
+      list-style: none;
+      border-radius: .5rem;
+      display: inline-block;
+
+      .switch {
+        margin-top: .75rem;
+
+        &:first-child {
+          margin-top: 0;
+        }
+
+        .icon {
+          width: 3rem;
+          height: 3rem;
+          border-radius: .5rem;
+          vertical-align: top;
+          box-shadow: 0 0 .125rem .125rem rgba(0, 0, 0, 0.2);
+        }
+      }
+    }
+  }
+}

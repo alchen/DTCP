@@ -7,7 +7,7 @@
     <meta name="description" content="" />
     <meta name="keywords" content="" />
     <link rel="stylesheet" href="css/normalize.css" />
-    <link rel="stylesheet" href="css/custom.css" />
+    <link rel="stylesheet" href="css/composer.css" />
   </head>
   <body>
     <div id="content">
@@ -17,9 +17,17 @@
           <section class="newformattedtweet" v-html="formattedTweet"></section>
         </section>
         <section class="newtweetmeta">
+          <img :src="composer.biggerIcon" class="composericon" @click="showSwitches" />
           <span class="remaining" v-text="remainingLength"></span>
-          <button class="newtweetbutton" :class="{ activenewtweetbutton: isValid }" @click="sendTweet">Tweet</button>
+          <button class="newtweetbutton" :class="{ active: isValid }" @click="sendTweet">Tweet</button>
         </section>
+        <div class="switches" v-if="showingSwitches" @click="dismiss">
+          <ul class="switchlist">
+            <li class="switch" v-for="account in switchUsers" @click="switchUser(account.screenname)">
+              <img class="icon" :src="account.biggerIcon" :title="account.screenname" />
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
     <script src="../view/newTweet.js"></script>

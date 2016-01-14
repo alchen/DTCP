@@ -34,6 +34,7 @@ var windows = {
       acceptFirstMouse: false,
       alwaysOnTop: true,
       useContentSize: true,
+      autoHideMenuBar: true,
       show: false
     });
     newWindow.loadURL('file://' + __dirname + '/static/newTweet.html');
@@ -52,7 +53,7 @@ var windows = {
 
     return newWindow;
   },
-  getNewTweetWindow: function getNewTweetWindow(screenname, replyTo, pretext, frontFocus) {
+  getNewTweetWindow: function getNewTweetWindow(screenname, availableUsers, replyTo, pretext, options) {
     var newWindow;
     var x;
     var y;
@@ -77,7 +78,7 @@ var windows = {
     newWindow = this.createNewTweetWindow();
 
     newWindow.webContents.on('did-finish-load', function () {
-      newWindow.webContents.send('pretext', screenname, replyTo, pretext, frontFocus);
+      newWindow.webContents.send('pretext', screenname, availableUsers, replyTo, pretext, options);
       newWindow.setPosition(x, y);
       newWindow.show();
     });
@@ -90,6 +91,7 @@ var windows = {
       minHeight: 64,
       fullscreen: false,
       acceptFirstMouse: false,
+      autoHideMenuBar: true,
       show: false
     });
 

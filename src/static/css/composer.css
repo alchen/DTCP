@@ -1,0 +1,163 @@
+/* https://github.com/daneden/animate.css */
+@keyframes flipInX {
+  from {
+    transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+    animation-timing-function: ease-in;
+    opacity: 0; }
+  40% {
+    transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+    animation-timing-function: ease-in; }
+  60% {
+    transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
+    opacity: 1; }
+  80% {
+    transform: perspective(400px) rotate3d(1, 0, 0, -5deg); }
+  to {
+    transform: perspective(400px); } }
+
+@keyframes flipOutX {
+  from {
+    transform: perspective(400px); }
+  30% {
+    transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+    opacity: 1; }
+  to {
+    transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+    opacity: 0; } }
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0; }
+  100% {
+    opacity: 1; } }
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1; }
+  100% {
+    opacity: 0; } }
+
+@keyframes slideInLeft {
+  0% {
+    -webkit-transform: translate3d(-100%, 0, 0); }
+  100% {
+    -webkit-transform: translate3d(0, 0, 0); } }
+
+@keyframes slideOutRight {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0); }
+  100% {
+    -webkit-transform: translate3d(100%, 0, 0); } }
+
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+  -webkit-user-select: none;
+  user-select: none; }
+
+body {
+  overflow: hidden; }
+
+*, *:before, *:after {
+  box-sizing: inherit;
+  -webkit-user-select: inherit;
+  user-select: inherit; }
+
+a {
+  color: #17b;
+  text-decoration: none; }
+
+.newtweet {
+  -webkit-animation: fadeIn .2s; }
+  .newtweet .newtweettext {
+    height: calc(100vh - 2.75rem);
+    position: relative;
+    word-break: break-all;
+    overflow: auto;
+    margin-left: 3.5rem; }
+    .newtweet .newtweettext .newrawtweet {
+      white-space: pre-wrap;
+      display: table;
+      width: 100%;
+      background-color: transparent;
+      border: none;
+      min-height: 100%;
+      font-size: .75rem;
+      padding: .75rem;
+      resize: none;
+      outline: none;
+      -webkit-text-fill-color: transparent; }
+    .newtweet .newtweettext .newformattedtweet {
+      white-space: pre-wrap;
+      width: 100%;
+      background-color: transparent;
+      border: none;
+      height: 100%;
+      font-size: .75rem;
+      padding: .75rem;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1; }
+  .newtweet .newtweetmeta {
+    background-color: #f4f7f9;
+    height: 2.75rem;
+    text-align: right;
+    padding: 0 .75rem;
+    border-top: 1px solid #ddd; }
+    .newtweet .newtweetmeta .composericon {
+      width: 3rem;
+      height: 3rem;
+      background: #fff;
+      border-radius: 0.5rem;
+      position: fixed;
+      left: .5rem;
+      top: .5rem;
+      box-shadow: 0 0 0.125rem 0.125rem rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      cursor: pointer; }
+    .newtweet .newtweetmeta .remaining {
+      font-size: .75rem;
+      padding: 0 .75rem;
+      line-height: 2.75rem;
+      color: #aaa; }
+    .newtweet .newtweetmeta .newtweetbutton {
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: .25rem;
+      text-align: center;
+      padding: .5rem .75rem;
+      font-size: .75rem;
+      color: #aaa;
+      outline: none;
+      transition: all .1s;
+      cursor: default; }
+      .newtweet .newtweetmeta .newtweetbutton.active {
+        color: #fff;
+        background-color: #69c;
+        cursor: pointer; }
+  .newtweet .switches {
+    background-color: rgba(255, 255, 255, 0);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh; }
+    .newtweet .switches .switchlist {
+      background-color: #efefef;
+      box-shadow: 0 0 0.5rem 0.125rem rgba(0, 0, 0, 0.2);
+      margin: .25rem;
+      padding: .25rem;
+      list-style: none;
+      border-radius: .5rem;
+      display: inline-block; }
+      .newtweet .switches .switchlist .switch {
+        margin-top: .75rem; }
+        .newtweet .switches .switchlist .switch:first-child {
+          margin-top: 0; }
+        .newtweet .switches .switchlist .switch .icon {
+          width: 3rem;
+          height: 3rem;
+          border-radius: .5rem;
+          vertical-align: top;
+          box-shadow: 0 0 0.125rem 0.125rem rgba(0, 0, 0, 0.2); }

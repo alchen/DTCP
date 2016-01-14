@@ -14,7 +14,7 @@
       <header class="headernav">
         <section class="switchbutton">
           <ul class="navlist">
-            <li class="navicon">
+            <li class="navicon" :class="{ unread: unreadFromOtherUser }">
               <img :src="bundle[screenname].users[screenname].biggerIcon" v-if="bundle[screenname]" class="usericon" @click="showSwitches" />
             </li>
           </ul>
@@ -37,7 +37,7 @@
               <button class="navbutton" @click="changeTimeline('user')"><span class="iconic" data-glyph="person"></span></button>
             </li>
             <li class="navicon">
-              <button class="navbutton" @click="compose"><span class="iconic" data-glyph="pencil"></span></button>
+              <button class="navbutton" @click="compose(screenname)"><span class="iconic" data-glyph="pencil"></span></button>
             </li>
           </ul>
         </nav>

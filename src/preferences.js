@@ -5,8 +5,17 @@ var _ = require('lodash');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var path = require('path');
+var app = require('electron').app;
 
-var filePath = path.join(config.preferencePath, 'preferences.json');
+function getPath() {
+  if (process.platform === 'win32') {
+    return app.getPath('userData');
+  } else {
+    return path.join(process.env.HOME, '/Library/Application Support/com.lab704.dtcp');
+  }
+}
+
+var filePath = path.join(getPath(), 'preferences.json');
 
 var excludeMethods = function (key, value) {
   if (key === 'save' || key === 'load') {
@@ -20,7 +29,7 @@ var preferences = {
   authenticated: false,
   accounts: {},
   save: function (preferences) {
-    mkdirp.sync(config.preferencePath);
+    mkdirp.sync(getPath());
     fs.writeFileSync(filePath, JSON.stringify(this, excludeMethods, 2));
   },
   load: function () {

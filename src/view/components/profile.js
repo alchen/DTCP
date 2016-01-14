@@ -60,10 +60,10 @@ var Profile = Vue.extend({
     toggleFollow: function () {
       if (!this.user.isPending) {
         ipc.send(
-          this.username,
           'follow',
+          this.username,
           this.user.screenname,
-          this.user.isFollowing || this.user.isPending
+          this.user.isFollowing
         );
       }
     },

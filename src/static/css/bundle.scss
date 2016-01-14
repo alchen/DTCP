@@ -8,7 +8,7 @@ $blue: #5ae;
 $lighter: #777;
 
 $header-height: 2.8125rem;
-$frame-height: calc(100vh - 2.8125rem);
+$frame-height: calc(100vh - #{$header-height});
 
 .frame {
   position: absolute;
@@ -37,15 +37,28 @@ $frame-height: calc(100vh - 2.8125rem);
     padding: 0;
     list-style: none;
 
-    .usericon {
-      width: 1.75rem;
-      height: 1.75rem;
-      vertical-align: top;
-      border: 1px solid #eee;
-      border-radius: .25rem;
-      margin-top: -0.25rem;
-      box-shadow: 0 0 .125rem 0 rgba(0, 0, 0, 0.2);
-      background: #ccc;
+    .navicon {
+      position: relative;
+
+      .usericon {
+        width: 1.75rem;
+        height: 1.75rem;
+        vertical-align: top;
+        border: 1px solid #eee;
+        border-radius: .25rem;
+        margin-top: -0.25rem;
+        box-shadow: 0 0 .125rem 0 rgba(0, 0, 0, 0.2);
+        background: #ccc;
+      }
+
+      &.unread:before {
+        content: '';
+        border: .1875rem solid $blue;
+        position: absolute;
+        border-radius: .25rem;
+        top: calc(50% - 0.25rem);
+        right: -.75rem;
+      }
     }
   }
 

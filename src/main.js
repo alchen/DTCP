@@ -5,6 +5,7 @@ var app = require('app');
 var ipc = require('electron').ipcMain;
 var windows;
 var menu;
+var tray;
 
 var preferences = require('./preferences');
 var Stream = require('./models/stream');
@@ -19,6 +20,10 @@ app.on('ready', function () {
   // Set up application menu
   menu = require('./menu');
   menu.createApplicationMenu();
+
+  // Set up tray icon
+  tray = require('./tray');
+  tray.createTray();
 
   if (preferences.authenticated && !_.isEmpty(preferences.accounts)) {
     _.each(preferences.accounts, function (account) {
@@ -126,8 +131,8 @@ ipc.on('loadMessages', function (event, screenname) {
   streams[screenname].loadMessages();
 });
 
-ipc.on('compose', function (event, screenname) {
-  windows.getNewTweetWindow(screenname);
+ipc.on('compose', function (event, screenname, availableUsers, replyTo, pretext, options) {
+  windows.getNewTweetWindow(screenname, availableUsers, replyTo, pretext, options);
 });
 
 ipc.on('stopComposing', function (event) {
@@ -143,16 +148,6 @@ ipc.on('sendTweet', function (event, screenname, tweet, replyTo) {
   var sender = windows.findWindowFromWebContents(event.sender);
   sender.hide();
   streams[screenname].sendTweet(tweet, replyTo, sender);
-});
-
-ipc.on('reply', function (event, screenname, replyTo, mentions) {
-  windows.getNewTweetWindow(screenname, replyTo, _.map(mentions, function (m) {
-    return '@' + m;
-  }).join(' '));
-});
-
-ipc.on('quote', function (event, screenname, replyTo, quoteUrl) {
-  windows.getNewTweetWindow(screenname, replyTo, quoteUrl, true);
 });
 
 ipc.on('favorite', function (event, screenname, tweetId, positive) {

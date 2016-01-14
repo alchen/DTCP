@@ -1,0 +1,21 @@
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  overflow: hidden;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+  -webkit-user-select: inherit;
+  user-select: inherit;
+}
+
+a {
+  color: #17b;
+  text-decoration: none;
+}

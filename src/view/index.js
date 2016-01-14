@@ -18,6 +18,16 @@ var timeline = new Vue({
   computed: {
     topFrame: function () {
       return this.frames[this.frames.length - 1] || {};
+    },
+    unreadFromOtherUser: function () {
+      var self = this;
+      return _.reduce(this.availableUsers, function (result, user) {
+        if (user.screenname === self.screenname) {
+          return result;
+        } else {
+          return result || self.bundle[user.screenname].unread.home || self.bundle[user.screenname].unread.messages || self.bundle[user.screenname].unread.mentions;
+        }
+      }, false);
     }
   },
   events: {
@@ -26,6 +36,12 @@ var timeline = new Vue({
     },
     switchUser: function (screenname) {
       this.switchUser(screenname);
+    },
+    back: function () {
+      this.back();
+    },
+    compose: function (screenname, inReplyTo, pretext, options) {
+      this.compose(screenname, inReplyTo, pretext, options);
     }
   },
   data: {
@@ -53,8 +69,27 @@ var timeline = new Vue({
       }
       return this.bundle[screenname][timeline].pop();
     },
-    compose: function () {
-      ipc.send('compose', this.screenname);
+    compose: function (screenname, inReplyTo, pretext, options) {
+      var self = this;
+
+      var availableUsers = _.reduce(this.availableUsers, function (result, user, screenname) {
+        result[screenname] = _.cloneDeep(self.availableUsers[screenname]);
+        return result;
+      }, {});
+
+      if (!pretext) {
+        if (this.topFrame.view === 'profile') {
+          pretext = '@' + this.topFrame.profile.screenname;
+        } else if (this.topFrame.view === 'messageGroup' && !_.isEmpty(this.topFrame.messages)) {
+          if (this.topFrame.messages[0].sender.screenname !== this.screenname) {
+            pretext = 'd ' + this.topFrame.messages[0].sender.screenname;
+          } else {
+            pretext = 'd ' + this.topFrame.messages[0].recipient.screenname;
+          }
+        }
+      }
+
+      ipc.send('compose', screenname, availableUsers, inReplyTo, pretext, options);
     },
     back: function () {
       if (this.frames.length > 1) {
@@ -450,6 +485,7 @@ var timeline = new Vue({
       }
     });
 
+    // New user object
     ipc.on('newProfileUser', function (event, screenname, user) {
       self.now = moment();
       user = self.updateProfile(screenname, user);
@@ -459,13 +495,19 @@ var timeline = new Vue({
       }
     });
 
+    // New user object and tweets
     ipc.on('newProfile', function (event, screenname, user, tweets) {
       self.now = moment();
       user = self.updateProfile(screenname, user);
       if (self.screenname === screenname && self.topFrame.profile &&
         self.topFrame.profile.screenname === user.screenname) {
         self.topFrame.profile = user;
-        self.topFrame.tweets = self.topFrame.tweets.concat(tweets);
+        if (self.topFrame.tweets.length) {
+          // first tweet will be duplicate because we didn't decrement tweet id in api request
+          self.topFrame.tweets = self.topFrame.tweets.concat(_.rest(tweets));
+        } else {
+          self.topFrame.tweets = self.topFrame.tweets.concat(tweets);
+        }
       }
     });
 
@@ -488,7 +530,7 @@ var timeline = new Vue({
     });
 
     ipc.on('requestComposer', function (event) {
-      self.compose();
+      self.compose(self.screenname);
     });
 
     ipc.send('initialLoad');

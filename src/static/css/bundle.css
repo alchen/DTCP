@@ -528,71 +528,6 @@ a {
   height: .75rem;
   width: .75rem; }
 
-.newtweet {
-  -webkit-animation: fadeIn .2s; }
-
-.newtweettext {
-  height: calc(100vh - 2.75rem);
-  position: relative;
-  word-break: break-all;
-  overflow: auto; }
-
-.newrawtweet {
-  white-space: pre-wrap;
-  display: table;
-  width: 100%;
-  background-color: transparent;
-  border: none;
-  min-height: 100%;
-  font-size: .75rem;
-  padding: .75rem;
-  resize: none;
-  outline: none;
-  -webkit-text-fill-color: transparent; }
-
-.newformattedtweet {
-  white-space: pre-wrap;
-  width: 100%;
-  background-color: transparent;
-  border: none;
-  height: 100%;
-  font-size: .75rem;
-  padding: .75rem;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1; }
-
-.newtweetmeta {
-  background-color: #f4f7f9;
-  height: 2.75rem;
-  text-align: right;
-  padding: 0 .75rem;
-  border-top: 1px solid #ddd; }
-
-.remaining {
-  font-size: .75rem;
-  padding: 0 .75rem;
-  line-height: 2.75rem;
-  color: #aaa; }
-
-.newtweetbutton {
-  background: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: .25rem;
-  text-align: center;
-  padding: .5rem .75rem;
-  font-size: .75rem;
-  color: #aaa;
-  outline: none;
-  transition: all .1s;
-  cursor: default; }
-
-.activenewtweetbutton {
-  color: #fff;
-  background-color: #69c;
-  cursor: pointer; }
-
 section.messageleft {
   float: left; }
 
@@ -719,6 +654,30 @@ svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconi
     transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
     opacity: 0; } }
 
+@keyframes fadeIn {
+  0% {
+    opacity: 0; }
+  100% {
+    opacity: 1; } }
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1; }
+  100% {
+    opacity: 0; } }
+
+@keyframes slideInLeft {
+  0% {
+    -webkit-transform: translate3d(-100%, 0, 0); }
+  100% {
+    -webkit-transform: translate3d(0, 0, 0); } }
+
+@keyframes slideOutRight {
+  0% {
+    -webkit-transform: translate3d(0, 0, 0); }
+  100% {
+    -webkit-transform: translate3d(100%, 0, 0); } }
+
 .frame {
   position: absolute;
   top: 2.8125rem;
@@ -743,15 +702,24 @@ svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconi
     margin: 0;
     padding: 0;
     list-style: none; }
-    .headernav .switchbutton .navlist .usericon {
-      width: 1.75rem;
-      height: 1.75rem;
-      vertical-align: top;
-      border: 1px solid #eee;
-      border-radius: .25rem;
-      margin-top: -0.25rem;
-      box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
-      background: #ccc; }
+    .headernav .switchbutton .navlist .navicon {
+      position: relative; }
+      .headernav .switchbutton .navlist .navicon .usericon {
+        width: 1.75rem;
+        height: 1.75rem;
+        vertical-align: top;
+        border: 1px solid #eee;
+        border-radius: .25rem;
+        margin-top: -0.25rem;
+        box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
+        background: #ccc; }
+      .headernav .switchbutton .navlist .navicon.unread:before {
+        content: '';
+        border: 0.1875rem solid #5ae;
+        position: absolute;
+        border-radius: .25rem;
+        top: calc(50% - 0.25rem);
+        right: -.75rem; }
   .headernav .nav {
     float: right;
     height: 1.25rem; }

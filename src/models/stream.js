@@ -75,7 +75,10 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
 
     tweet = self.timeline.addTweet(tweet);
 
-    self.send('newTweet', self.screenname, 'home', tweet);
+    if (true || self.timeline.isFriend(tweet.user) || tweet.user.screenname === self.screenname) {
+      self.send('newTweet', self.screenname, 'home', tweet);
+    }
+
     if (tweet.mentionsScreenname(screenname)) {
       self.send('newTweet', self.screenname, 'mentions', tweet);
     }

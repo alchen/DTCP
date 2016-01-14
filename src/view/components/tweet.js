@@ -104,9 +104,11 @@ var Tweet = Vue.extend({
         return k !== self.username;
       });
       mentions.unshift(this.tweet.user.screenname);
-      mentions = _.unique(mentions);
+      mentions = _.map(_.unique(mentions), function (m) {
+        return '@' + m;
+      }).join(' ');
 
-      ipc.send('reply', this.username, this.tweet.id, mentions);
+      this.$dispatch('compose', this.username, this.tweet.id, mentions);
     },
     doRetweet: function (event) {
       ipc.send('retweet', this.username, this.tweet.id, !this.tweet.isRetweeted);
@@ -117,7 +119,9 @@ var Tweet = Vue.extend({
         '/status/' +
         this.tweet.id;
 
-      ipc.send('quote', this.username, this.tweet.id, tweetUrl);
+      this.$dispatch('compose', this.username, this.tweet.id, tweetUrl, {
+        frontFocus: true
+      });
     },
     doFavorite: function (event) {
       ipc.send('favorite', this.username, this.tweet.id, !this.tweet.isFavorited);

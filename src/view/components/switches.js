@@ -2,14 +2,14 @@
 
 var Vue = require('vue');
 
-var template = '<div class="switches">' +
+var template = '<div class="switches" @click="leftclick">' +
     '<div class="promptbackground"></div>' +
     '<ul class="switchlist">' +
       '<li class="switch" v-for="account in accounts" @click="switchUser(account.screenname)" :class="{ unread: account.unread }">' +
         '<section class="icon"><img :src="account.biggerIcon" /></section>' +
         '<section class="text" v-text="account.screenname"></section>' +
       '</li>' +
-      '<li class="switch" @click="addAccount">' +
+      '<li class="switch" @click.stop="addAccount">' +
         '<section class="icon"><span class="iconic iconic-md" data-glyph="plus"></span></section>' +
         '<section class="text">Add</section>' +
       '</li>' +
@@ -26,8 +26,12 @@ var Switches = Vue.extend({
     switchUser: function (screenname) {
       this.$dispatch('switchUser', screenname);
     },
-    addAccount: function () {
+    addAccount: function (event) {
       this.$dispatch('addAccount');
+    },
+    leftclick: function () {
+      // dismiss Switches
+      this.$dispatch('back');
     }
   }
 });
