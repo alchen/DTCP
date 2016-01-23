@@ -1,11 +1,27 @@
-# Desktop Twitter Client Project [![Build Status](https://travis-ci.org/alchen/DTCP.svg?branch=master)](https://travis-ci.org/alchen/DTCP)
+![Desktop Twitter Client Project](docs/banner.png)
 
-![](http://lab704.com/img/birdie.png)
+[![Build Status](https://travis-ci.org/alchen/DTCP.svg?branch=master)](https://travis-ci.org/alchen/DTCP)
 
-DTCP is an open source Twitter client for the desktop, and currently at a very early stage of development.
+DTCP is a Twitter client based on [`electron`][1].
 
-[Download for Mac](https://github.com/alchen/DTCP/releases/download/v0.4.3/DTCP-mac.zip)
+[<img src="docs/screenshot_1.png" width="240" />](docs/screenshot_1.png)[<img src="docs/screenshot_2.png" width="240" />](docs/screenshot_2.png)
 
-[Download for Windows](https://github.com/alchen/DTCP/releases/download/v0.4.3/DTCP-win32.zip)
+# Downloads
 
-![](http://lab704.com/img/dtcp_1.png)
+[<img src="docs/apple.png" width="32" /> OS X](https://github.com/alchen/DTCP/releases/download/v0.4.4/DTCP-mac.zip)
+
+[<img src="docs/windows.png" width="32" /> Windows Installer](https://github.com/alchen/DTCP/releases/download/v0.4.4/DTCP-win32.zip)
+
+# Development
+
+```
+npm install  # Install dependencies
+gulp         # Bundle up javascript files and style sheets
+npm start    # Start the program with electron-prebuilt
+```
+
+# Questions
+
+You can always find me at [@uinoka](https://twitter.com/uinoka).
+
+[1]:https://github.com/atom/electron

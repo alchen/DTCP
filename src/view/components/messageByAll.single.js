@@ -2,11 +2,8 @@
 
 var Vue = require('vue');
 var moment = require('moment');
-require('./messageGroup');
-// var remote = require('remote');
-// var contextmenu = require('./contextmenu');
 
-var template = '<li class="tweetcontainer">' +
+var template = '<li class="tweetcontainer" data-tweet-id="{{topMessage.id}}">' +
   '<div class="tweet" @click="leftclick">' +
     '<section class="tweetleft">' +
       '<img class="tweeticon" :src="correspondent.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />' +

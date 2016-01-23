@@ -1,7 +1,7 @@
 'use strict';
 
 var Vue = require('vue');
-var Tweet = require('./tweet');
+var Tweet = require('./tweet.single');
 var moment = require('moment');
 
 var template = '<li class="tweetcontainer" data-tweet-id="{{tweet.id}}"><div class="tweet fattweet" @contextmenu="rightclick" @click="leftclick">' +

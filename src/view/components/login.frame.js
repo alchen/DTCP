@@ -17,7 +17,7 @@ var oauth = new OAuth.OAuth(
 
 var template = '<div class="login">' +
     '<section class="connect">' +
-      '<button @click="connect">Sign in with Twitter</button>' +
+      '<button @click="connect"><span class="iconic iconic-sm" data-glyph="social-twitter"></span>Sign in with Twitter</button>' +
     '</section>' +
     '<section class="error" v-if="error" v-text="error"></section>' +
     '<section class="verify" v-if="stage === \'verify\'" transition="verify">' +

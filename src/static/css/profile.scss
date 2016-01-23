@@ -1,0 +1,86 @@
+.profilemeta {
+  overflow: hidden;
+  font-size: .75rem;
+  border-bottom: .1rem solid #ccc;
+  line-height: 1.25rem;
+}
+
+.profilecounts > section {
+  margin-right: .375rem;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.profilecounttag {
+  color: #999;
+}
+
+.profilebackground {
+  width: 100%;
+  padding-bottom: 33%;
+  background-size: cover;
+}
+
+.profilemetaright .relationship {
+  display: inline-block;
+  width: 5rem;
+  background-color: #5af;
+  border-radius: .25rem;
+  text-align: center;
+  color: #fff;
+  padding: .25rem;
+  box-shadow: 0 0 3px #ccc;
+  vertical-align: top;
+  -webkit-animation: fadeIn .2s;
+  cursor: pointer;
+}
+
+.profilemetaright .relationship.pending {
+  background: #eee;
+  color: #777;
+  cursor: default;
+}
+
+.profilemetaright .relationship.self {
+  display: none;
+}
+
+.profilemetaright .names {
+  display: inline-block;
+  width: calc(100% - 5rem);
+}
+
+.profilemetaright .name {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+  display: block;
+}
+
+.profilemetaright .screenname {
+  color: #777;
+  font-size: 0.6875rem;
+  display: block;
+}
+
+.profilemetacontent {
+  padding: .75rem;
+  overflow: hidden;
+}
+
+.profilemetaleft {
+  float: left;
+}
+
+.profileiconlink {
+  cursor: default;
+}
+
+.profilemetaright {
+  float: right;
+  width: calc(100% - 3.75rem);
+}
+
+.profiletext {
+  font-size: .875rem;
+}

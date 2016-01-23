@@ -174,7 +174,9 @@ Timeline.prototype.mergeTweet = function (dstTweet, srcTweet) {
 
 Timeline.prototype.saveUser = function (user) {
   if (this.users[user.screenname]) {
-    _.assign(this.users[user.screenname], user);
+    _.assignWith(this.users[user.screenname], user, function (objValue, srcValue, key) {
+      return _.isUndefined(srcValue) ? objValue : srcValue;
+    });
   } else {
     this.users[user.screenname] = user;
   }

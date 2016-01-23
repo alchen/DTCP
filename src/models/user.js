@@ -15,7 +15,7 @@ var User = function (user) {
   this.originalIcon = this.icon.replace('_normal', '');
 
   if (user.profile_banner_url) {
-    this.profileBackground = user.profile_banner_url + '/600x200';
+    this.profileBackground = user.profile_banner_url + '/web_retina';
   }
 
   this.description = user.description;
@@ -32,12 +32,8 @@ var User = function (user) {
   this.statusesCount = user.statuses_count;
 
   this.isProtected = user.protected;
-  if (user.following !== null) {
-    this.isFollowing = user.following;
-  }
-  if (user.follow_request_sent !== null) {
-    this.isPending = user.follow_request_sent;
-  }
+  this.isFollowing = user.following;
+  this.isPending = user.follow_request_sent;
 };
 
 module.exports = User;

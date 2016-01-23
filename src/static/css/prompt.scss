@@ -1,0 +1,75 @@
+.promptcontainer {
+  height: 100vh;
+  width: 100%;
+}
+
+.prompt {
+  display: block;
+  width: 12rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.prompterror {
+  background: #c99;
+  margin: .75rem 0;
+  padding: .75rem;
+  color: #fff;
+  border-radius: .25rem;
+  -webkit-animation: fadeIn .7s;
+}
+
+.promptbackground {
+  width: 50vh;
+  height: 50vh;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-image: url("../image/background.png");
+  background-size: cover;
+  max-width: 1024px;
+  max-height: 1024px;
+  background-position: 14vh 11vh;
+  background-repeat: no-repeat;
+}
+
+.promptbutton {
+  line-height: 1rem;
+  outline: none;
+  background: #fff;
+  color: #6ac;
+  border: none;
+  padding: .75rem;
+  border-radius: .25rem;
+  height: 2.5rem;
+}
+
+.signinbutton,
+.verifiedbutton {
+  width: 100%;
+}
+
+.backbutton {
+  margin-right: .375rem;
+  width: calc(50% - .375rem);
+}
+
+.verifybutton {
+  width: 50%;
+}
+
+.prompticon {
+  vertical-align: middle;
+}
+
+.pininput {
+  width: 100%;
+  line-height: 2rem;
+  border: 0;
+  text-align: center;
+  border-radius: .25rem;
+  margin-bottom: .75rem;
+  outline: none;
+}

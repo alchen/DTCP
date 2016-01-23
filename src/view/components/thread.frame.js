@@ -4,8 +4,8 @@ var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
 var detectViewport = require('../directives/detectViewport');
 Vue.use(detectViewport);
-require('./fatTweet');
-require('./tweet');
+require('./tweet.fat.single');
+require('./tweet.single');
 
 var template = '<ul class="thread timeline">' +
     '<component is="tweetComponent" v-for="tweet in pretext" :tweet="tweet" :username="username" :now="now" track-by="id"></component>' +

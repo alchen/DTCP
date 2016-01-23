@@ -5,7 +5,7 @@ var ipc = require('electron').ipcRenderer;
 var remote = require('remote');
 var shell = require('shell');
 var contextmenu = require('./contextmenu');
-require('./timeline');
+require('./timeline.frame');
 
 var template = '<section class="profile">' +
     '<section class="profilemeta" @contextmenu="rightclick">' +
@@ -85,6 +85,6 @@ var Profile = Vue.extend({
   }
 });
 
-Vue.component('profileComponent', Profile);
+Vue.component('profile', Profile);
 
 module.exports = Profile;

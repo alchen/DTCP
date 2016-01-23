@@ -1,0 +1,328 @@
+.tweetcontainer {
+  -webkit-animation: fadeIn .7s;
+}
+
+@-webkit-keyframes compress {
+  0% {
+    max-height: 1.5rem;
+  }
+
+  100% {
+    max-height: 0;
+  }
+}
+
+@-webkit-keyframes expand {
+  0% {
+    max-height: 0;
+  }
+
+  100% {
+    max-height: 1.5rem;
+  }
+}
+
+.gap {
+  background-color: #eee;
+  text-transform: uppercase;
+  font-size: .625rem;
+  text-align: center;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  color: #777;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.gap .iconic::before {
+  font-size: .5rem;
+  margin-right: .25rem;
+}
+
+.gap-enter {
+  -webkit-animation: expand .3s;
+}
+
+.gap-leave {
+  -webkit-animation: compress .3s;
+}
+
+.tweet {
+  border-bottom: 1px solid #ddd;
+  padding: .75rem;
+  overflow: hidden;
+  width: 100%;
+  font-size: .75rem;
+  cursor: default;
+}
+
+.fattweet {
+  background-color: #fcfcfc;
+  padding: .75rem .75rem .5rem .75rem;
+}
+
+.activetweet .tweet, .activetweet .fattweet {
+  background-color: #f0f0f0;
+}
+
+.tweet:hover .tweetmetaleft {
+  width: calc(100% - 7rem);
+}
+
+.tweet:hover .tweetmetaright {
+  width: 7rem;
+}
+
+.tweet:hover .tweettime,
+.tweet:hover .tweetindicator {
+  display: none;
+}
+
+.tweet:hover .tweetactions {
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.tweetleft {
+  float: left;
+}
+
+.tweetright {
+  float: right;
+  width: calc(100% - 3.75rem);
+}
+
+.tweeticon {
+  border-radius: .25rem;
+  width: 3rem;
+  height: 3rem;
+}
+
+.js-display-url {
+  word-break: break-all;
+}
+
+.tweettext {
+  white-space: pre-wrap;
+}
+
+.fattweet .tweettext {
+  margin-top: .75rem;
+  font-size: 1.125rem;
+  color: #333;
+  font-weight: lighter;
+}
+
+.names,
+.profiletext,
+.profilelocation,
+.profileurl,
+.fattweet .tweettext,
+.fattweet .quotedtext {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.quotedtext {
+  white-space: pre-wrap;
+}
+
+.tweetmeta {
+  white-space: nowrap;
+  line-height: 1rem;
+  overflow: hidden;
+  position: relative;
+  height: 1rem;
+  overflow: hidden;
+}
+
+.fattweetbottommeta {
+  margin-top: .75rem;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.tweetactions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: all .2s;
+  opacity: 0;
+  transition: visibility 0s linear 0.5s, opacity 0.5s linear;
+}
+
+.fattweetactions {
+  margin: .75rem 0 0 0;
+  padding: 0;
+  list-style: none;
+  transition: all .2s;
+}
+
+.tweetaction {
+  display: inline-block;
+  margin-left: .85rem;
+}
+
+.fattweetaction {
+  display: inline-block;
+  width: 25%;
+  text-align: center;
+}
+
+.tweetbutton {
+  background: none;
+  border: none;
+  outline: none;
+  padding: 0;
+  height: 1rem;
+}
+
+.tweetbuttonicon:empty:before {
+  font-size: .75rem;
+  transition: all .2s;
+  line-height: 1rem;
+}
+
+.tweetindicator:empty:before {
+  color: #fc2;
+  text-shadow: 0 0 1px #ccc;
+}
+
+.fattweet .tweetbuttonicon:empty:before {
+  font-size: 1.125rem;
+  color: #333;
+}
+
+.tweetbutton:hover .tweetbuttonicon:empty:before {
+  color: #6ac;
+}
+
+.disabledbutton {
+  cursor: default;
+}
+
+.disabledbutton .tweetbuttonicon:empty:before,
+.disabledbutton:hover .tweetbuttonicon:empty:before {
+  color: #ccc;
+}
+
+.activetweetbutton .tweetbuttonicon:empty:before,
+.activetweetbutton:hover .tweetbuttonicon:empty:before {
+  color: #07f;
+}
+
+.tweetmetaleft .name,
+.quotedmeta .name {
+  color: #333;
+  font-weight: bold;
+}
+
+.tweetmetaleft .screenname,
+.quotedmeta .screenname {
+  color: #999;
+  font-size: 0.6875rem;
+}
+
+.fattweetmetaleft,
+.fattweetmetaright {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.fattweetmetaright {
+  margin-left: .5rem;
+}
+
+.fattweetmetaright .name {
+  color: #333;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.fattweetmetaright .screenname {
+  color: #999;
+  font-size: .875rem;
+}
+
+.tweetmetaleft {
+  width: calc(100% - 2rem);
+  overflow: hidden;
+  display: inline-block;
+  text-overflow: ellipsis;
+}
+
+.tweetmetaright {
+  text-align: right;
+  color: #999;
+  font-size: 0.6875rem;
+  display: inline-block;
+  height: 1rem;
+  overflow: hidden;
+  width: 2rem;
+}
+
+.tweettime {
+  /*background-color: #fff;*/
+}
+
+.tweetindicator {
+  background-color: #fff;
+}
+
+.fattweettime {
+  /*margin-top: .75rem;*/
+
+}
+
+.fattweetretweet {
+  color: #666;
+  line-height: 1rem;
+  margin-top: .75rem;
+}
+
+.tweetretweet {
+  color: #666;
+  line-height: 1rem;
+  margin-top: .125rem;
+}
+
+.retweeticon {
+  float: left;
+  margin-right: .1875rem;
+  margin-top: .0625rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+.quotedtweet {
+  padding: .375rem;
+  margin-top: .375rem;
+  background-color: #f0f0f0;
+  border-radius: .25rem;
+  color: #333;
+}
+
+.tweetimagelist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.tweetimagebox {
+  height: 9rem;
+  margin-top: .75rem;
+  overflow: hidden;
+  float: left;
+}
+
+.tweetimagelink {
+  width: 100%;
+  height: 100%;
+  display: block;
+  font-size: 0;
+  background-size: cover;
+  background-position: center;
+}

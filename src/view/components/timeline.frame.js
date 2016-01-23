@@ -3,7 +3,7 @@
 var Vue = require('vue');
 var detectViewport = require('../directives/detectViewport');
 Vue.use(detectViewport);
-require('./tweet');
+require('./tweet.single');
 
 var template = '<ul class="tweets timeline">' +
     '<component is="tweetComponent" v-for="tweet in tweets" :tweet="tweet" :view="view" :username="username" :now="now" track-by="id"></component>' +

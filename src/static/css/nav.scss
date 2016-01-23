@@ -1,0 +1,118 @@
+.headernav {
+  width: 100%;
+  overflow: hidden;
+  height: $header-height;
+  padding-top: .75rem;
+  padding-left: .75rem;
+  padding-right: .75rem;
+  border-bottom: .0625rem solid #ccc;
+  box-sizing: border-box;;
+  background-color: #f6f6f6;
+
+  .switchbutton .navlist {
+    float: left;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    .navicon {
+      position: relative;
+
+      .usericon {
+        width: 1.75rem;
+        height: 1.75rem;
+        vertical-align: top;
+        border: 1px solid #eee;
+        border-radius: .25rem;
+        margin-top: -0.25rem;
+        box-shadow: 0 0 .125rem 0 rgba(0, 0, 0, 0.2);
+        background: #ccc;
+      }
+
+      &.unread:before {
+        content: '';
+        border: .1875rem solid $blue;
+        position: absolute;
+        border-radius: .25rem;
+        top: calc(50% - 0.25rem);
+        right: -.75rem;
+      }
+    }
+  }
+
+  .nav {
+    float: right;
+    height: 1.25rem;
+
+    .navlist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      .navicon {
+        cursor: pointer;
+        position: relative;
+        float: left;
+        margin-left: .75rem;
+
+        .navbutton {
+          background: none;
+          border: none;
+          outline: none;
+          transition: all .2s;
+          height: 1.25rem;
+
+          &:hover {
+            color: #6ac;
+          }
+        }
+
+        &.active .navbutton, &.active .navbutton:hover {
+          color: #08F;
+          cursor: default;
+        }
+
+        &.unread:before {
+          content: '';
+          border: .1875rem solid #5ae;
+          position: absolute;
+          border-radius: .25rem;
+          bottom: -.375rem;
+          left: calc(50% - 0.1875rem);
+        }
+      }
+    }
+  }
+}
+
+.logobutton {
+  cursor: default;
+}
+
+.unreadmark {
+  display: inline-block;
+  font-size: .625rem;
+  background-color: #39D;
+  border-radius: 100%;
+  opacity: .85;
+  position: relative;
+  left: -.25rem;
+  top: .25rem;
+  height: .75rem;
+  width: .75rem;
+}
+
+.iconic[data-glyph].iconic-sm.messagereply:before {
+  font-size: 1rem;
+  color: #777;
+  vertical-align: top;
+  padding-right: .25rem;
+}
+
+.iconic-property-fill, .iconic-property-text {stroke: none !important;}
+.iconic-property-stroke {fill: none !important;}
+svg.iconic.iconic-fluid {height:100% !important;width:100% !important;}
+svg.iconic.iconic-sm:not(.iconic-size-md):not(.iconic-size-lg), svg.iconic.iconic-size-sm{width:16px;height:16px;}
+svg.iconic-sm > g.iconic-md, svg.iconic-sm > g.iconic-lg, svg.iconic-md > g.iconic-sm, svg.iconic-md > g.iconic-lg, svg.iconic-lg > g.iconic-sm, svg.iconic-lg > g.iconic-md {display: none;}
+svg.iconic.iconic-icon-sm > g.iconic-lg, svg.iconic.iconic-icon-md > g.iconic-lg {display:none;}
+svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconic-md.iconic-icon-sm > g.iconic-sm, svg.iconic-lg.iconic-icon-sm > g.iconic-sm {display:inline;}

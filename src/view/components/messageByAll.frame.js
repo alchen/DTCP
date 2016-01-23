@@ -1,7 +1,7 @@
 'use strict';
 
 var Vue = require('vue');
-require('./messageTop');
+require('./messageByAll.single');
 
 var template = '<ul class="tweets timeline">' +
     '<component is="messageTop" v-for="group in messages" :group="group.messages" :username="username" :now="now" track-by="id"></component>' +

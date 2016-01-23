@@ -1,0 +1,19 @@
+.frame {
+  position: absolute;
+  top: $header-height;
+  left: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: $frame-height;
+  width: 100%;
+}
+
+.frame-enter {
+  -webkit-animation: slideInLeft .2s;
+  border-right: 1px solid #ccf;
+}
+
+.frame-leave {
+  -webkit-animation: slideOutRight .2s;
+  border-left: 1px solid #ccf;
+}

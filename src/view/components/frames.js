@@ -4,12 +4,13 @@
 var _ = require('lodash');
 var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
-require('../../view/components/profile');
-require('../../view/components/timeline');
-require('../../view/components/thread');
-require('../../view/components/messages');
-require('../../view/components/switches');
-require('../../view/components/login');
+require('../../view/components/profile.frame');
+require('../../view/components/timeline.frame');
+require('../../view/components/thread.frame');
+require('../../view/components/messageByAll.frame');
+require('../../view/components/messageByOne.frame');
+require('../../view/components/switches.frame');
+require('../../view/components/login.frame');
 
 var template = '<section class="frames">' +
                '<div class="frame" v-for="frame in frames" :style="{ zIndex: ($index + 1) }" @scroll="scroll" transition="frame">' +
@@ -90,7 +91,7 @@ var Frames = Vue.extend({
         return;
       }
       var newFrame = {
-        is: 'profileComponent',
+        is: 'profile',
         view: 'profile',
         profile: user,
         tweets: []
@@ -103,7 +104,7 @@ var Frames = Vue.extend({
         return;
       }
       var newFrame = {
-        is: 'profileComponent',
+        is: 'profile',
         view: 'profile',
         profile: {screenname: screenname},
         tweets: []
@@ -179,7 +180,19 @@ var Frames = Vue.extend({
         } else if (nextContainer.getBoundingClientRect().top <= currentFrameRect.top) {
           this.scrollTo(currentFrame.scrollTop + nextContainer.getBoundingClientRect().top - currentFrame.offsetTop);
         }
+      } else {
+        this.scrollTo(0); // scroll to top
       }
+    },
+    scrollPageDown: function () {
+      var frames = document.getElementsByClassName('frame');
+      var currentFrame = frames[frames.length - 1];
+      this.scrollTo(currentFrame.scrollTop + currentFrame.getBoundingClientRect().height * 0.9);
+    },
+    scrollPageUp: function () {
+      var frames = document.getElementsByClassName('frame');
+      var currentFrame = frames[frames.length - 1];
+      this.scrollTo(currentFrame.scrollTop - currentFrame.getBoundingClientRect().height * 0.9);
     }
   },
   methods: {

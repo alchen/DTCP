@@ -67,6 +67,17 @@ a {
   color: #17b;
   text-decoration: none; }
 
+::-webkit-scrollbar {
+  width: .625rem; }
+
+::-webkit-scrollbar-track {
+  border-radius: .625rem;
+  background-color: #eee; }
+
+::-webkit-scrollbar-thumb {
+  border-radius: .625rem;
+  background-color: #ccc; }
+
 .newtweet {
   -webkit-animation: fadeIn .2s; }
   .newtweet .newtweettext {

@@ -37,7 +37,7 @@ var windows = {
       autoHideMenuBar: true,
       show: false
     });
-    newWindow.loadURL('file://' + __dirname + '/static/newTweet.html');
+    newWindow.loadURL('file://' + __dirname + '/static/composer.html');
     newTweetWindows.push(newWindow);
 
     newWindow.on('close', function () {
@@ -153,11 +153,12 @@ var windows = {
     mainWindow.show();
   },
   unloadTimeline: function () {
+    var self = this;
     if (this.streams) {
       _.each(this.streams, function (stream, screenname) {
         stream.unsubscribe(mainWindow);
-        delete this.streams[screenname];
-      }, this);
+        delete self.streams[screenname];
+      });
     }
   }
 };

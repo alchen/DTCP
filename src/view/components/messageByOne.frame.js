@@ -2,23 +2,15 @@
 
 var Vue = require('vue');
 var moment = require('moment');
-// var remote = require('remote');
-// var contextmenu = require('./contextmenu');
+require('./messageByOne.single');
 
-var template = '<li class="tweetcontainer">' +
-  '<div class="message" :class="{\'self\': message.sender.screenname === username}" @contextmenu="rightclick">' +
-    '<section class="messageleft">' +
-      '<img class="tweeticon" :src="message.sender.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />' +
-    '</section>' +
-    '<section class="messageright">' +
-      '<section class="messagetext" v-html="message.status"></section>' +
-      '<section class="messagetime" v-text="timeFrom"></section>' +
-    '</section>' +
-  '</div></li>';
+var template = '<ul class="tweets timeline messagegroup">' +
+  '<component is="message" v-for="message in reversedMessages" :message="message" :username="username" :now="now" track-by="id" />' +
+  '</ul>';
 
-var Message = Vue.extend({
+var MessageGroup = Vue.extend({
   replace: true,
-  props: ['message', 'username', 'now'],
+  props: ['messages', 'username', 'now', 'view'],
   template: template,
   filters: {
     at: function (name) {
@@ -26,8 +18,20 @@ var Message = Vue.extend({
     }
   },
   computed: {
-    timeFrom: function () {
-      var createdAt = moment(new Date(this.message.createdAt));
+    reversedMessages: function () {
+      return this.messages.slice().reverse();
+    }
+  },
+  attached: function () {
+    this.scrollToBottom();
+  },
+  methods: {
+    scrollToBottom: function () {
+      var frames = document.getElementsByClassName('frame');
+      frames[frames.length - 1].getElementsByClassName('timeline')[0].scrollIntoView(false);
+    },
+    timeFrom: function (message) {
+      var createdAt = moment(new Date(message.createdAt));
       var now = this.now;
       var duration = moment.duration(now.diff(createdAt));
 
@@ -46,11 +50,9 @@ var Message = Vue.extend({
         sign = duration.as('year');
         return Math.round(sign) + 'y';
       }
-    }
-  },
-  methods: {
-    doShowProfile: function () {
-      this.$dispatch('showProfile', this.message.sender);
+    },
+    doShowProfile: function (user) {
+      this.$dispatch('showProfile', user);
     },
     rightclick: function (event) {
       // TODO modify for direct messages
@@ -61,6 +63,6 @@ var Message = Vue.extend({
   }
 });
 
-Vue.component('message', Message);
+Vue.component('messageGroup', MessageGroup);
 
-module.exports = Message;
+module.exports = MessageGroup;

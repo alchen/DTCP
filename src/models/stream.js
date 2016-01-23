@@ -171,10 +171,10 @@ Stream.prototype.send = function () {
 
   if (this.subscriber) {
     var payload = _.map(arguments, function (part) {
-      return _.cloneDeep(part, function (i) {
+      return _.cloneDeepWith(part, function (i) {
         if (_.isArray(i)) {
           return _.map(i, function (j) {
-            return _.cloneDeep(j, function (k) {
+            return _.cloneDeepWith(j, function (k) {
               if (k && k.isTweet) {
                 return cloneTweet(k);
               } else if (k && k.isMessage) {

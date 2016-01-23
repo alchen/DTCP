@@ -104,7 +104,10 @@ var Tweet = Vue.extend({
         return k !== self.username;
       });
       mentions.unshift(this.tweet.user.screenname);
-      mentions = _.map(_.unique(mentions), function (m) {
+      if (this.tweet.quote) {
+        mentions.push(this.tweet.quote.user.screenname);
+      }
+      mentions = _.map(_.uniq(mentions), function (m) {
         return '@' + m;
       }).join(' ');
 
