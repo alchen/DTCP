@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>About</title>
+    <style>
+      * {
+        user-select: none;
+        user-drag: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
+        cursor: default;
+      }
+      body {
+        background-color: #f3f3f3;
+        text-align: center;
+        font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        line-height: 1.25rem;
+      }
+      img {
+        width: 8rem;
+      }
+      button {
+        outline: none;
+        border: none;
+        background: none;
+        color: #5ae;
+        cursor: pointer;
+      }
+      #name {
+        font-weight: bold;
+      }
+      #copyright {
+        color: #e0e0e0;
+      }
+      #version, #links, #copyright {
+        font-size: .75rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <div id="logo">
+        <img src="image/background.png" />
+      </div>
+      <div id="name">
+        {{ name }}
+      </div>
+      <div id="version">
+        Version {{ version }}
+      </div>
+      <div id="links">
+        <button @click="openWebsite">Website</button>-<button @click="openGithub">Github</button>
+      </div>
+      <div id="copyright">
+        Copyright &copy; 2014-2015 Alexander Chen
+      </div>
+    </div>
+    <script src="js/about.js"></script>
+  </body>
+</html>

@@ -16,6 +16,9 @@ a {
   color: #17b;
   text-decoration: none; }
 
+.js-display-url {
+  word-break: break-all; }
+
 ::-webkit-scrollbar {
   width: .625rem; }
 
@@ -78,213 +81,120 @@ a {
   100% {
     -webkit-transform: translate3d(100%, 0, 0); } }
 
+#content {
+  display: flex;
+  flex-flow: column;
+  height: 100vh; }
+
+.pageheader {
+  height: 2.8125rem; }
+
+.frames {
+  position: relative;
+  flex-grow: 1; }
+
 .frame {
   position: absolute;
-  top: 2.8125rem;
+  top: 0;
   left: 0;
   overflow-x: hidden;
   overflow-y: auto;
-  height: calc(100vh - 2.8125rem);
+  height: 100%;
   width: 100%; }
+  .frame > div, .frame > ul {
+    min-height: 100%;
+    background-color: #fff; }
+  .frame > ul {
+    display: block;
+    list-style: none;
+    margin: 0;
+    padding: 0 0 3rem 0; }
 
-.frame-enter {
-  -webkit-animation: slideInLeft .2s;
-  border-right: 1px solid #ccf; }
-
-.frame-leave {
-  -webkit-animation: slideOutRight .2s;
-  border-left: 1px solid #ccf; }
-
-.loader {
-  text-align: center;
-  margin-top: .75rem;
-  transition: all 1s; }
-
-.ball-clip-rotate > div {
-  background-color: #fff;
-  border-radius: 100%;
-  -webkit-animation-fill-mode: both;
-  border: 2px solid #000;
-  border-bottom-color: transparent;
-  height: 1.5rem;
-  width: 1.5rem;
-  background: transparent !important;
-  display: inline-block;
-  -webkit-animation: rotate 0.75s 0s linear infinite; }
-
-@keyframes rotate {
-  0% {
-    -webkit-transform: rotate(0deg) scale(1); }
-  50% {
-    -webkit-transform: rotate(180deg) scale(0.6); }
-  100% {
-    -webkit-transform: rotate(360deg) scale(1); } }
-
-.timelines .timeline {
-  height: calc(100vh - 3rem);
-  overflow: auto; }
-
-.tweets.timeline {
-  padding-bottom: 3rem; }
-
-.tweets, .thread {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border: 0; }
-
-section.messageleft {
-  float: left; }
-
-.message {
-  clear: both;
-  display: inline-block;
-  width: 100%; }
-
-.message .tweeticon {
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid #ccc;
-  box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
-  margin: .5rem; }
-
-.messageright {
-  float: right;
-  width: calc(100% - 3rem); }
-
-.messagetext {
-  background-color: #5af;
-  color: #fff;
-  padding: .5rem;
-  border-radius: .375rem;
-  margin: .5rem 3rem .5rem 0;
-  position: relative;
-  display: inline-block;
-  font-size: .875rem; }
-
-.message.self .messagetext {
-  background-color: #eee;
-  color: #000; }
-
-.messagetext:before {
-  width: 0;
-  height: 0;
-  border-top: .375rem solid transparent;
-  border-bottom: .375rem solid transparent;
-  border-right: .375rem solid #5af;
-  content: '';
-  position: absolute;
-  left: -.25rem;
-  top: .625rem; }
-
-.messagetime {
-  font-size: .625rem;
-  color: #999;
-  clear: both; }
-
-.message.self .messageleft {
-  float: right; }
-
-.message.self .messageright {
-  float: left; }
-
-.message.self .messagetext {
-  float: right;
-  margin: .5rem 0 .5rem 3rem; }
-
-.message.self .messagetext:before {
-  border-right: 0;
-  border-left: .375rem solid #eee;
-  content: '';
-  position: absolute;
-  right: -.25rem;
-  left: auto; }
-
-.message.self .messagetime {
-  float: right; }
-
-.switches {
-  height: calc(100vh - 2.8125rem);
-  background-color: rgba(255, 255, 255, 0.9); }
-  .switches .switchlist {
+.pageheader {
+  overflow: hidden;
+  padding-top: .75rem;
+  padding-left: .75rem;
+  padding-right: .75rem;
+  border-bottom: .0625rem solid #ccc;
+  box-sizing: border-box;
+  background-color: #f6f6f6; }
+  .pageheader .switchbutton .navlist {
+    float: left;
     margin: 0;
     padding: 0;
     list-style: none; }
-    .switches .switchlist .switch {
-      padding: .75rem;
-      cursor: pointer;
+    .pageheader .switchbutton .navlist .navicon {
       position: relative; }
-      .switches .switchlist .switch.unread:before {
+      .pageheader .switchbutton .navlist .navicon .usericon {
+        width: 1.75rem;
+        height: 1.75rem;
+        vertical-align: top;
+        border: 1px solid #eee;
+        border-radius: .25rem;
+        margin-top: -0.25rem;
+        box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
+        background: #ccc; }
+      .pageheader .switchbutton .navlist .navicon.unread:before {
         content: '';
-        border: .1875rem solid #5ae;
+        border: 0.1875rem solid #5ae;
         position: absolute;
         border-radius: .25rem;
-        top: calc(50% - .1875rem);
-        left: .375rem; }
-      .switches .switchlist .switch:hover .text, .switches .switchlist .switch:hover .icon .iconic[data-glyph].iconic-md:before {
-        color: #5ae; }
-      .switches .switchlist .switch:hover .icon img {
-        box-shadow: 0 0 0.5rem 0 #5ae; }
-      .switches .switchlist .switch .icon, .switches .switchlist .switch .text {
-        display: inline-block;
-        vertical-align: middle; }
-      .switches .switchlist .switch .icon {
-        padding: 0 .375rem;
-        margin-right: .75rem; }
-        .switches .switchlist .switch .icon .iconic[data-glyph].iconic-md:before {
-          font-size: 2rem;
-          transition: color 0.2s; }
-        .switches .switchlist .switch .icon img {
-          width: 2rem;
-          height: 2rem;
-          border: 1px solid #eee;
+        top: calc(50% - 0.25rem);
+        right: -.75rem; }
+  .pageheader .nav {
+    float: right;
+    height: 1.25rem; }
+    .pageheader .nav .navlist {
+      list-style: none;
+      margin: 0;
+      padding: 0; }
+      .pageheader .nav .navlist .navicon {
+        cursor: pointer;
+        position: relative;
+        float: left;
+        margin-left: .75rem; }
+        .pageheader .nav .navlist .navicon .navbutton {
+          background: none;
+          border: none;
+          outline: none;
+          transition: all .2s;
+          height: 1.25rem; }
+          .pageheader .nav .navlist .navicon .navbutton:hover {
+            color: #6ac; }
+          .pageheader .nav .navlist .navicon .navbutton span::before {
+            font-size: .875rem;
+            line-height: 1rem; }
+        .pageheader .nav .navlist .navicon.active .navbutton, .pageheader .nav .navlist .navicon.active .navbutton:hover {
+          color: #08F;
+          cursor: default; }
+        .pageheader .nav .navlist .navicon.unread:before {
+          content: '';
+          border: .1875rem solid #5ae;
+          position: absolute;
           border-radius: .25rem;
-          box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
-          transition: box-shadow 0.2s; }
-      .switches .switchlist .switch .text {
-        text-transform: uppercase;
-        font-size: 1.25rem;
-        transition: color 0.2s; }
+          bottom: -.375rem;
+          left: calc(50% - 0.1875rem); }
 
-.login {
-  height: calc(100vh - 2.8125rem);
-  background-color: #5ae;
-  padding: 4rem 0; }
-  .login .connect, .login .error, .login .result, .login .verify {
-    padding: .75rem;
-    text-align: center; }
-  .login .connect button {
-    background: #fff;
-    border: 0;
-    border-radius: .25rem;
-    padding: .75rem;
-    color: #5ae;
-    box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2); }
-    .login .connect button .iconic[data-glyph].iconic-sm:before {
-      font-size: 1.25rem;
-      margin-right: .5rem;
-      vertical-align: middle; }
-  .login .error, .login .result {
-    color: #fff; }
-  .login .verify {
-    padding-top: 4rem;
-    backface-visibility: visible !important; }
-    .login .verify input, .login .verify button {
-      padding: .75rem;
-      background: #fff;
-      border: 0;
-      box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2); }
-    .login .verify input {
-      border-top-left-radius: .25rem;
-      border-bottom-left-radius: .25rem; }
-    .login .verify button {
-      border-top-right-radius: .25rem;
-      border-bottom-right-radius: .25rem;
-      color: #5ae; }
-  .login .verify-enter {
-    -webkit-animation: flipInX .3s; }
-  .login .verify-out {
-    -webkit-animation: flipOutX .3s; }
+.logobutton {
+  cursor: default; }
+
+.unreadmark {
+  display: inline-block;
+  font-size: .625rem;
+  background-color: #39D;
+  border-radius: 100%;
+  opacity: .85;
+  position: relative;
+  left: -.25rem;
+  top: .25rem;
+  height: .75rem;
+  width: .75rem; }
+
+.iconic[data-glyph].iconic-sm.messagereply:before {
+  font-size: 1rem;
+  color: #777;
+  vertical-align: top;
+  padding-right: .25rem; }
 
 .promptcontainer {
   height: 100vh;
@@ -352,113 +262,14 @@ section.messageleft {
   margin-bottom: .75rem;
   outline: none; }
 
-.headernav {
-  width: 100%;
-  overflow: hidden;
-  height: 2.8125rem;
-  padding-top: .75rem;
-  padding-left: .75rem;
-  padding-right: .75rem;
-  border-bottom: .0625rem solid #ccc;
-  box-sizing: border-box;
-  background-color: #f6f6f6; }
-  .headernav .switchbutton .navlist {
-    float: left;
-    margin: 0;
-    padding: 0;
-    list-style: none; }
-    .headernav .switchbutton .navlist .navicon {
-      position: relative; }
-      .headernav .switchbutton .navlist .navicon .usericon {
-        width: 1.75rem;
-        height: 1.75rem;
-        vertical-align: top;
-        border: 1px solid #eee;
-        border-radius: .25rem;
-        margin-top: -0.25rem;
-        box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
-        background: #ccc; }
-      .headernav .switchbutton .navlist .navicon.unread:before {
-        content: '';
-        border: 0.1875rem solid #5ae;
-        position: absolute;
-        border-radius: .25rem;
-        top: calc(50% - 0.25rem);
-        right: -.75rem; }
-  .headernav .nav {
-    float: right;
-    height: 1.25rem; }
-    .headernav .nav .navlist {
-      list-style: none;
-      margin: 0;
-      padding: 0; }
-      .headernav .nav .navlist .navicon {
-        cursor: pointer;
-        position: relative;
-        float: left;
-        margin-left: .75rem; }
-        .headernav .nav .navlist .navicon .navbutton {
-          background: none;
-          border: none;
-          outline: none;
-          transition: all .2s;
-          height: 1.25rem; }
-          .headernav .nav .navlist .navicon .navbutton:hover {
-            color: #6ac; }
-        .headernav .nav .navlist .navicon.active .navbutton, .headernav .nav .navlist .navicon.active .navbutton:hover {
-          color: #08F;
-          cursor: default; }
-        .headernav .nav .navlist .navicon.unread:before {
-          content: '';
-          border: .1875rem solid #5ae;
-          position: absolute;
-          border-radius: .25rem;
-          bottom: -.375rem;
-          left: calc(50% - 0.1875rem); }
+.frame-enter {
+  -webkit-animation: slideInLeft .2s; }
 
-.logobutton {
-  cursor: default; }
+.frame-leave {
+  -webkit-animation: slideOutRight .2s; }
 
-.unreadmark {
-  display: inline-block;
-  font-size: .625rem;
-  background-color: #39D;
-  border-radius: 100%;
-  opacity: .85;
-  position: relative;
-  left: -.25rem;
-  top: .25rem;
-  height: .75rem;
-  width: .75rem; }
-
-.iconic[data-glyph].iconic-sm.messagereply:before {
-  font-size: 1rem;
-  color: #777;
-  vertical-align: top;
-  padding-right: .25rem; }
-
-.iconic-property-fill, .iconic-property-text {
-  stroke: none !important; }
-
-.iconic-property-stroke {
-  fill: none !important; }
-
-svg.iconic.iconic-fluid {
-  height: 100% !important;
-  width: 100% !important; }
-
-svg.iconic.iconic-sm:not(.iconic-size-md):not(.iconic-size-lg), svg.iconic.iconic-size-sm {
-  width: 16px;
-  height: 16px; }
-
-svg.iconic-sm > g.iconic-md, svg.iconic-sm > g.iconic-lg, svg.iconic-md > g.iconic-sm, svg.iconic-md > g.iconic-lg, svg.iconic-lg > g.iconic-sm, svg.iconic-lg > g.iconic-md {
-  display: none; }
-
-svg.iconic.iconic-icon-sm > g.iconic-lg, svg.iconic.iconic-icon-md > g.iconic-lg {
-  display: none; }
-
-svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconic-md.iconic-icon-sm > g.iconic-sm, svg.iconic-lg.iconic-icon-sm > g.iconic-sm {
-  display: inline; }
+.profile {
+  background: #fff; }
 
 .profilemeta {
   overflow: hidden;
@@ -532,8 +343,258 @@ svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconi
 .profiletext {
   font-size: .875rem; }
 
-.tweetcontainer {
-  -webkit-animation: fadeIn .7s; }
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0; }
+
+.loader {
+  text-align: center;
+  padding: 1.5rem;
+  -webkit-transition: all 1s;
+  transition: all 1s; }
+
+.ball-clip-rotate > div {
+  background-color: #fff;
+  border-radius: 100%;
+  -webkit-animation-fill-mode: both;
+  border: 2px solid #000;
+  border-bottom-color: transparent;
+  height: 1.5rem;
+  width: 1.5rem;
+  background: transparent !important;
+  display: inline-block;
+  -webkit-animation: rotate 0.75s 0s linear infinite; }
+
+@-webkit-keyframes rotate {
+  0% {
+    -webkit-transform: rotate(0deg) scale(1); }
+  50% {
+    -webkit-transform: rotate(180deg) scale(0.6); }
+  100% {
+    -webkit-transform: rotate(360deg) scale(1); } }
+
+@keyframes rotate {
+  0% {
+    -webkit-transform: rotate(0deg) scale(1); }
+  50% {
+    -webkit-transform: rotate(180deg) scale(0.6); }
+  100% {
+    -webkit-transform: rotate(360deg) scale(1); } }
+
+.box {
+  -webkit-animation: fadeIn .7s;
+  border-bottom: 1px solid #ddd; }
+
+.tweet {
+  padding: .75rem;
+  font-size: .75rem;
+  cursor: default;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex; }
+
+.activetweet {
+  background-color: #f3f3f3; }
+
+.tweetleft {
+  -webkit-flex-shrink: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0; }
+
+.tweeticon {
+  height: 3rem;
+  width: 3rem;
+  margin-right: .75rem;
+  border-radius: .25rem;
+  border: 1px solid #eee; }
+
+.tweetright {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  overflow: hidden; }
+
+.tweettext {
+  white-space: pre-wrap; }
+
+.tweetretweet {
+  color: #777; }
+
+.tweetretweeticon:empty:before {
+  color: #777;
+  vertical-align: middle; }
+
+.quotedtweet {
+  margin-top: 0.375rem;
+  padding: .5rem;
+  background-color: #eee;
+  border-radius: .25rem; }
+
+.quotedmeta {
+  line-height: 1rem; }
+
+.quotedtext {
+  white-space: pre-wrap; }
+
+.name {
+  color: #333;
+  font-weight: bold; }
+
+.screenname {
+  color: #999;
+  font-size: 0.6875rem; }
+
+.tweetmeta {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: nowrap;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  line-height: 1.25rem; }
+
+.tweetmetaleft, .tweetmetaright {
+  display: inline-block; }
+
+.tweetmetaleft {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  -webkit-flex-shrink: 1;
+  -ms-flex-negative: 1;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+.tweetmetaright {
+  -webkit-flex-shrink: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  color: #999;
+  font-size: 0.6875rem; }
+
+.tweettime {
+  min-width: 1.5rem;
+  display: inline-block;
+  text-align: right; }
+
+@-webkit-keyframes fadeInInlineFromNone {
+  0% {
+    opacity: 0; }
+  1% {
+    opacity: 0; }
+  100% {
+    opacity: 1; } }
+
+.tweet .tweetcontrols {
+  display: none; }
+
+.tweet:hover .tweetcontrols {
+  display: inline-block;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
+  -webkit-animation: fadeInInlineFromNone .3s;
+  animation: fadeInInlineFromNone .3s; }
+
+.tweetbutton {
+  border: none;
+  background: none;
+  padding: 0 .125rem;
+  margin-left: .375rem;
+  outline: none;
+  vertical-align: text-bottom; }
+
+.tweetbuttonicon:empty:before {
+  font-size: .6875rem;
+  color: #333; }
+
+.tweetbutton.disabled .tweetbuttonicon:empty:before {
+  color: #999;
+  cursor: default; }
+
+.tweetbutton.active.retweetbutton .tweetbuttonicon:empty:before {
+  color: #5ae; }
+
+.tweetbutton.active.favoritebutton .tweetbuttonicon:empty:before {
+  color: #ffc107;
+  -webkit-text-stroke: 1px #c93; }
+
+.tweetbuttonicon:hover:empty:before {
+  color: #5ae; }
+
+.tweetbuttonicon:active:empty:before {
+  -webkit-transform: translateY(0.0625rem);
+  transform: translateY(0.0625rem); }
+
+.fattweet {
+  padding: .75rem;
+  font-size: .875rem;
+  cursor: default; }
+
+.fattweetmeta {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex; }
+
+.fattweetmeta .name, .fattweetmeta .screenname {
+  display: block;
+  line-height: 1rem; }
+
+.fattweetmeta .name {
+  font-size: 1rem; }
+
+.fattweetmeta .screenname {
+  font-size: .875rem; }
+
+.fattweetmetaright {
+  margin: .5rem 0; }
+
+.fattweettext {
+  margin-top: .75rem;
+  font-size: 1.125rem;
+  font-weight: lighter;
+  color: #333;
+  white-space: pre-wrap;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text; }
+
+.fattweetbottommeta {
+  margin-top: .75rem;
+  color: #999;
+  text-transform: uppercase; }
+
+.fattweettime {
+  font-size: .75rem; }
+
+.fattweetcontrols {
+  margin-top: .75rem;
+  white-space: nowrap;
+  width: 100%; }
+
+.fattweetbutton {
+  display: inline-block;
+  width: 25%;
+  border: none;
+  background: none;
+  outline: none;
+  padding: 0;
+  margin: 0; }
+
+.fattweetbuttonicon:empty:before {
+  font-size: 1rem; }
+
+.fattweetbuttonicon:active:empty:before {
+  -webkit-transform: translateY(0.125rem);
+  transform: translateY(0.125rem); }
 
 @-webkit-keyframes compress {
   0% {
@@ -559,7 +620,7 @@ svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconi
   cursor: pointer;
   overflow: hidden; }
 
-.gap .iconic::before {
+.gap .iconic:before {
   font-size: .5rem;
   margin-right: .25rem; }
 
@@ -569,243 +630,238 @@ svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconi
 .gap-leave {
   -webkit-animation: compress .3s; }
 
-.tweet {
-  border-bottom: 1px solid #ddd;
-  padding: .75rem;
-  overflow: hidden;
+.tweetmedia {
+  margin-top: 0.375rem;
   width: 100%;
-  font-size: .75rem;
-  cursor: default; }
+  padding-bottom: calc(66% + 1rem);
+  position: relative; }
 
-.fattweet {
-  background-color: #fcfcfc;
-  padding: .75rem .75rem .5rem .75rem; }
-
-.activetweet .tweet, .activetweet .fattweet {
-  background-color: #f0f0f0; }
-
-.tweet:hover .tweetmetaleft {
-  width: calc(100% - 7rem); }
-
-.tweet:hover .tweetmetaright {
-  width: 7rem; }
-
-.tweet:hover .tweettime,
-.tweet:hover .tweetindicator {
-  display: none; }
-
-.tweet:hover .tweetactions {
-  opacity: 1;
-  transition-delay: 0s; }
-
-.tweetleft {
-  float: left; }
-
-.tweetright {
-  float: right;
-  width: calc(100% - 3.75rem); }
-
-.tweeticon {
+.tweetmediaimage {
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  width: calc(50% - .5rem);
+  height: calc(50% - .5rem);
   border-radius: .25rem;
-  width: 3rem;
-  height: 3rem; }
-
-.js-display-url {
-  word-break: break-all; }
-
-.tweettext {
-  white-space: pre-wrap; }
-
-.fattweet .tweettext {
-  margin-top: .75rem;
-  font-size: 1.125rem;
-  color: #333;
-  font-weight: lighter; }
-
-.names,
-.profiletext,
-.profilelocation,
-.profileurl,
-.fattweet .tweettext,
-.fattweet .quotedtext {
-  -webkit-user-select: text;
-  user-select: text; }
-
-.quotedtext {
-  white-space: pre-wrap; }
-
-.tweetmeta {
-  white-space: nowrap;
-  line-height: 1rem;
-  overflow: hidden;
-  position: relative;
-  height: 1rem;
+  margin: .25rem;
+  cursor: pointer;
   overflow: hidden; }
 
-.fattweetbottommeta {
-  margin-top: .75rem;
-  color: #999;
-  text-transform: uppercase; }
+.tweetmediaimage img {
+  -o-object-fit: cover;
+  object-fit: cover;
+  width: 100%;
+  height: 100%; }
 
-.tweetactions {
+.tweetmedia.one .tweetmediaimage {
+  width: auto;
+  height: auto; }
+
+.tweetmedia.two {
+  padding-bottom: calc(50% + .5rem); }
+
+.tweetmedia.two .tweetmediaimage {
+  height: calc(100% - .5rem); }
+
+.tweetmedia.three .tweetmediaimage:first-child {
+  height: calc(100% - .5rem); }
+
+.inflatecontainer {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0; }
+
+section.messageleft {
+  float: left; }
+
+.message {
+  clear: both;
+  display: inline-block;
+  width: 100%; }
+
+.message .tweeticon {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
+  margin: .5rem; }
+
+.messageright {
+  float: right;
+  width: calc(100% - 3rem); }
+
+.messagetext {
+  background-color: #5af;
+  color: #fff;
+  padding: .5rem;
+  border-radius: .375rem;
+  margin: .5rem 3rem .5rem 0;
+  position: relative;
+  display: inline-block;
+  font-size: .875rem; }
+
+.message.self .messagetext {
+  background-color: #eee;
+  color: #000; }
+
+.messagetext:before {
+  width: 0;
+  height: 0;
+  border-top: .375rem solid transparent;
+  border-bottom: .375rem solid transparent;
+  border-right: .375rem solid #5af;
+  content: '';
+  position: absolute;
+  left: -.25rem;
+  top: .625rem; }
+
+.messagetime {
+  font-size: .625rem;
+  color: #999;
+  clear: both; }
+
+.message.self .messageleft {
+  float: right; }
+
+.message.self .messageright {
+  float: left; }
+
+.message.self .messagetext {
+  float: right;
+  margin: .5rem 0 .5rem 3rem; }
+
+.message.self .messagetext:before {
+  border-right: 0;
+  border-left: .375rem solid #eee;
+  content: '';
+  position: absolute;
+  right: -.25rem;
+  left: auto; }
+
+.message.self .messagetime {
+  float: right; }
+
+.messagebox {
+  border: none; }
+
+.frame > .switches {
+  background-color: rgba(255, 255, 255, 0.9); }
+
+.switches .switchlist {
   margin: 0;
   padding: 0;
-  list-style: none;
-  transition: all .2s;
-  opacity: 0;
-  transition: visibility 0s linear 0.5s, opacity 0.5s linear; }
+  list-style: none; }
 
-.fattweetactions {
-  margin: .75rem 0 0 0;
-  padding: 0;
-  list-style: none;
-  transition: all .2s; }
+.switches .switchlist .switch {
+  padding: .75rem;
+  cursor: pointer;
+  position: relative; }
 
-.tweetaction {
-  display: inline-block;
-  margin-left: .85rem; }
+.switches .switchlist .switch.unread:before {
+  content: '';
+  border: .1875rem solid #5ae;
+  position: absolute;
+  border-radius: .25rem;
+  top: calc(50% - .1875rem);
+  left: .375rem; }
 
-.fattweetaction {
-  display: inline-block;
-  width: 25%;
-  text-align: center; }
+.switches .switchlist .switch:hover .text, .switches .switchlist .switch:hover .icon .iconic[data-glyph].iconic-md:before {
+  color: #5ae; }
 
-.tweetbutton {
-  background: none;
-  border: none;
-  outline: none;
-  padding: 0;
-  height: 1rem; }
+.switches .switchlist .switch:hover .icon img {
+  box-shadow: 0 0 0.5rem 0 #5ae; }
 
-.tweetbuttonicon:empty:before {
-  font-size: .75rem;
-  transition: all .2s;
-  line-height: 1rem; }
-
-.tweetindicator:empty:before {
-  color: #fc2;
-  text-shadow: 0 0 1px #ccc; }
-
-.fattweet .tweetbuttonicon:empty:before {
-  font-size: 1.125rem;
-  color: #333; }
-
-.tweetbutton:hover .tweetbuttonicon:empty:before {
-  color: #6ac; }
-
-.disabledbutton {
-  cursor: default; }
-
-.disabledbutton .tweetbuttonicon:empty:before,
-.disabledbutton:hover .tweetbuttonicon:empty:before {
-  color: #ccc; }
-
-.activetweetbutton .tweetbuttonicon:empty:before,
-.activetweetbutton:hover .tweetbuttonicon:empty:before {
-  color: #07f; }
-
-.tweetmetaleft .name,
-.quotedmeta .name {
-  color: #333;
-  font-weight: bold; }
-
-.tweetmetaleft .screenname,
-.quotedmeta .screenname {
-  color: #999;
-  font-size: 0.6875rem; }
-
-.fattweetmetaleft,
-.fattweetmetaright {
+.switches .switchlist .switch .icon, .switches .switchlist .switch .text {
   display: inline-block;
   vertical-align: middle; }
 
-.fattweetmetaright {
-  margin-left: .5rem; }
+.switches .switchlist .switch .icon {
+  padding: 0 .375rem;
+  margin-right: .75rem; }
 
-.fattweetmetaright .name {
-  color: #333;
-  font-weight: bold;
-  font-size: 1rem; }
+.switches .switchlist .switch .icon .iconic[data-glyph].iconic-md:before {
+  font-size: 2rem;
+  -webkit-transition: color 0.2s;
+  transition: color 0.2s; }
 
-.fattweetmetaright .screenname {
-  color: #999;
-  font-size: .875rem; }
-
-.tweetmetaleft {
-  width: calc(100% - 2rem);
-  overflow: hidden;
-  display: inline-block;
-  text-overflow: ellipsis; }
-
-.tweetmetaright {
-  text-align: right;
-  color: #999;
-  font-size: 0.6875rem;
-  display: inline-block;
-  height: 1rem;
-  overflow: hidden;
-  width: 2rem; }
-
-.tweettime {
-  /*background-color: #fff;*/ }
-
-.tweetindicator {
-  background-color: #fff; }
-
-.fattweettime {
-  /*margin-top: .75rem;*/ }
-
-.fattweetretweet {
-  color: #666;
-  line-height: 1rem;
-  margin-top: .75rem; }
-
-.tweetretweet {
-  color: #666;
-  line-height: 1rem;
-  margin-top: .125rem; }
-
-.retweeticon {
-  float: left;
-  margin-right: .1875rem;
-  margin-top: .0625rem;
-  height: 1rem;
-  width: 1rem; }
-
-.quotedtweet {
-  padding: .375rem;
-  margin-top: .375rem;
-  background-color: #f0f0f0;
+.switches .switchlist .switch .icon img {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #eee;
   border-radius: .25rem;
-  color: #333; }
+  box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
+  -webkit-transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s; }
 
-.tweetimagelist {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  width: 100%;
-  overflow: hidden; }
+.switches .switchlist .switch .text {
+  text-transform: uppercase;
+  font-size: 1.25rem;
+  -webkit-transition: color 0.2s;
+  transition: color 0.2s; }
 
-.tweetimagebox {
-  height: 9rem;
-  margin-top: .75rem;
-  overflow: hidden;
-  float: left; }
+.login {
+  padding: 4rem 0; }
 
-.tweetimagelink {
-  width: 100%;
-  height: 100%;
-  display: block;
-  font-size: 0;
-  background-size: cover;
-  background-position: center; }
+.frame > .login {
+  background-color: #5ae; }
 
-ul.timeline {
-  background: #fff; }
+.login .connect, .login .error, .login .result, .login .verify {
+  padding: .75rem;
+  text-align: center; }
 
-.profile {
+.login .connect button {
   background: #fff;
-  min-height: calc(100vh - 2.8125rem); }
+  border: 0;
+  border-radius: .25rem;
+  padding: .75rem;
+  color: #5ae;
+  box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2); }
 
-.messagegroup, .thread {
-  min-height: calc(100vh - 2.8125rem); }
+.login .connect button .iconic[data-glyph].iconic-sm:before {
+  font-size: 1.25rem;
+  margin-right: .5rem;
+  vertical-align: middle; }
+
+.login .error, .login .result {
+  color: #fff; }
+
+.login .verify {
+  padding-top: 4rem;
+  -webkit-backface-visibility: visible !important;
+  backface-visibility: visible !important; }
+
+.login .verify input, .login .verify button {
+  padding: .75rem;
+  background: #fff;
+  border: 0;
+  box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2); }
+
+.login .verify input {
+  border-top-left-radius: .25rem;
+  border-bottom-left-radius: .25rem; }
+
+.login .verify button {
+  border-top-right-radius: .25rem;
+  border-bottom-right-radius: .25rem;
+  color: #5ae; }
+
+.login .verify-enter {
+  -webkit-animation: flipInX .3s; }
+
+.login .verify-out {
+  -webkit-animation: flipOutX .3s; }

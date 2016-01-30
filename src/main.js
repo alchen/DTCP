@@ -32,7 +32,7 @@ app.on('ready', function () {
     });
   }
 
-  windows.createMainWindow(streams);
+  windows.getMainWindow(streams);
 });
 
 // Handle Events
@@ -129,6 +129,15 @@ ipc.on('loadScreenname', function (event, screenname, screennameToLoad) {
 
 ipc.on('loadMessages', function (event, screenname) {
   streams[screenname].loadMessages();
+});
+
+ipc.on('showViewer', function (event, media, index) {
+  windows.getNewViewerWindow(media, index);
+});
+
+ipc.on('resizeViewer', function (event, width, height) {
+  var sender = windows.findWindowFromWebContents(event.sender);
+  windows.setViewerBounds(sender, width, height);
 });
 
 ipc.on('compose', function (event, screenname, availableUsers, replyTo, pretext, options) {

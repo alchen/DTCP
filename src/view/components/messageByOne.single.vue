@@ -1,23 +1,32 @@
+<style lang="sass">
+.messagebox {
+  border: none;
+}
+</style>
+
+<template lang="html">
+  <li class="box messagebox">
+    <div class="message" :class="{'self': message.sender.screenname === username}" @contextmenu="rightclick">
+      <section class="messageleft">
+        <img class="tweeticon" :src="message.sender.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />
+      </section>
+      <section class="messageright">
+        <section class="messagetext" v-html="message.status"></section>
+        <section class="messagetime" v-text="timeFrom"></section>
+      </section>
+    </div>
+  </li>
+</template>
+
+<script>
 'use strict';
 
 var Vue = require('vue');
 var moment = require('moment');
 
-var template = '<li class="tweetcontainer">' +
-  '<div class="message" :class="{\'self\': message.sender.screenname === username}" @contextmenu="rightclick">' +
-    '<section class="messageleft">' +
-      '<img class="tweeticon" :src="message.sender.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />' +
-    '</section>' +
-    '<section class="messageright">' +
-      '<section class="messagetext" v-html="message.status"></section>' +
-      '<section class="messagetime" v-text="timeFrom"></section>' +
-    '</section>' +
-  '</div></li>';
-
 var Message = Vue.extend({
   replace: true,
   props: ['message', 'username', 'now'],
-  template: template,
   filters: {
     at: function (name) {
       return '@' + name;
@@ -62,3 +71,5 @@ var Message = Vue.extend({
 Vue.component('message', Message);
 
 module.exports = Message;
+
+</script>

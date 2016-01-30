@@ -1,12 +1,10 @@
-.headernav {
-  width: 100%;
+.pageheader {
   overflow: hidden;
-  height: $header-height;
   padding-top: .75rem;
   padding-left: .75rem;
   padding-right: .75rem;
   border-bottom: .0625rem solid #ccc;
-  box-sizing: border-box;;
+  box-sizing: border-box;
   background-color: #f6f6f6;
 
   .switchbutton .navlist {
@@ -65,6 +63,11 @@
           &:hover {
             color: #6ac;
           }
+
+          span::before {
+            font-size: .875rem;
+            line-height: 1rem;
+          }
         }
 
         &.active .navbutton, &.active .navbutton:hover {
@@ -108,11 +111,3 @@
   vertical-align: top;
   padding-right: .25rem;
 }
-
-.iconic-property-fill, .iconic-property-text {stroke: none !important;}
-.iconic-property-stroke {fill: none !important;}
-svg.iconic.iconic-fluid {height:100% !important;width:100% !important;}
-svg.iconic.iconic-sm:not(.iconic-size-md):not(.iconic-size-lg), svg.iconic.iconic-size-sm{width:16px;height:16px;}
-svg.iconic-sm > g.iconic-md, svg.iconic-sm > g.iconic-lg, svg.iconic-md > g.iconic-sm, svg.iconic-md > g.iconic-lg, svg.iconic-lg > g.iconic-sm, svg.iconic-lg > g.iconic-md {display: none;}
-svg.iconic.iconic-icon-sm > g.iconic-lg, svg.iconic.iconic-icon-md > g.iconic-lg {display:none;}
-svg.iconic-sm:not(.iconic-icon-md):not(.iconic-icon-lg) > g.iconic-sm, svg.iconic-md.iconic-icon-sm > g.iconic-sm, svg.iconic-lg.iconic-icon-sm > g.iconic-sm {display:inline;}

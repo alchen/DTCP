@@ -1,17 +1,24 @@
+<style lang="sass">
+
+</style>
+
+<template lang="html">
+  <ul class="thread timeline">
+      <component is="tweetComponent" v-for="tweet in pretext" :tweet="tweet" :username="username" :now="now" track-by="id"></component>
+      <component is="fatTweet" :tweet="base" :username="username" :now="now"></component>
+      <component is="tweetComponent" v-for="tweet in replies" :tweet="tweet" :username="username" :now="now" track-by="id"></component>
+    </ul>
+</template>
+
+<script>
 'use strict';
 
 var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
 var detectViewport = require('../directives/detectViewport');
 Vue.use(detectViewport);
-require('./tweet.fat.single');
-require('./tweet.single');
-
-var template = '<ul class="thread timeline">' +
-    '<component is="tweetComponent" v-for="tweet in pretext" :tweet="tweet" :username="username" :now="now" track-by="id"></component>' +
-    '<component is="fatTweet" :tweet="base" :username="username" :now="now"></component>' +
-    '<component is="tweetComponent" v-for="tweet in replies" :tweet="tweet" :username="username" :now="now" track-by="id"></component>' +
-  '</ul>';
+require('./tweet.fat.single.vue');
+require('./tweet.single.vue');
 
 var Thread = Vue.extend({
   props: ['base', 'pretext', 'replies', 'username', 'now', 'view'],
@@ -55,12 +62,10 @@ var Thread = Vue.extend({
   },
   attached: function () {
     this.scrollToFat();
-  },
-  template: template,
-  transitions: {
   }
 });
 
 Vue.component('thread', Thread);
 
 module.exports = Thread;
+</script>

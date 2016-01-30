@@ -18,7 +18,9 @@ module.exports = {
           submenu: [
             {
               label: 'About',
-              selector: 'orderFrontStandardAboutPanel:'
+              click: function () {
+                windows.getAboutWindow();
+              }
             },
             {
               type: 'separator'
@@ -122,7 +124,7 @@ module.exports = {
         },
         {
           label: 'View',
-          submenu: [
+          submenu: (process.env.NODE_ENV !== 'production') ? [
             {
               label: 'Reload',
               accelerator: 'Command+R',
@@ -132,6 +134,12 @@ module.exports = {
               label: 'Toggle DevTools',
               accelerator: 'Alt+Command+I',
               click: function () { BrowserWindow.getFocusedWindow().toggleDevTools(); }
+            }
+          ] : [
+            {
+              label: 'Reload',
+              accelerator: 'Command+R',
+              click: function () { BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache(); }
             }
           ]
         },

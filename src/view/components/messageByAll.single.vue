@@ -1,32 +1,38 @@
+<style lang="sass">
+</style>
+
+<template lang="html">
+  <li class="box" data-tweet-id="{{topMessage.id}}">
+    <div class="tweet" @click="leftclick">
+      <section class="tweetleft">
+        <img class="tweeticon" :src="correspondent.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />
+      </section>
+      <section class="tweetright">
+        <section class="tweetmeta">
+          <section class="tweetmetaleft">
+            <span class="name" v-text="correspondent.name" @click="doShowProfile"></span>
+            &nbsp;
+            <span class="screenname" v-text="correspondent.screenname | at" @click="doShowProfile"></span>
+          </section>
+          <section class="tweetmetaright">
+            <span class="tweettime" v-text="timeFrom"></span>
+          </section>
+        </section>
+        <section class="tweettext"><span class="iconic iconic-sm messagereply" v-if="topMessage.sender.screenname === username" data-glyph="carriage-return" aria-hidden="true"></span>{{{topMessage.status}}}</section>
+      </section>
+    </div>
+  </li>
+</template>
+
+<script>
 'use strict';
 
 var Vue = require('vue');
 var moment = require('moment');
 
-var template = '<li class="tweetcontainer" data-tweet-id="{{topMessage.id}}">' +
-  '<div class="tweet" @click="leftclick">' +
-    '<section class="tweetleft">' +
-      '<img class="tweeticon" :src="correspondent.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />' +
-    '</section>' +
-    '<section class="tweetright">' +
-      '<section class="tweetmeta">' +
-        '<section class="tweetmetaleft">' +
-          '<span class="name" v-text="correspondent.name" @click="doShowProfile"></span>' +
-          '&nbsp;' +
-          '<span class="screenname" v-text="correspondent.screenname | at" @click="doShowProfile"></span>' +
-        '</section>' +
-        '<section class="tweetmetaright">' +
-          '<span class="tweettime" v-text="timeFrom"></span>' +
-        '</section>' +
-      '</section>' +
-      '<section class="tweettext"><span class="iconic iconic-sm messagereply" v-if="topMessage.sender.screenname === username" data-glyph="carriage-return" aria-hidden="true"></span>{{{topMessage.status}}}</section>' +
-    '</section>' +
-  '</div></li>';
-
 var MessageTop = Vue.extend({
   replace: true,
   props: ['group', 'username', 'now'],
-  template: template,
   filters: {
     at: function (name) {
       return '@' + name;
@@ -83,3 +89,4 @@ var MessageTop = Vue.extend({
 Vue.component('messageTop', MessageTop);
 
 module.exports = MessageTop;
+</script>

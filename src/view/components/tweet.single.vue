@@ -1,0 +1,477 @@
+<style lang="sass">
+@import '../assets/const';
+
+.box {
+  -webkit-animation: fadeIn .7s;
+  border-bottom: 1px solid #ddd;
+}
+
+.tweet {
+  padding: .75rem;
+  font-size: .75rem;
+  cursor: default;
+  display: flex;
+
+  @at-root .activetweet {
+    background-color: #f3f3f3;
+  }
+
+  &left {
+    flex-shrink: 0;
+
+    @at-root .tweeticon {
+      height: 3rem;
+      width: 3rem;
+      margin-right: .75rem;
+      border-radius: .25rem;
+      border: 1px solid #eee;
+    }
+  }
+
+  &right {
+    flex-grow: 1;
+    overflow: hidden;
+
+    @at-root .tweettext {
+      white-space: pre-wrap;
+    }
+
+    @at-root .tweetretweet {
+      color: #777;
+
+      &icon:empty:before {
+        color: #777;
+        vertical-align: middle;
+      }
+    }
+
+    @at-root .quotedtweet {
+      margin-top: $tweet-internal-margin-top;
+      padding: .5rem;
+      background-color: #eee;
+      border-radius: .25rem;
+
+      @at-root .quotedmeta {
+        line-height: 1rem;
+      }
+
+      @at-root .quotedtext {
+        white-space: pre-wrap;
+      }
+    }
+  }
+
+  @at-root .name {
+    color: #333;
+    font-weight: bold;
+  }
+
+  @at-root .screenname {
+    color: #999;
+    font-size: 0.6875rem;
+  }
+}
+
+.tweetmeta {
+  display: flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  line-height: 1.25rem;
+
+  &left, &right {
+    display: inline-block;
+  }
+
+  &left {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &right {
+    flex-shrink: 0;
+    color: #999;
+    font-size: 0.6875rem;
+  }
+}
+
+.tweettime {
+  min-width: 1.5rem;
+  display: inline-block;
+  text-align: right;
+}
+
+@-webkit-keyframes fadeInInlineFromNone {
+    0% {
+      opacity: 0;
+    }
+    1% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+}
+
+.tweetcontrols {
+  @at-root .tweet .tweetcontrols {
+    display: none;
+  }
+
+  @at-root .tweet:hover .tweetcontrols {
+    display: inline-block;
+    animation-fill-mode: forwards;
+    animation: fadeInInlineFromNone .3s;
+  }
+
+  @at-root .tweetbutton {
+    border: none;
+    background: none;
+    padding: 0 .125rem;
+    margin-left: .375rem;
+    outline: none;
+    vertical-align: text-bottom;
+
+    &icon:empty:before {
+      font-size: .6875rem;
+      color: #333;
+    }
+
+    &.disabled #{&}icon:empty:before {
+      color: #999;
+      cursor: default;
+    }
+
+    &.active.retweetbutton #{&}icon:empty:before {
+      color: $blue;
+    }
+
+    &.active.favoritebutton #{&}icon:empty:before {
+      color: $yellow;
+      -webkit-text-stroke: 1px #c93;
+    }
+
+    &icon:hover:empty:before {
+      color: $blue;
+    }
+
+    &icon:active:empty:before {
+      transform: translateY(.0625rem);
+    }
+  }
+}
+
+// Fat Tweet
+
+.fattweet {
+  padding: .75rem;
+  font-size: .875rem;
+  cursor: default;
+
+  @at-root .fattweetmeta {
+    display: flex;
+
+    .name, .screenname {
+      display: block;
+      line-height: 1rem;
+    }
+
+    .name {
+      font-size: 1rem;
+    }
+
+    .screenname {
+      font-size: .875rem;
+    }
+
+    @at-root .fattweetmetaright {
+      margin: .5rem 0;
+    }
+  }
+
+  @at-root .fattweettext {
+    margin-top: .75rem;
+    font-size: 1.125rem;
+    font-weight: lighter;
+    color: #333;
+    white-space: pre-wrap;
+    user-select: text;
+  }
+
+  @at-root .fattweetbottommeta {
+    margin-top: .75rem;
+    color: #999;
+    text-transform: uppercase;
+
+    @at-root .fattweettime {
+      font-size: .75rem;
+    }
+  }
+}
+
+.fattweetcontrols {
+  margin-top: .75rem;
+  white-space: nowrap;
+  width: 100%;
+
+  @at-root .fattweetbutton {
+    display: inline-block;
+    width: 25%;
+    border: none;
+    background: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+
+    &icon:empty:before {
+      font-size: 1rem;
+    }
+
+    &icon:active:empty:before {
+      transform: translateY(.125rem);
+    }
+  }
+}
+
+// Gap
+
+@-webkit-keyframes compress {
+  0% {
+    max-height: 1.5rem;
+  }
+
+  100% {
+    max-height: 0;
+  }
+}
+
+@-webkit-keyframes expand {
+  0% {
+    max-height: 0;
+  }
+
+  100% {
+    max-height: 1.5rem;
+  }
+}
+
+.gap {
+  background-color: #eee;
+  text-transform: uppercase;
+  font-size: .625rem;
+  text-align: center;
+  height: 1.5rem;
+  line-height: 1.5rem;
+  color: #777;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  overflow: hidden;
+
+  .iconic:before {
+    font-size: .5rem;
+    margin-right: .25rem;
+  }
+}
+
+.gap-enter {
+  -webkit-animation: expand .3s;
+}
+
+.gap-leave {
+  -webkit-animation: compress .3s;
+}
+</style>
+
+<template lang="html">
+  <li class="box" data-tweet-id="{{tweet.id}}">
+    <div class="gap" v-if="tweet.gaps[view]" @click="loadMissing" transition="gap"><span class="iconic" data-glyph="chevron-top" aria-hidden="true"></span> Load missing tweets</div>
+    <div class="tweet" @contextmenu="rightclick" @click="leftclick">
+      <div class="tweetleft">
+        <img class="tweeticon" :src="tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />
+      </div>
+      <div class="tweetright">
+        <section class="tweetmeta">
+          <section class="tweetmetaleft">
+            <span class="name" v-text="tweet.user.name" @click="doShowProfile"></span>
+            <span class="screenname" v-text="tweet.user.screenname | at" @click="doShowProfile"></span>
+          </section>
+          <section class="tweetmetaright">
+            <section class="tweetcontrols">
+              <button class="tweetbutton" @click="doReply"><span class="iconic tweetbuttonicon" data-glyph="share"></span></button>
+              <button class="tweetbutton retweetbutton" @click="doRetweet" :class="{ disabled: tweet.user.isProtected, active: tweet.isRetweeted }"><span class="iconic tweetbuttonicon" data-glyph="loop-circular"></span></button>
+              <button class="tweetbutton" @click="doQuote" :class="{ disabled: tweet.user.isProtected }"><span class="iconic tweetbuttonicon" data-glyph="double-quote-serif-left"></span></button>
+              <button class="tweetbutton favoritebutton"  @click="doFavorite" :class="{ active: tweet.isFavorited }"><span class="iconic tweetbuttonicon" data-glyph="star"></span></button>
+            </section>
+            <span class="tweettime" v-text="timeFrom"></span>
+          </section>
+        </section>
+        <section class="tweettext" v-html="tweet.status"></section>
+        <section class="tweetretweet" v-if="tweet.retweetedBy || tweet.isRetweeted">
+          <span class="iconic tweetretweeticon" data-glyph="loop-square"></span>
+          <span class="retweetname" v-if="tweet.retweetedBy" v-text="lastRetweetedBy.name" @click="doShowScreenname(lastRetweetedBy.screenname)"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>
+        </section>
+        <component is="tweetMedia" v-if="tweet.media" :media="tweet.media"></component>
+        <section class="quotedtweet" v-if="tweet.quote" @click="quoteclick">
+          <section class="quotedmeta">
+            <span class="name" v-text="tweet.quote.user.name"></span>
+            <span class="screenname" v-text="tweet.quote.user.screenname | at"></span>
+          </section>
+          <section class="quotedtext" v-html="tweet.quote.status"></section>
+          <component is="tweetMedia" v-if="tweet.quote.media" :media="tweet.quote.media"></component>
+        </section>
+      </div>
+    </div>
+  </li>
+</template>
+
+<script>
+'use strict';
+
+var Vue = require('vue');
+var moment = require('moment');
+var remote = require('remote');
+var contextmenu = require('./contextmenu');
+var ipc = require('electron').ipcRenderer;
+var shell = require('shell');
+var _ = require('lodash');
+require('./tweetMedia.single.vue');
+
+var Tweet = Vue.extend({
+  replace: true,
+  props: ['tweet', 'username', 'now', 'view', 'fat'],
+  filters: {
+    at: function (name) {
+      return '@' + name;
+    }
+  },
+  computed: {
+    lastRetweetedBy: function () {
+      return this.tweet.retweetedBy[this.tweet.retweetedBy.length - 1];
+    },
+    timeFrom: function () {
+      var createdAt = moment(new Date(this.tweet.createdAt));
+      var now = this.now;
+      var duration = moment.duration(now.diff(createdAt));
+
+      var sign = null;
+      if ((sign = duration.as('second')) <= 5) {
+        return 'now';
+      } else if (sign < 60) {
+        return Math.round(sign) + 's';
+      } else if ((sign = duration.as('minute')) < 60) {
+        return Math.round(sign) + 'm';
+      } else if ((sign = duration.as('hour')) < 24) {
+        return Math.round(sign) + 'h';
+      } else if ((sign = duration.as('day')) <= 365) {
+        return Math.round(sign) + 'd';
+      } else {
+        sign = duration.as('year');
+        return Math.round(sign) + 'y';
+      }
+    }
+  },
+  methods: {
+    doReply: function (event) {
+      var self = this;
+      var mentions = _.filter(this.tweet.mentions, function (k) {
+        return k !== self.username;
+      });
+      mentions.unshift(this.tweet.user.screenname);
+      if (this.tweet.quote) {
+        mentions.push(this.tweet.quote.user.screenname);
+      }
+      mentions = _.map(_.uniq(mentions), function (m) {
+        return '@' + m;
+      }).join(' ');
+
+      this.$dispatch('compose', this.username, this.tweet.id, mentions);
+    },
+    doRetweet: function (event) {
+      ipc.send('retweet', this.username, this.tweet.id, !this.tweet.isRetweeted);
+    },
+    doQuote: function (event) {
+      var tweetUrl = 'https://twitter.com/' +
+        this.tweet.user.screenname +
+        '/status/' +
+        this.tweet.id;
+
+      this.$dispatch('compose', this.username, this.tweet.id, tweetUrl, {
+        frontFocus: true
+      });
+    },
+    doFavorite: function (event) {
+      ipc.send('favorite', this.username, this.tweet.id, !this.tweet.isFavorited);
+    },
+    doDelete: function (event) {
+      ipc.send('delete', this.username, this.tweet.id);
+    },
+    doShowInBrowser: function (event) {
+      var tweetUrl = 'https://twitter.com/' +
+        this.tweet.user.screenname +
+        '/status/' +
+        this.tweet.id;
+
+      shell.openExternal(tweetUrl);
+    },
+    doShowScreenname: function (screenname) {
+      this.$dispatch('showScreenname', screenname);
+    },
+    doShowProfile: function () {
+      this.$dispatch('showProfile', this.tweet.user);
+    },
+    rightclick: function (event) {
+      var menu = contextmenu.tweet(this);
+      menu.popup(remote.getCurrentWindow());
+      event.preventDefault();
+    },
+    leftclick: function (event) {
+      if (event.target.tagName === 'SECTION') {
+        var el = event.target;
+        do {
+          if (el.classList.contains('quotedtweet')) {
+            // because this is handled separately in quoteclick() below
+            return;
+          }
+          el = el.parentElement;
+        }
+        while (el);
+      }
+
+      if (event.target.tagName === 'A') {
+        var screenname = event.target.getAttribute('data-screen-name');
+        if (screenname) {
+          this.doShowScreenname(screenname);
+        }
+      } else if (event.target.tagName !== 'SPAN' &&
+        event.target.tagName !== 'BUTTON' &&
+        event.target.tagName !== 'IMG') {
+        // Avoid firing on wrong elements
+        this.$dispatch('showThread', this.tweet);
+      }
+    },
+    quoteclick: function (event) {
+      if (event.target.tagName === 'A') {
+        var screenname = event.target.getAttribute('data-screen-name');
+        if (screenname) {
+          this.doShowScreenname(screenname);
+        }
+      } else if (event.target.tagName !== 'SPAN' &&
+        event.target.tagName !== 'BUTTON' &&
+        event.target.tagName !== 'IMG') {
+        // Avoid firing on wrong elements
+        this.$dispatch('showThread', this.tweet.quote);
+      }
+    },
+    loadMissing: function (event) {
+      this.$dispatch('loadSince', this.tweet.id);
+    }
+  },
+  transitions: {
+  }
+});
+
+Vue.component('tweetComponent', Tweet);
+
+module.exports = Tweet;
+</script>

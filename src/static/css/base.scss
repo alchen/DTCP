@@ -20,6 +20,10 @@ a {
   text-decoration: none;
 }
 
+.js-display-url {
+  word-break: break-all;
+}
+
 ::-webkit-scrollbar {
   width: .625rem;
 }

@@ -1,25 +1,6 @@
-@import 'const';
 @import 'base';
 @import 'animate';
-@import 'frame';
-@import 'timeline';
-@import 'message';
-@import 'switches';
-@import 'login';
-@import 'prompt';
+@import 'layout';
 @import 'nav';
-@import 'profile';
-@import 'tweet';
-
-ul.timeline {
-  background: $bg-color;
-}
-
-.profile {
-  background: $bg-color;
-  min-height: $frame-height;
-}
-
-.messagegroup, .thread {
-  min-height: $frame-height;
-}
+@import 'prompt';
+@import 'components'

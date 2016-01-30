@@ -5,7 +5,7 @@ var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
 var twitterText = require('twitter-text');
 
-Vue.config.debug = true;
+Vue.config.debug = process.env.NODE_ENV !== 'production';
 Vue.config.strict = true;
 
 var newTweet;

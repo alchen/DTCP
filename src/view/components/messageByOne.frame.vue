@@ -1,17 +1,23 @@
+<style lang="sass">
+
+</style>
+
+<template lang="html">
+  <ul class="tweets timeline messagegroup">
+    <component is="message" v-for="message in reversedMessages" :message="message" :username="username" :now="now" track-by="id"></component>
+  </ul>
+</template>
+
+<script>
 'use strict';
 
 var Vue = require('vue');
 var moment = require('moment');
-require('./messageByOne.single');
-
-var template = '<ul class="tweets timeline messagegroup">' +
-  '<component is="message" v-for="message in reversedMessages" :message="message" :username="username" :now="now" track-by="id" />' +
-  '</ul>';
+require('./messageByOne.single.vue');
 
 var MessageGroup = Vue.extend({
   replace: true,
   props: ['messages', 'username', 'now', 'view'],
-  template: template,
   filters: {
     at: function (name) {
       return '@' + name;
@@ -53,12 +59,6 @@ var MessageGroup = Vue.extend({
     },
     doShowProfile: function (user) {
       this.$dispatch('showProfile', user);
-    },
-    rightclick: function (event) {
-      // TODO modify for direct messages
-      // var menu = contextmenu.tweet(this);
-      // menu.popup(remote.getCurrentWindow());
-      // event.preventDefault();
     }
   }
 });
@@ -66,3 +66,4 @@ var MessageGroup = Vue.extend({
 Vue.component('messageGroup', MessageGroup);
 
 module.exports = MessageGroup;
+</script>

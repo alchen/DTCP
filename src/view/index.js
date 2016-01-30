@@ -4,13 +4,13 @@
 var ipc = require('electron').ipcRenderer;
 var _ = require('lodash');
 var Vue = require('vue');
-require('../view/components/frames');
 var moment = require('moment');
+require('../view/components/frames.vue');
 
-Vue.config.debug = true;
+Vue.config.debug = process.env.NODE_ENV !== 'production';
 Vue.config.strict = true;
 
-var defaultLength = 20;
+var defaultLength = 50;
 var scrollThrottleRate = 60;
 
 var timeline = new Vue({
@@ -452,8 +452,8 @@ var timeline = new Vue({
     },
     keepPosition: function (offset) {
       var el = document.getElementsByClassName('frame')[0];
-      var toBottom =  el.scrollTop < 64 ? 0 : el.scrollHeight - el.scrollTop;
-      var tweets = el.getElementsByClassName('tweetcontainer');
+      var toBottom =  el.scrollTop < 16 ? 0 : el.scrollHeight - el.scrollTop;
+      var tweets = el.getElementsByClassName('box');
       var lastTweetHeight = tweets.length > 1 ? tweets[tweets.length - 2].scrollHeight : 0;
 
       this.$nextTick(function () {

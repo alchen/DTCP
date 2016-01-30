@@ -1,40 +1,51 @@
+<style lang="sass">
+.frame-enter {
+  -webkit-animation: slideInLeft .2s;
+}
+.frame-leave {
+  -webkit-animation: slideOutRight .2s;
+}
+</style>
+
+<template lang="html">
+  <section class="frames">
+    <div class="frame" v-for="frame in frames" :style="{ zIndex: ($index + 1) }" @scroll="scroll" transition="frame">
+      <component
+        :is="frame.is"
+        :view="frame.view"
+        :tweets="frame.tweets"
+        :messages="frame.messages"
+        :user="frame.profile"
+        :base.sync="frame.base"
+        :pretext.sync="frame.pretext"
+        :replies.sync="frame.replies"
+        :accounts="frame.accounts"
+        :username="screenname"
+        :now="now"
+      ></component>
+    </div>
+  </section>
+</template>
+
+<script>
 /*jslint browser:true*/
 'use strict';
 
 var _ = require('lodash');
 var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
-require('../../view/components/profile.frame');
-require('../../view/components/timeline.frame');
-require('../../view/components/thread.frame');
-require('../../view/components/messageByAll.frame');
-require('../../view/components/messageByOne.frame');
-require('../../view/components/switches.frame');
-require('../../view/components/login.frame');
+require('./profile.frame.vue');
+require('./timeline.frame.vue');
+require('./thread.frame.vue');
+require('./messageByAll.frame.vue');
+require('./messageByOne.frame.vue');
+require('./switches.frame.vue');
+require('./login.frame.vue');
 
-var template = '<section class="frames">' +
-               '<div class="frame" v-for="frame in frames" :style="{ zIndex: ($index + 1) }" @scroll="scroll" transition="frame">' +
-               '  <component' +
-               '    :is="frame.is"' +
-               '    :view="frame.view"' +
-               '    :tweets="frame.tweets"' +
-               '    :messages="frame.messages"' +
-               '    :user="frame.profile"' +
-               '    :base.sync="frame.base"' +
-               '    :pretext.sync="frame.pretext"' +
-               '    :replies.sync="frame.replies"' +
-               '    :accounts="frame.accounts"' +
-               '    :username="screenname"' +
-               '    :now="now"' +
-               '  ></component>' +
-               '</div>' +
-               '</section>';
-
-var scrollSpeed = 180;
+var scrollSpeed = 240;
 
 var Frames = Vue.extend({
   replace: true,
-  template: template,
   props: ['frames', 'screenname', 'now'],
   computed: {
     topFrame: function () {
@@ -132,7 +143,7 @@ var Frames = Vue.extend({
           nextContainer.classList.add('activetweet');
         }
       } else {
-        var tweetContainers = currentFrame.getElementsByClassName('tweetcontainer');
+        var tweetContainers = currentFrame.getElementsByClassName('box');
         nextContainer = _.find(tweetContainers, function (el) {
           return el.getBoundingClientRect().top >= currentFrameRect.top;
         });
@@ -145,7 +156,7 @@ var Frames = Vue.extend({
         if (nextContainer.getBoundingClientRect().bottom >= currentFrameRect.bottom) {
           this.scrollTo(currentFrame.scrollTop  + nextContainer.getBoundingClientRect().bottom - currentFrameRect.bottom);
         } else if (nextContainer.getBoundingClientRect().top <= currentFrameRect.top) {
-          this.scrollTo(currentFrame.scrollTop + nextContainer.getBoundingClientRect().top - currentFrame.offsetTop);
+          this.scrollTo(currentFrame.scrollTop + nextContainer.getBoundingClientRect().top - currentFrameRect.top);
         }
       }
     },
@@ -165,7 +176,7 @@ var Frames = Vue.extend({
           nextContainer.classList.add('activetweet');
         }
       } else {
-        var tweetContainers = currentFrame.getElementsByClassName('tweetcontainer');
+        var tweetContainers = currentFrame.getElementsByClassName('box');
         nextContainer = _.find(tweetContainers, function (el) {
           return el.getBoundingClientRect().top >= currentFrameRect.top;
         });
@@ -178,7 +189,7 @@ var Frames = Vue.extend({
         if (nextContainer.getBoundingClientRect().bottom >= currentFrameRect.bottom) {
           this.scrollTo(currentFrame.scrollTop  + nextContainer.getBoundingClientRect().bottom - currentFrameRect.bottom);
         } else if (nextContainer.getBoundingClientRect().top <= currentFrameRect.top) {
-          this.scrollTo(currentFrame.scrollTop + nextContainer.getBoundingClientRect().top - currentFrame.offsetTop);
+          this.scrollTo(currentFrame.scrollTop + nextContainer.getBoundingClientRect().top - currentFrameRect.top);
         }
       } else {
         this.scrollTo(0); // scroll to top
@@ -202,6 +213,7 @@ var Frames = Vue.extend({
       var frames = document.getElementsByClassName('frame');
       var currentFrame = frames[frames.length - 1];
       var sy = currentFrame.scrollTop;
+      var changed = false;
       speed = typeof speed !== 'undefined' ? speed : scrollSpeed;
 
       // cancel frame is there is an scroll event happening
@@ -231,8 +243,24 @@ var Frames = Vue.extend({
         // avoid elapsed times higher than one
         elapsed = elapsed > 1 ? 1 : elapsed;
 
-        value = ease(elapsed);
-        cy = sy + (destination - sy) * value;
+        if (changed || elapsed == 1 || Math.abs(destination - sy) < 16) {
+          if (!changed) {
+            startTime = now();
+            sy = currentFrame.scrollTop;
+            speed = Math.floor(speed / 2);
+            changed = true;
+          }
+          elapsed = (time - startTime) / speed;
+          elapsed = elapsed > 1 ? 1 : elapsed;
+          value = ease(elapsed);
+          cy = sy + (destination - sy) * value;
+        } else {
+          cy = sy + Math.sign(destination - sy) * (time - startTime) * 1.5;
+
+          if ((destination > sy && cy > destination) || (destination < sy && cy < destination)) {
+            cy = destination;
+          }
+        }
 
         currentFrame.scrollTop = Math.floor(cy);
 
@@ -261,6 +289,7 @@ var Frames = Vue.extend({
       }
     },
     scroll: function (event) {
+      // TODO: Add a debounced check for activetweet visibility
       if (this.frames.length === 1 && event.target.scrollTop === 0 && (this.topFrame.view === 'home' || this.topFrame.view === 'mentions')) {
         this.$dispatch('rewind');
       }
@@ -271,3 +300,4 @@ var Frames = Vue.extend({
 Vue.component('frames', Frames);
 
 module.exports = Frames;
+</script>
