@@ -14,7 +14,7 @@ var defaultLength = 50;
 var scrollThrottleRate = 60;
 
 var timeline = new Vue({
-  el: '#content',
+  el: 'html',
   computed: {
     topFrame: function () {
       return this.frames[this.frames.length - 1] || {};
@@ -46,6 +46,7 @@ var timeline = new Vue({
   },
   data: {
     blur: false,
+    fontSize: 16,
     screenname: '',
     frames: [],
     bundle: {},
@@ -99,7 +100,32 @@ var timeline = new Vue({
         this.frames.pop();
       }
     },
-    dive: function () {
+    findTweet: function (tweetId) {
+      var target;
+      if (this.topFrame.is === 'profile' || this.topFrame.is === 'timeline') {
+        target = _.find(this.topFrame.tweets, function (tweet) {
+          return tweetId === tweet.id;
+        });
+        return target;
+      } else if (this.topFrame.is === 'thread') {
+        if (tweetId === this.topFrame.base.id) {
+          target = this.topFrame.base;
+        } else {
+          target = _.find(this.topFrame.pretext, function (tweet) {
+            return tweetId === tweet.id;
+          }) || _.find(this.topFrame.replies, function (tweet) {
+            return tweetId === tweet.id;
+          });
+        }
+        return target;
+      } else if (this.topFrame.is === 'messages') {
+        target = _.find(this.topFrame.messages, function (messageGroup) {
+          return messageGroup.id === tweetId;
+        });
+        return target;
+      }
+    },
+    getActiveTweet: function () {
       var frames = document.getElementsByClassName('frame');
       var currentFrame = frames[frames.length - 1];
       var activeTweets = currentFrame.getElementsByClassName('activetweet');
@@ -109,36 +135,26 @@ var timeline = new Vue({
       }
 
       var tweetId = activeTweets[0].getAttribute('data-tweet-id');
+      var tweet = this.findTweet(tweetId)
 
-      if (!tweetId) {
+      return tweet;
+    },
+    dive: function () {
+      var tweet = this.getActiveTweet(tweetId);
+      if (!tweet) {
         return;
       }
 
-      var target;
-
       if (this.topFrame.is === 'profile' || this.topFrame.is === 'timeline') {
-        target = _.find(this.topFrame.tweets, function (tweet) {
-          return tweetId === tweet.id;
-        });
-
-        this.$broadcast('showThread', target);
+        this.$broadcast('showThread', tweet);
       } else if (this.topFrame.is === 'thread') {
-        if (tweetId === this.topFrame.base.id) {
+        if (tweet.id === this.topFrame.base.id) {
           this.$broadcast('showProfile', this.topFrame.base.user);
         } else {
-          target = _.find(this.topFrame.pretext, function (tweet) {
-            return tweetId === tweet.id;
-          }) || _.find(this.topFrame.replies, function (tweet) {
-            return tweetId === tweet.id;
-          });
-
-          this.$broadcast('showThread', target);
+          this.$broadcast('showThread', tweet);
         }
       } else if (this.topFrame.is === 'messages') {
-        target = _.find(this.topFrame.messages, function (messageGroup) {
-          return messageGroup.id === tweetId;
-        });
-        this.$broadcast('showMessageGroup', target.messages);
+        this.$broadcast('showMessageGroup', tweet);
       }
     },
     updateBadge: function () {
@@ -501,6 +517,52 @@ var timeline = new Vue({
         } else {
           self.scrollPageDown();
         }
+      } else if (event.keyCode === 82) { // R
+        var tweet = self.getActiveTweet();
+        if (!tweet) {
+          return;
+        }
+
+        var mentions = _.filter(tweet.mentions, function (k) {
+          return k !== self.screenname;
+        });
+        mentions.unshift(tweet.user.screenname);
+        if (tweet.quote) {
+          mentions.push(tweet.quote.user.screenname);
+        }
+        mentions = _.map(_.uniq(mentions), function (m) {
+          return '@' + m;
+        }).join(' ');
+
+        self.$emit('compose', self.screenname, tweet.id, mentions);
+      } else if (event.keyCode === 84 && event.altKey) { // Alt + T
+        var tweet = self.getActiveTweet();
+        if (!tweet) {
+          return;
+        }
+
+        var tweetUrl = 'https://twitter.com/' +
+          tweet.user.screenname +
+          '/status/' +
+          tweet.id;
+
+        self.$emit('compose', self.screenname, tweet.id, tweetUrl, {
+          frontFocus: true
+        });
+      } else if (event.keyCode === 70) { // F
+        var tweet = self.getActiveTweet();
+        if (!tweet) {
+          return;
+        }
+
+        ipc.send('favorite', self.screenname, tweet.id, !tweet.isFavorited);
+      } else if (event.keyCode === 84) { // T
+        var tweet = self.getActiveTweet();
+        if (!tweet) {
+          return;
+        }
+
+        ipc.send('retweet', self.screenname, tweet.id, !tweet.isRetweeted);
       }
 
       switch (event.keyCode) {
@@ -611,6 +673,11 @@ var timeline = new Vue({
       self.compose(self.screenname);
     });
 
+    ipc.on('fontSize', function (event, fontSize) {
+      self.fontSize = fontSize;
+    });
+
+    ipc.send('getFontSize');
     ipc.send('initialLoad');
   }
 });

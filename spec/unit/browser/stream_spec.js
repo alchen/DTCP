@@ -18,7 +18,7 @@ var twitStub = function () {
     get: function () {}
   };
 };
-var Stream = proxyquire('../../../instrumented/models/stream', {'../../lib/twit': twitStub});
+var Stream = proxyquire('../../../instrumented/models/stream', {'../lib/twit': twitStub});
 
 var config = require('../../../instrumented/config');
 var Tweet = require('../../../instrumented/models/tweet');

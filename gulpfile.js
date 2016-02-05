@@ -3,7 +3,7 @@
 const gulp = require('gulp');
 const sass = require('gulp-sass');
 const webpack = require('webpack');
-const RestoreDirname = require('./lib/webpack/restoredirname.webpack');
+const RestoreDirname = require('./webpack/restoredirname.webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 gulp.task('default', ['webpack', 'sass']);
@@ -27,6 +27,7 @@ gulp.task('webpack', function (cb) {
       'static/js/composer': './view/composer.js',
       'static/js/about': './view/about.js',
       'static/js/viewer': './view/viewer.js',
+      'static/js/preferences': './view/preferences.js',
       'entry': './main.js'
     },
     output: {

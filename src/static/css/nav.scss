@@ -1,28 +1,27 @@
 .pageheader {
   overflow: hidden;
-  padding-top: .75rem;
-  padding-left: .75rem;
-  padding-right: .75rem;
+  padding: .5rem .75rem;
   border-bottom: .0625rem solid #ccc;
   box-sizing: border-box;
   background-color: #f6f6f6;
+  display: flex;
+
+  @at-root .switchbutton {
+    flex-grow: 1;
+  }
 
   .switchbutton .navlist {
-    float: left;
     margin: 0;
     padding: 0;
     list-style: none;
 
     .navicon {
-      position: relative;
-
       .usericon {
         width: 1.75rem;
         height: 1.75rem;
         vertical-align: top;
         border: 1px solid #eee;
         border-radius: .25rem;
-        margin-top: -0.25rem;
         box-shadow: 0 0 .125rem 0 rgba(0, 0, 0, 0.2);
         background: #ccc;
       }
@@ -39,8 +38,7 @@
   }
 
   .nav {
-    float: right;
-    height: 1.25rem;
+    text-align: right;
 
     .navlist {
       list-style: none;
@@ -49,16 +47,16 @@
 
       .navicon {
         cursor: pointer;
-        position: relative;
-        float: left;
+        display: inline-block;
         margin-left: .75rem;
+        position: relative;
 
         .navbutton {
           background: none;
           border: none;
           outline: none;
           transition: all .2s;
-          height: 1.25rem;
+          height: 1.75rem;
 
           &:hover {
             color: #6ac;
@@ -66,7 +64,7 @@
 
           span::before {
             font-size: .875rem;
-            line-height: 1rem;
+            line-height: 1.75rem;
           }
         }
 
@@ -80,7 +78,7 @@
           border: .1875rem solid #5ae;
           position: absolute;
           border-radius: .25rem;
-          bottom: -.375rem;
+          bottom: -.25rem;
           left: calc(50% - 0.1875rem);
         }
       }

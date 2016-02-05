@@ -26,6 +26,16 @@ module.exports = {
               type: 'separator'
             },
             {
+              label: 'Preferences...',
+              accelerator: 'Command+,',
+              click: function () {
+                windows.getPreferencesWindow();
+              }
+            },
+            {
+              type: 'separator'
+            },
+            {
               label: 'Hide',
               accelerator: 'Command+H',
               selector: 'hide:'

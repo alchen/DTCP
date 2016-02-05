@@ -1,0 +1,169 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+body {
+  background-color: #f0f0f0;
+  font-family: "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  line-height: 1.25rem;
+  color: #333;
+}
+
+#content {
+  padding: 1rem;
+  animation: fadeIn .5s;
+
+  @at-root h1 {
+    font-size: 1.5rem;
+  }
+
+  @at-root h2 {
+    font-size: 1.25rem;
+    font-weight: normal;
+    line-height: 1.5rem;
+    margin: 0;
+    flex-grow: 1;
+  }
+
+  section > header {
+    display: flex;
+  }
+
+  @at-root .description {
+    color: #666;
+    font-size: .875rem;
+  }
+
+  @at-root .proxy {
+    margin-top: 1rem;
+
+    @at-root .form {
+      margin-top: 1rem;
+
+      @at-root .proxyhost, .proxyport {
+        line-height: 2rem;
+        padding: 0 .25rem;
+        margin: .125rem;
+        width: 100%;
+        outline: none;
+        cursor: text;
+      }
+    }
+  }
+
+  @at-root .save {
+    margin-top: 1rem;
+    text-align: right;
+
+    @at-root .savebutton {
+      outline: none;
+      border: none;
+      border-radius: .25rem;
+      padding: .375rem .75rem;
+      text-transform: uppercase;
+      background: #ccc;
+      color: #fff;
+      font-size: .875rem;
+      transition: margin .1s, background .2s;
+
+      &.active {
+        background: #5ae;
+        cursor: pointer;
+      }
+
+      &:active {
+        margin-top: .125rem;
+      }
+    }
+  }
+
+  @at-root .size {
+    margin: 1rem auto;
+    .form {
+      display: flex;
+
+      @at-root .fontsize {
+        flex-grow: 1;
+      }
+
+      @at-root .fontsizevalue {
+        padding: 0 1rem;
+      }
+    }
+  }
+}
+
+.onoffswitch {
+  position: relative;
+  width: 3rem;
+  user-select: none;
+}
+.onoffswitch-checkbox {
+  display: none;
+}
+.onoffswitch-label {
+  display: block;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid #999999;
+  border-radius: 0px;
+}
+.onoffswitch-inner {
+  display: block;
+  width: 200%;
+  margin-left: -100%;
+  transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+    display: block;
+    float: left;
+    width: 50%;
+    height: 1.5rem;
+    padding: 0;
+    color: white;
+    font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+.onoffswitch-inner:before {
+    content: "";
+    padding-left: .25rem;
+    background-color: #CCCCCC; color: #FFFFFF;
+}
+.onoffswitch-inner:after {
+    content: "";
+    padding-right: .25rem;
+    background-color: #CCCCCC; color: #333333;
+    text-align: right;
+}
+.onoffswitch-switch {
+    display: block;
+    width: 1rem;
+    margin: 0px;
+    background: #A1A1A1;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 2rem;
+    transition: all 0.3s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px;
+    background-color: #27A1CA;
+}

@@ -290,10 +290,27 @@ var Frames = Vue.extend({
     },
     scroll: function (event) {
       // TODO: Add a debounced check for activetweet visibility
+      this.userScrollHandler();
       if (this.frames.length === 1 && event.target.scrollTop === 0 && (this.topFrame.view === 'home' || this.topFrame.view === 'mentions')) {
         this.$dispatch('rewind');
       }
     }
+  },
+  compiled: function () {
+    this.userScrollHandler = _.debounce(function () {
+      var frames = document.getElementsByClassName('frame');
+      var currentFrame = frames[frames.length - 1];
+      var currentFrameRect = currentFrame.getBoundingClientRect();
+      var activeTweets = currentFrame.getElementsByClassName('activetweet');
+
+      if (activeTweets.length > 0) {
+        var activeTweet = activeTweets[0];
+        var tweetRect = activeTweet.getBoundingClientRect();
+        if (!(tweetRect.top >= currentFrameRect.top && tweetRect.bottom <= currentFrameRect.bottom)) {
+          activeTweet.classList.remove('activetweet');
+        }
+      }
+    }, 500);
   }
 });
 

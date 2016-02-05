@@ -163,15 +163,16 @@ a {
       margin: .25rem;
       padding: .25rem;
       list-style: none;
-      border-radius: .5rem;
-      display: inline-block; }
+      border-radius: .25rem;
+      display: inline-flex; }
       .newtweet .switches .switchlist .switch {
-        margin-top: .75rem; }
+        margin-left: .25rem;
+        -webkit-animation: fadeIn .1s; }
         .newtweet .switches .switchlist .switch:first-child {
-          margin-top: 0; }
+          margin-left: 0; }
         .newtweet .switches .switchlist .switch .icon {
           width: 3rem;
           height: 3rem;
-          border-radius: .5rem;
+          border-radius: .25rem;
           vertical-align: top;
           box-shadow: 0 0 0.125rem 0.125rem rgba(0, 0, 0, 0.2); }

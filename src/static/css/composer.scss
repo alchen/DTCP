@@ -108,20 +108,21 @@ $switch-transition-time: .2s;
       margin: .25rem;
       padding: .25rem;
       list-style: none;
-      border-radius: .5rem;
-      display: inline-block;
+      border-radius: .25rem;
+      display: inline-flex;
 
       .switch {
-        margin-top: .75rem;
+        margin-left: .25rem;
+        -webkit-animation: fadeIn .1s;
 
         &:first-child {
-          margin-top: 0;
+          margin-left: 0;
         }
 
         .icon {
           width: 3rem;
           height: 3rem;
-          border-radius: .5rem;
+          border-radius: .25rem;
           vertical-align: top;
           box-shadow: 0 0 .125rem .125rem rgba(0, 0, 0, 0.2);
         }

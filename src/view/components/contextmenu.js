@@ -8,15 +8,19 @@ module.exports = {
     var contextTemplate = [
       {
         label: 'Reply...',
+        accelerator: 'R'
       },
       {
         label: 'Retweet',
+        accelerator: 'T'
       },
       {
         label: 'Quote Tweet...',
+        accelerator: 'Alt+T'
       },
       {
         label: 'Favorite',
+        accelerator: 'F'
       },
       {
         type: 'separator'

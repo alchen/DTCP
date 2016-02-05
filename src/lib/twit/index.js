@@ -2,7 +2,7 @@
 //  Twitter API Wrapper
 //
 var assert = require('assert');
-var request = require('request');
+var request = require('./request');
 var util = require('util');
 var endpoints = require('./endpoints');
 var helpers = require('./helpers');

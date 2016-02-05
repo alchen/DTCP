@@ -30,7 +30,12 @@
   }
 
   .error, .result {
-    color: #fff;
+    color: #5ae;
+    background: #fff;
+    width: 8rem;
+    border-radius: .25rem;
+    margin: 4rem auto 0 auto;
+    box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
   }
 
   .verify {
@@ -76,7 +81,7 @@
       <input type="text" v-model="pin" placeholder="Enter PIN" />
       <button @click="verify">Verify</button>
     </section>
-    <section class="result" v-if="result" v-text="result"></section>
+    <section class="result" v-if="result" v-text="result" transition="verify"></section>
   </div>
 </template>
 
@@ -143,6 +148,10 @@ var Login = Vue.extend({
               oauthAccessTokenSecret,
               results.screen_name
             );
+            setTimeout(function () {
+              console.log('papa')
+              self.$dispatch('back');
+            }, 1200);
           }
         }
       );

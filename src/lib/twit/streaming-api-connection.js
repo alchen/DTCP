@@ -4,7 +4,7 @@ var util = require('util');
 
 var helpers = require('./helpers')
 var Parser = require('./parser');
-var request = require('request');
+var request = require('./request');
 var zlib = require('zlib');
 
 var STATUS_CODES_TO_ABORT_ON = require('./settings').STATUS_CODES_TO_ABORT_ON

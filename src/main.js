@@ -105,6 +105,23 @@ ipc.on('newAccount', function (event, oauthToken, oauthTokenSecret, screenname) 
   stream.initialLoad();
 });
 
+ipc.on('getProxy', function (event) {
+  event.sender.send('proxy', preferences.proxyConfig);
+})
+
+ipc.on('setProxy', function (event, proxyConfig) {
+  preferences.proxyConfig = proxyConfig;
+});
+
+ipc.on('getFontSize', function (event) {
+  event.sender.send('fontSize', preferences.fontSize);
+})
+
+ipc.on('setFontSize', function (event, fontSize) {
+  preferences.fontSize = fontSize;
+  windows.getMainWindow().send('fontSize', fontSize);
+})
+
 ipc.on('initialLoad', function () {
   _.each(streams, function (stream) {
     stream.initialLoad();

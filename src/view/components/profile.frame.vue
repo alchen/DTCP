@@ -26,33 +26,36 @@
   background-size: cover;
 }
 
-.profilemetaright .relationship {
-  display: inline-block;
-  width: 5rem;
+.profilemetaright .relationshipbutton {
+  outline: none;
+  border: none;
+  background: none;
+  margin: 0;
   background-color: #5af;
   border-radius: .25rem;
   text-align: center;
   color: #fff;
-  padding: .25rem;
+  padding: .25rem .5rem;
   box-shadow: 0 0 3px #ccc;
-  vertical-align: top;
   -webkit-animation: fadeIn .2s;
-  cursor: pointer;
 }
 
-.profilemetaright .relationship.pending {
+.profilemetaright .relationshipbutton.pending {
   background: #eee;
   color: #777;
   cursor: default;
 }
 
-.profilemetaright .relationship.self {
+.profilemetaright .relationshipbutton.self {
   display: none;
 }
 
+.profilemetaright .profiletop {
+  display: flex;
+}
+
 .profilemetaright .names {
-  display: inline-block;
-  width: calc(100% - 5rem);
+  flex-grow: 1;
 }
 
 .profilemetaright .name {
@@ -100,11 +103,15 @@
             <a :href="user.originalIcon" target="_blank" class="profileiconlink"><img class="tweeticon" :src="user.biggerIcon" onerror="this.style.visibility='hidden';" /></a>
           </section>
           <section class="profilemetaright">
-            <section class="names">
-              <span class="name" v-text="user.name"></span>
-              <span class="screenname" v-text="user.screenname | at"></span>
+            <section class="profiletop">
+              <section class="names">
+                <span class="name" v-text="user.name"></span>
+                <span class="screenname" v-text="user.screenname | at"></span>
+              </section>
+              <section class="relationship" v-if="this.user.isFollowing !== null">
+                <button class="relationshipbutton" :class="{'following': this.user.isFollowing, 'pending': this.user.isPending, 'self': this.user.screenname == username }" @click="toggleFollow" v-text="relationship"></button>
+              </section>
             </section>
-            <section class="relationship" v-bind:class="{'following': this.user.isFollowing, 'pending': this.user.isPending, 'self': this.user.screenname == username }" @click="toggleFollow" v-text="relationship" v-if="this.user.isFollowing !== null"></section>
             <section class="profiletext" v-text="user.description"></section>
             <section class="profilelocation" v-text="user.location"></section>
             <section class="profileurl"><a :href="user.expandedUrl" v-text="user.expandedUrl" target="_blank"></a></section>

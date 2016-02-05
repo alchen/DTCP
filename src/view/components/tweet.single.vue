@@ -34,9 +34,11 @@
 
     @at-root .tweettext {
       white-space: pre-wrap;
+      word-wrap: break-word;
     }
 
     @at-root .tweetretweet {
+      margin-top: .25rem;
       color: #777;
 
       &icon:empty:before {
@@ -123,6 +125,10 @@
     display: inline-block;
     animation-fill-mode: forwards;
     animation: fadeInInlineFromNone .3s;
+  }
+
+  @at-root .activetweet .tweet .tweetcontrols {
+    display: inline-block;
   }
 
   @at-root .tweetbutton {
@@ -309,7 +315,7 @@
         <section class="tweettext" v-html="tweet.status"></section>
         <section class="tweetretweet" v-if="tweet.retweetedBy || tweet.isRetweeted">
           <span class="iconic tweetretweeticon" data-glyph="loop-square"></span>
-          <span class="retweetname" v-if="tweet.retweetedBy" v-text="lastRetweetedBy.name" @click="doShowScreenname(lastRetweetedBy.screenname)"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy"> and </span><span class="retweetname" v-if="tweet.isRetweeted">You</span>
+          <span class="retweetname" v-if="tweet.retweetedBy" v-text="lastRetweetedBy.name" @click="doShowScreenname(lastRetweetedBy.screenname)"></span><span class="retweetname" v-if="tweet.isRetweeted && tweet.retweetedBy">&nbsp;and&nbsp;</span><span class="retweetname" v-if="tweet.isRetweeted">You</span>
         </section>
         <component is="tweetMedia" v-if="tweet.media" :media="tweet.media"></component>
         <section class="quotedtweet" v-if="tweet.quote" @click="quoteclick">
@@ -426,18 +432,6 @@ var Tweet = Vue.extend({
       event.preventDefault();
     },
     leftclick: function (event) {
-      if (event.target.tagName === 'SECTION') {
-        var el = event.target;
-        do {
-          if (el.classList.contains('quotedtweet')) {
-            // because this is handled separately in quoteclick() below
-            return;
-          }
-          el = el.parentElement;
-        }
-        while (el);
-      }
-
       if (event.target.tagName === 'A') {
         var screenname = event.target.getAttribute('data-screen-name');
         if (screenname) {
@@ -462,6 +456,7 @@ var Tweet = Vue.extend({
         // Avoid firing on wrong elements
         this.$dispatch('showThread', this.tweet.quote);
       }
+      event.stopPropagation();
     },
     loadMissing: function (event) {
       this.$dispatch('loadSince', this.tweet.id);

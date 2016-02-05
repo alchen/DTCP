@@ -25,30 +25,38 @@
   padding-bottom: 33%;
   background-size: cover; }
 
-.profilemetaright .relationship {
-  display: inline-block;
-  width: 5rem;
+.profilemetaright .relationshipbutton {
+  outline: none;
+  border: none;
+  background: none;
+  margin: 0;
   background-color: #5af;
   border-radius: .25rem;
   text-align: center;
   color: #fff;
-  padding: .25rem;
+  padding: .25rem .5rem;
   box-shadow: 0 0 3px #ccc;
-  vertical-align: top;
-  -webkit-animation: fadeIn .2s;
-  cursor: pointer; }
+  -webkit-animation: fadeIn .2s; }
 
-.profilemetaright .relationship.pending {
+.profilemetaright .relationshipbutton.pending {
   background: #eee;
   color: #777;
   cursor: default; }
 
-.profilemetaright .relationship.self {
+.profilemetaright .relationshipbutton.self {
   display: none; }
 
+.profilemetaright .profiletop {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex; }
+
 .profilemetaright .names {
-  display: inline-block;
-  width: calc(100% - 5rem); }
+  -webkit-box-flex: 1;
+  -webkit-flex-grow: 1;
+      -ms-flex-positive: 1;
+          flex-grow: 1; }
 
 .profilemetaright .name {
   font-weight: bold;
@@ -146,8 +154,10 @@
             flex-grow: 1;
     overflow: hidden; }
     .tweettext {
-      white-space: pre-wrap; }
+      white-space: pre-wrap;
+      word-wrap: break-word; }
     .tweetretweet {
+      margin-top: .25rem;
       color: #777; }
       .tweetretweeticon:empty:before {
         color: #777;
@@ -219,6 +229,9 @@
           animation-fill-mode: forwards;
   -webkit-animation: fadeInInlineFromNone .3s;
           animation: fadeInInlineFromNone .3s; }
+
+.activetweet .tweet .tweetcontrols {
+  display: inline-block; }
 
 .tweetbutton {
   border: none;
@@ -520,7 +533,12 @@ section.messageleft {
       margin-right: .5rem;
       vertical-align: middle; }
   .login .error, .login .result {
-    color: #fff; }
+    color: #5ae;
+    background: #fff;
+    width: 8rem;
+    border-radius: .25rem;
+    margin: 4rem auto 0 auto;
+    box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2); }
   .login .verify {
     padding-top: 4rem;
     -webkit-backface-visibility: visible !important;

@@ -3,9 +3,11 @@
 var _ = require('lodash');
 var shell = require('shell');
 var BrowserWindow = require('browser-window');
+var preferences = require('./preferences');
 
 var mainWindow;
 var aboutWindow;
+var preferencesWindow;
 var newTweetWindows = [];
 var newViewerWindows = [];
 
@@ -26,6 +28,24 @@ var windows = {
       autoHideMenuBar: true,
       show: false
     });
+
+    var validHostname = function (str) {
+      return /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$|^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/.test(str);
+    }
+
+    if (preferences.proxyConfig && validHostname(preferences.proxyConfig.host) && !isNaN(preferences.proxyConfig.port) && (+preferences.proxyConfig.port) >= 0 &&  (+preferences.proxyConfig.port) < 65536) {
+      try {
+        var rule = 'socks5://' + preferences.proxyConfig.host + ':' + (+preferences.proxyConfig.port)
+        console.log(rule)
+        mainWindow.webContents.session.setProxy({
+          proxyRules: rule
+        }, function () {
+          console.log('Main: proxy set.');
+        })
+      } catch (err) {
+        console.error('Main: roxy config error: ' + err);
+      }
+    }
 
     mainWindow.webContents.on('did-finish-load', function () {
       mainWindow.show();
@@ -104,6 +124,38 @@ var windows = {
     });
 
     return aboutWindow;
+  },
+  getPreferencesWindow: function () {
+    if (preferencesWindow) {
+      return preferencesWindow;
+    }
+
+    var width = 320;
+    var height = 420;
+    var margin = 40;
+    var position = this.getNewWindowPosition(width, height, margin, false);
+
+    preferencesWindow = new BrowserWindow({
+      width: width,
+      height: height,
+      x: position.x,
+      y: position.y,
+      resizable: false,
+      alwaysOnTop: true,
+      useContentSize: true,
+      autoHideMenuBar: true
+    });
+    preferencesWindow.loadURL('file://' + __dirname + '/static/preferences.html');
+
+    preferencesWindow.on('close', function () {
+      preferencesWindow.hide();
+    });
+
+    preferencesWindow.on('closed', function () {
+      preferencesWindow = null;
+    });
+
+    return preferencesWindow;
   },
   getNewTweetWindow: function (screenname, availableUsers, replyTo, pretext, options) {
     var newWindowWidth = 320;
@@ -194,7 +246,7 @@ var windows = {
     var margin = 40;
     var useCursor = false;
     var position = this.getNewWindowPosition(width, height, margin, useCursor);
-    var animate = true;
+    var animate = false;
 
     viewer.setBounds({
       x: position.x,

@@ -22,9 +22,12 @@ ipc.on('pretext', function (event, media, index) {
         var self = this;
         var img = new Image();
         img.addEventListener('load', function () {
-          self.currentView = self.media[self.index];
           ipc.send('resizeViewer', img.naturalWidth, img.naturalHeight);
           img = null;
+
+          self.$nextTick(function () {
+            self.currentView = self.media[self.index];
+          });
         }, false);
         img.src = this.media[this.index];
       }

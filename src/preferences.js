@@ -28,6 +28,7 @@ var excludeMethods = function (key, value) {
 var preferences = {
   authenticated: false,
   accounts: {},
+  fontSize: 16,
   save: function (preferences) {
     mkdirp.sync(getPath());
     fs.writeFileSync(filePath, JSON.stringify(this, excludeMethods, 2));
