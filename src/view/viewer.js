@@ -17,23 +17,8 @@ ipc.on('pretext', function (event, media, index) {
       index: index,
       currentView: undefined
     },
-    methods: {
-      loadMedia: function () {
-        var self = this;
-        var img = new Image();
-        img.addEventListener('load', function () {
-          ipc.send('resizeViewer', img.naturalWidth, img.naturalHeight);
-          img = null;
-
-          self.$nextTick(function () {
-            self.currentView = self.media[self.index];
-          });
-        }, false);
-        img.src = this.media[this.index];
-      }
-    },
     compiled: function () {
-      this.loadMedia();
+      this.currentView = this.media[this.index];
     }
   });
 });

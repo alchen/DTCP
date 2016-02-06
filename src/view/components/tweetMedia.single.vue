@@ -11,6 +11,7 @@
     width: calc(50% - .5rem);
     height: calc(50% - .5rem);
     border-radius: .25rem;
+    border: 1px solid #f0f0f0;
     margin: .25rem;
     cursor: pointer;
     overflow: hidden;
@@ -77,7 +78,7 @@ var TweetMedia = Vue.extend({
   methods: {
     leftclick: function (index) {
       var media = _.map(this.media, function (m) {
-        return m.url;
+        return _.cloneDeep(m);
       });
       ipc.send('showViewer', media, index);
     }

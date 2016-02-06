@@ -80,10 +80,6 @@
   float: left;
 }
 
-.profileiconlink {
-  cursor: default;
-}
-
 .profilemetaright {
   float: right;
   width: calc(100% - 3.75rem);
@@ -92,15 +88,19 @@
 .profiletext {
   font-size: .875rem;
 }
+
+.profileicon {
+  cursor: pointer;
+}
 </style>
 
 <template lang="html">
   <div class="profile">
       <section class="profilemeta" @contextmenu="rightclick">
-        <section class="profilebackground" v-if="user.profileBackground" :style="{ backgroundImage: 'url(' + user.profileBackground + ')' }"></section>
+        <section class="profilebackground" v-if="user.profileBackground" :style="{ backgroundImage: 'url(' + user.profileBackground + ')' }" @click="showProfileBackground"></section>
         <section class="profilemetacontent">
           <section class="profilemetaleft">
-            <a :href="user.originalIcon" target="_blank" class="profileiconlink"><img class="tweeticon" :src="user.biggerIcon" onerror="this.style.visibility='hidden';" /></a>
+            <img class="tweeticon profileicon" :src="user.biggerIcon" onerror="this.style.visibility='hidden';" @click="showProfileIcon" />
           </section>
           <section class="profilemetaright">
             <section class="profiletop">
@@ -168,6 +168,26 @@ var Profile = Vue.extend({
           this.user.isFollowing
         );
       }
+    },
+    showProfileIcon: function () {
+      ipc.send('showViewer', [{
+        type: 'image',
+        url: this.user.originalIcon,
+        size: {
+          width: 512,
+          height: 512
+        }
+      }], 0);
+    },
+    showProfileBackground: function () {
+      ipc.send('showViewer', [{
+        type: 'image',
+        url: this.user.profileBackground,
+        size: {
+          width: 1040,
+          height: 520
+        }
+      }], 0);
     },
     rightclick: function (event) {
       var menu = contextmenu.profile(this);

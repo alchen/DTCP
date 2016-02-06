@@ -13,21 +13,45 @@ var newViewerWindows = [];
 
 var atomScreen = require('screen');
 var windows = {
-  getMainWindow: function getMainWindow (streams) {
+  getMainWindow: function (streams) {
     if (mainWindow) {
       return mainWindow;
     }
 
-    mainWindow = new BrowserWindow({
-      width: 400,
-      height: 640,
-      minWidth: 304,
-      minHeight: 64,
-      fullscreen: false,
-      acceptFirstMouse: false,
-      autoHideMenuBar: true,
-      show: false
-    });
+    var self = this;
+    var windowState = preferences.windowState;
+    if (windowState &&
+      windowState.bounds &&
+      windowState.display &&
+      windowState.bounds.x !== undefined &&
+      windowState.bounds.y !== undefined &&
+      windowState.bounds.width !== undefined &&
+      windowState.bounds.height !== undefined &&
+      windowState.display === atomScreen.getDisplayMatching(windowState.bounds).id) {
+      mainWindow = new BrowserWindow({
+        width: windowState.bounds.width,
+        height: windowState.bounds.height,
+        x: windowState.bounds.x,
+        y: windowState.bounds.y,
+        minWidth: 304,
+        minHeight: 64,
+        fullscreen: false,
+        acceptFirstMouse: false,
+        autoHideMenuBar: true,
+        show: false
+      });
+    } else {
+      mainWindow = new BrowserWindow({
+        width: 400,
+        height: 640,
+        minWidth: 304,
+        minHeight: 64,
+        fullscreen: false,
+        acceptFirstMouse: false,
+        autoHideMenuBar: true,
+        show: false
+      });
+    }
 
     var validHostname = function (str) {
       return /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$|^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/.test(str);
@@ -91,6 +115,14 @@ var windows = {
     }
 
     return mainWindow;
+  },
+  getMainWindowState: function () {
+    var bounds = mainWindow.getBounds();
+    var display = atomScreen.getDisplayMatching(bounds).id;
+    return {
+      bounds: bounds,
+      display: display
+    };
   },
   getAboutWindow: function () {
     if (aboutWindow) {
@@ -204,12 +236,14 @@ var windows = {
     });
   },
   getNewViewerWindow: function (media, index) {
-    var position = this.getNewWindowPosition(320, 240, 40, false);
+    var width = media[index].size.width || 320;
+    var height = media[index].size.height || 240;
+    var position = this.getNewWindowPosition(width, height, 40, false);
     var newWindow = new BrowserWindow({
       x: position.x,
       y: position.y,
-      width: 320,
-      height: 240,
+      width: width,
+      height: height,
       minWidth: 144,
       minHeight: 100,
       fullscreen: false,
@@ -220,6 +254,8 @@ var windows = {
     });
     newWindow.loadURL('file://' + __dirname + '/static/viewer.html');
     newViewerWindows.push(newWindow);
+
+    newWindow.setAspectRatio(width / height);
 
     newWindow.on('close', function () {
       newWindow.hide();
@@ -242,22 +278,7 @@ var windows = {
       newWindow.show();
     });
   },
-  setViewerBounds: function (viewer, width, height) {
-    var margin = 40;
-    var useCursor = false;
-    var position = this.getNewWindowPosition(width, height, margin, useCursor);
-    var animate = false;
-
-    viewer.setBounds({
-      x: position.x,
-      y: position.y,
-      width: width,
-      height: height
-    }, animate);
-    viewer.setAspectRatio(width / height);
-  },
   getNewWindowPosition: function (width, height, margin, useCursor) {
-    // TODO: add option to place new window on the more roomy side of the screen
     var x;
     var y;
     var mainBounds = mainWindow.getBounds();

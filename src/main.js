@@ -1,5 +1,10 @@
 'use strict';
 
+process.on('uncaughtException', function (err) {
+  console.error('Uncaught Exception. Invetigate.');
+  console.error(err.stack);
+});
+
 var _ = require('lodash');
 var app = require('app');
 var ipc = require('electron').ipcMain;
@@ -50,6 +55,7 @@ app.on('window-all-closed', function () {
 
 app.on('before-quit', function () {
   global.willQuit = true;
+  preferences.windowState = windows.getMainWindowState();
   preferences.save();
   windows.closeTweetWindows();
 });
@@ -115,12 +121,20 @@ ipc.on('setProxy', function (event, proxyConfig) {
 
 ipc.on('getFontSize', function (event) {
   event.sender.send('fontSize', preferences.fontSize);
-})
+});
 
 ipc.on('setFontSize', function (event, fontSize) {
   preferences.fontSize = fontSize;
   windows.getMainWindow().send('fontSize', fontSize);
-})
+});
+
+ipc.on('setLastScreenname', function (event, screenname) {
+  preferences.lastScreenname = screenname;
+});
+
+ipc.on('getLastScreenname', function (event) {
+  event.sender.send('lastScreenname', preferences.lastScreenname);
+});
 
 ipc.on('initialLoad', function () {
   _.each(streams, function (stream) {
@@ -150,11 +164,6 @@ ipc.on('loadMessages', function (event, screenname) {
 
 ipc.on('showViewer', function (event, media, index) {
   windows.getNewViewerWindow(media, index);
-});
-
-ipc.on('resizeViewer', function (event, width, height) {
-  var sender = windows.findWindowFromWebContents(event.sender);
-  windows.setViewerBounds(sender, width, height);
 });
 
 ipc.on('compose', function (event, screenname, availableUsers, replyTo, pretext, options) {

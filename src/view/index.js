@@ -48,6 +48,7 @@ var timeline = new Vue({
     blur: false,
     fontSize: 16,
     screenname: '',
+    lastScreenname: undefined,
     frames: [],
     bundle: {},
     currentUser: undefined,
@@ -313,6 +314,7 @@ var timeline = new Vue({
         view: 'home',
         tweets: this.bundle[screenname].home
       }];
+      ipc.send('setLastScreenname', screenname);
     },
     addAvailableUser: function (screenname) {
       this.$set('bundle["' + screenname + '"]', {
@@ -334,7 +336,7 @@ var timeline = new Vue({
       });
       this.$set('availableUsers["' + screenname + '"]', this.bundle[screenname].users[screenname]);
 
-      if (_.isEmpty(this.screenname)) {
+      if (_.isEmpty(this.screenname) || this.lastScreenname === screenname) {
         this.switchUser(screenname);
       }
 
@@ -471,9 +473,10 @@ var timeline = new Vue({
       var toBottom =  el.scrollTop < 16 ? 0 : el.scrollHeight - el.scrollTop;
       var tweets = el.getElementsByClassName('box');
       var lastTweetHeight = tweets.length > 1 ? tweets[tweets.length - 2].scrollHeight : 0;
+      var loaderHeight = tweets.length > 0 ? tweets[tweets.length - 1].scrollHeight : 0;
 
       this.$nextTick(function () {
-        var target = el.scrollHeight - Math.max(toBottom, 36 + 45 + el.getBoundingClientRect().height + lastTweetHeight) + (offset || 0);
+        var target = el.scrollHeight - Math.max(toBottom, 8 + loaderHeight + lastTweetHeight + el.getBoundingClientRect().top + el.getBoundingClientRect().height) + (offset || 0);
         el.scrollTop = toBottom ? target : 0;
       });
     },
@@ -677,7 +680,15 @@ var timeline = new Vue({
       self.fontSize = fontSize;
     });
 
+    ipc.on('lastScreenname', function (event, screenname) {
+      self.lastScreenname = screenname;
+      if (screenname in self.bundle) {
+        self.switchUser(screenname);
+      }
+    });
+
     ipc.send('getFontSize');
+    ipc.send('getLastScreenname');
     ipc.send('initialLoad');
   }
 });

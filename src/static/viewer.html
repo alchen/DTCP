@@ -12,11 +12,17 @@
   </head>
   <body>
     <div id="content">
-      <div class="square-spin" v-if="!currentView">
+      <div class="square-spin">
         <div></div>
       </div>
-      <div class="media" v-if="currentView">
-        <img :src="currentView" />
+      <div class="media" v-if="currentView && currentView.type === 'image'" :class="{ active: currentView.type === 'image'}">
+        <img :src="currentView.url" />
+      </div>
+      <div class="media" v-if="currentView && currentView.type === 'photo'" :class="{ active: currentView.type === 'photo'}">
+        <img :src="currentView.url + ':large'" />
+      </div>
+      <div class="media" v-if="currentView && currentView.video" :class="{ active: currentView.video }">
+        <video :src="currentView.video.url" :poster="currentView.url + ':large'" muted="true" controls="true" loop="true" autoplay="true"></video>
       </div>
     </div>
     <script src="js/viewer.js"></script>

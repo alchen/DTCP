@@ -60,17 +60,40 @@ var Tweet = function (tweet, screenname) {
 
   this.media = (tweet.extended_entities ?
     _.map(tweet.extended_entities.media, function (k) {
-      if (k.type === 'photo') {
-        return {
-          url: k.media_url_https,
-          display: k.media_url_https
-        };
-      } else {
-        return {
-          url: k.media_url_https,
-          display: k.expanded_url
-        };
+      var mediaObj = {
+        url: k.media_url_https,
+        type: k.type,
+        size: {
+          width: k.sizes.large.w,
+          height: k.sizes.large.h
+        }
+      };
+      if (k.type === 'animated_gif' || k.type === 'video' ) {
+        var video = _.find(k.video_info.variants, function (variant) {
+          return variant.content_type === 'video/webm';
+        }) || _.sortBy(_.filter(k.video_info.variants, function (variant) {
+          return variant.content_type === 'video/mp4';
+        }), function (videoObj) {
+          return -videoObj.bitrate;
+        });
+        if (video) {
+          video = _.isArray(video) ? video[0] : video;
+          mediaObj.video = {
+            type: video.content_type,
+            url: video.url
+          };
+
+          if (k.type === 'video') {
+            var parts = video.url.split('/');
+            var size = parts[parts.length - 2].split('x');
+            mediaObj.size = {
+              width: +size[0],
+              height: +size[1]
+            }
+          }
+        }
       }
+      return mediaObj;
     }) : null
   );
 

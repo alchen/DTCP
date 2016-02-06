@@ -16,6 +16,8 @@
     list-style: none;
 
     .navicon {
+      position: relative;
+
       .usericon {
         width: 1.75rem;
         height: 1.75rem;
@@ -32,7 +34,7 @@
         position: absolute;
         border-radius: .25rem;
         top: calc(50% - 0.25rem);
-        right: -.75rem;
+        left: 2rem;
       }
     }
   }
