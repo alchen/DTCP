@@ -162,8 +162,8 @@ var windows = {
       return preferencesWindow;
     }
 
-    var width = 320;
-    var height = 420;
+    var width = 330;
+    var height = 440;
     var margin = 40;
     var position = this.getNewWindowPosition(width, height, margin, false);
 
@@ -202,8 +202,8 @@ var windows = {
       y: y,
       width: newWindowWidth,
       height: newWindowHeight,
-      minWidth: 144,
-      minHeight: 100,
+      minWidth: 240,
+      minHeight: 150,
       fullscreen: false,
       acceptFirstMouse: false,
       alwaysOnTop: true,

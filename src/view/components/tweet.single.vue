@@ -294,7 +294,7 @@
     <div class="gap" v-if="tweet.gaps[view]" @click="loadMissing" transition="gap"><span class="iconic" data-glyph="chevron-top" aria-hidden="true"></span> Load missing tweets</div>
     <div class="tweet" @contextmenu="rightclick" @click="leftclick">
       <div class="tweetleft">
-        <img class="tweeticon" :src="tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />
+        <img class="tweeticon" :src="tweet.user.biggerIcon" onerror="this.style.visibility='hidden';" @click="doShowProfile" />
       </div>
       <div class="tweetright">
         <section class="tweetmeta">
@@ -335,12 +335,12 @@
 'use strict';
 
 var Vue = require('vue');
-var moment = require('moment');
 var remote = require('remote');
 var contextmenu = require('./contextmenu');
 var ipc = require('electron').ipcRenderer;
 var shell = require('shell');
 var _ = require('lodash');
+const timefrom = require('./timefrom');
 require('./tweetMedia.single.vue');
 
 var Tweet = Vue.extend({
@@ -356,25 +356,8 @@ var Tweet = Vue.extend({
       return this.tweet.retweetedBy[this.tweet.retweetedBy.length - 1];
     },
     timeFrom: function () {
-      var createdAt = moment(new Date(this.tweet.createdAt));
-      var now = this.now;
-      var duration = moment.duration(now.diff(createdAt));
-
-      var sign = null;
-      if ((sign = duration.as('second')) <= 5) {
-        return 'now';
-      } else if (sign < 60) {
-        return Math.round(sign) + 's';
-      } else if ((sign = duration.as('minute')) < 60) {
-        return Math.round(sign) + 'm';
-      } else if ((sign = duration.as('hour')) < 24) {
-        return Math.round(sign) + 'h';
-      } else if ((sign = duration.as('day')) <= 365) {
-        return Math.round(sign) + 'd';
-      } else {
-        sign = duration.as('year');
-        return Math.round(sign) + 'y';
-      }
+      var createdAt = Math.floor(new Date(this.tweet.createdAt).getTime() / 1000);
+      return timefrom(createdAt, this.now);
     }
   },
   methods: {

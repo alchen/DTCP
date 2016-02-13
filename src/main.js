@@ -175,14 +175,20 @@ ipc.on('stopComposing', function (event) {
   sender.close();
 });
 
+ipc.on('resizeComposerToHeight', function (event, height) {
+  var sender = windows.findWindowFromWebContents(event.sender);
+  var currentSize = sender.getContentSize();
+  sender.setContentSize(currentSize[0], Math.max(currentSize[1], height));
+})
+
 ipc.on('findContext', function (event, screenname, tweetId) {
   streams[screenname].findContext(tweetId);
 });
 
-ipc.on('sendTweet', function (event, screenname, tweet, replyTo) {
+ipc.on('sendTweet', function (event, screenname, tweet, replyTo, mediaPath) {
   var sender = windows.findWindowFromWebContents(event.sender);
   sender.hide();
-  streams[screenname].sendTweet(tweet, replyTo, sender);
+  streams[screenname].sendTweet(tweet, replyTo, sender, mediaPath);
 });
 
 ipc.on('favorite', function (event, screenname, tweetId, positive) {

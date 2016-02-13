@@ -2,9 +2,11 @@
 //  Twitter API Wrapper
 //
 var assert = require('assert');
+var Promise = require('bluebird');
 var request = require('./request');
 var util = require('util');
 var endpoints = require('./endpoints');
+var FileUploader = require('./file_uploader');
 var helpers = require('./helpers');
 var StreamingAPIConnection = require('./streaming-api-connection');
 var STATUS_CODES_TO_ABORT_ON = require('./settings').STATUS_CODES_TO_ABORT_ON;
@@ -31,6 +33,10 @@ var FORMDATA_PATHS = [
 //  Twitter
 //
 var Twitter = function (config) {
+  if (!(this instanceof Twitter)) {
+    return new Twitter(config);
+  }
+
   var self = this
   var credentials = {
     consumer_key        : config.consumer_key,
@@ -44,6 +50,7 @@ var Twitter = function (config) {
 
   this._validateConfigOrThrow(config);
   this.config = config;
+  this._twitter_time_minus_local_time_ms = 0;
 }
 
 Twitter.prototype.get = function (path, params, callback) {
@@ -55,29 +62,100 @@ Twitter.prototype.post = function (path, params, callback) {
 }
 
 Twitter.prototype.request = function (method, path, params, callback) {
-  var self = this
-  assert(method == 'GET' || method == 'POST')
+  var self = this;
+  assert(method == 'GET' || method == 'POST');
   // if no `params` is specified but a callback is, use default params
   if (typeof params === 'function') {
     callback = params
     params = {}
   }
 
-  self._buildReqOpts(method, path, params, false, function (err, reqOpts) {
-    if (err) {
-      callback(err, null, null)
-      return
+  return new Promise(function (resolve, reject) {
+    var _returnErrorToUser = function (err) {
+      if (callback && typeof callback === 'function') {
+        callback(err, null, null);
+      }
+      reject(err);
     }
 
-    var twitOptions = (params && params.twit_options) || {}
+    self._buildReqOpts(method, path, params, false, function (err, reqOpts) {
+      if (err) {
+        _returnErrorToUser(err);
+        return
+      }
 
-    process.nextTick(function () {
-      // ensure all HTTP i/o occurs after the user has a chance to bind their event handlers
-      self._doRestApiRequest(reqOpts, twitOptions, method, callback)
-    })
-  })
+      var twitOptions = (params && params.twit_options) || {};
 
-  return self
+      process.nextTick(function () {
+        // ensure all HTTP i/o occurs after the user has a chance to bind their event handlers
+        self._doRestApiRequest(reqOpts, twitOptions, method, function (err, parsedBody, resp) {
+          self._updateClockOffsetFromResponse(resp);
+
+          if (self.config.trusted_cert_fingerprints) {
+            if (!resp.socket.authorized) {
+              // The peer certificate was not signed by one of the authorized CA's.
+              var authErrMsg = resp.socket.authorizationError.toString();
+              var err = helpers.makeTwitError('The peer certificate was not signed; ' + authErrMsg);
+              _returnErrorToUser(err);
+              return;
+            }
+            var fingerprint = resp.socket.getPeerCertificate().fingerprint;
+            var trustedFingerprints = self.config.trusted_cert_fingerprints;
+            if (trustedFingerprints.indexOf(fingerprint) === -1) {
+              var errMsg = util.format('Certificate untrusted. Trusted fingerprints are: %s. Got fingerprint: %s.',
+                                       trustedFingerprints.join(','), fingerprint);
+              var err = new Error(errMsg);
+              _returnErrorToUser(err);
+              return;
+            }
+          }
+
+          if (callback && typeof callback === 'function') {
+            callback(err, parsedBody, resp);
+          }
+
+          resolve({ data: parsedBody, resp: resp });
+          return;
+        })
+      })
+    });
+  });
+}
+
+/**
+ * Uploads a file to Twitter via the POST media/upload (chunked) API.
+ * Use this as an easier alternative to doing the INIT/APPEND/FINALIZE commands yourself.
+ * Returns the response from the FINALIZE command, or if an error occurs along the way,
+ * the first argument to `cb` will be populated with a non-null Error.
+ *
+ *
+ * `params` is an Object of the form:
+ * {
+ *   file_path: String // Absolute path of file to be uploaded.
+ * }
+ *
+ * @param  {Object}  params  options object (described above).
+ * @param  {cb}      cb      callback of the form: function (err, bodyObj, resp)
+ */
+Twitter.prototype.postMediaChunked = function (params, cb) {
+  var self = this;
+  try {
+    var fileUploader = new FileUploader(params, self);
+  } catch(err) {
+    cb(err);
+    return;
+  }
+  fileUploader.upload(cb);
+}
+
+Twitter.prototype._updateClockOffsetFromResponse = function (resp) {
+  var self = this;
+  if (resp && resp.headers && resp.headers.date &&
+      new Date(resp.headers.date).toString() !== 'Invalid Date'
+  ) {
+    var twitterTimeMs = new Date(resp.headers.date).getTime()
+    self._twitter_time_minus_local_time_ms = twitterTimeMs - Date.now();
+  }
 }
 
 /**
@@ -110,7 +188,11 @@ Twitter.prototype._buildReqOpts = function (method, path, params, isStreaming, c
       'User-Agent': 'twit-client'
     },
     gzip: true,
-    encoding: null
+    encoding: null,
+  }
+
+  if (typeof self.config.timeout_ms !== 'undefined') {
+    reqOpts.timeout = self.config.timeout_ms;
   }
 
   try {
@@ -161,11 +243,14 @@ Twitter.prototype._buildReqOpts = function (method, path, params, isStreaming, c
   if (!self.config.app_only_auth) {
     // with user auth, we can just pass an oauth object to requests
     // to have the request signed
+    var oauth_ts = Date.now() + self._twitter_time_minus_local_time_ms;
+
     reqOpts.oauth = {
       consumer_key: self.config.consumer_key,
       consumer_secret: self.config.consumer_secret,
       token: self.config.access_token,
       token_secret: self.config.access_token_secret,
+      timestamp: Math.floor(oauth_ts/1000).toString(),
     }
 
     callback(null, reqOpts);
@@ -202,19 +287,21 @@ Twitter.prototype._doRestApiRequest = function (reqOpts, twitOptions, method, ca
   var response = null;
 
   var onRequestComplete = function () {
-    try {
-      body = JSON.parse(body)
-    } catch (jsonDecodeError) {
-      // there was no transport-level error, but a JSON object could not be decoded from the request body
-      // surface this to the caller
-      var err = helpers.makeTwitError('JSON decode error: Twitter HTTP response body was not valid JSON')
-      err.statusCode = response ? response.statusCode: null;
-      err.allErrors.concat({error: jsonDecodeError.toString()})
-      callback(err, body, response);
-      return
+    if (body !== '') {
+      try {
+        body = JSON.parse(body)
+      } catch (jsonDecodeError) {
+        // there was no transport-level error, but a JSON object could not be decoded from the request body
+        // surface this to the caller
+        var err = helpers.makeTwitError('JSON decode error: Twitter HTTP response body was not valid JSON')
+        err.statusCode = response ? response.statusCode: null;
+        err.allErrors.concat({error: jsonDecodeError.toString()})
+        callback(err, body, response);
+        return
+      }
     }
 
-    if (body.error || body.errors) {
+    if (typeof body === 'object' && (body.error || body.errors)) {
       // we got a Twitter API-level error response
       // place the errors in the HTTP response body into the Error object and pass control to caller
       var err = helpers.makeTwitError('Twitter API Error')
@@ -363,6 +450,10 @@ Twitter.prototype._validateConfigOrThrow = function (config) {
   //check config for proper format
   if (typeof config !== 'object') {
     throw new TypeError('config must be object, got ' + typeof config)
+  }
+
+  if (typeof config.timeout_ms !== 'undefined' && isNaN(Number(config.timeout_ms))) {
+    throw new TypeError('Twit config `timeout_ms` must be a Number. Got: ' + config.timeout_ms + '.');
   }
 
   if (config.app_only_auth) {

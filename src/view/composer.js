@@ -19,7 +19,10 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       frontFocus: options && options.frontFocus,
       screenname: screenname,
       availableUsers: availableUsers,
-      showingSwitches: false
+      showingSwitches: false,
+      mediaType: undefined,
+      mediaPaths: [],
+      message: undefined
     },
     computed: {
       switchUsers: function () {
@@ -63,11 +66,54 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       },
       sendTweet: function (event) {
         if (this.isValid) {
-          ipc.send('sendTweet', this.screenname, this.rawTweet, this.replyTo);
+          ipc.send('sendTweet', this.screenname, this.rawTweet, this.replyTo, this.mediaPaths);
         }
       },
       updateTweet: function (event) {
         this.rawTweet = event.target.value;
+      },
+      addMedia: function () {
+        var fileElem = document.getElementById("fileElem");
+
+        if (fileElem) {
+          fileElem.click();
+        }
+      },
+      handleFiles: function (files) {
+        if (files.length) {
+          if (/image\/.*/i.test(files[0].type)) {
+            this.mediaType = 'image';
+            this.mediaPaths.push(files[0].path);
+            if (this.mediaPaths.length > 4) {
+              this.mediaPaths.shift()
+            }
+          } else if (/video\/.*/i.test(files[0].type)) {
+            this.mediaType = 'video';
+            this.mediaPaths = [files[0].path];
+          }
+          var contentEl = document.getElementById('content');
+          var currentHeight = contentEl.scrollHeight;
+          this.$nextTick(function () {
+            ipc.send('resizeComposerToHeight', contentEl.scrollHeight);
+          });
+        }
+      },
+      inputFile: function (event) {
+        var files = event.target.files;
+        this.handleFiles(files);
+      },
+      disable: function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      },
+      drop: function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        var dt = e.dataTransfer;
+        var files = dt.files;
+
+        this.handleFiles(files);
       }
     },
     compiled: function () {
@@ -76,6 +122,10 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       // Handle keyboard shortcut
       ipc.on('tweet', function () {
         self.sendTweet();
+      });
+
+      ipc.on('message', function (event, message) {
+        self.message = message;
       });
 
       var textarea = document.getElementsByClassName('newrawtweet')[0];

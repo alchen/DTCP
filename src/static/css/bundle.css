@@ -120,21 +120,23 @@ a {
     margin: 0;
     padding: 0;
     list-style: none; }
-    .pageheader .switchbutton .navlist .navicon .usericon {
-      width: 1.75rem;
-      height: 1.75rem;
-      vertical-align: top;
-      border: 1px solid #eee;
-      border-radius: .25rem;
-      box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
-      background: #ccc; }
-    .pageheader .switchbutton .navlist .navicon.unread:before {
-      content: '';
-      border: 0.1875rem solid #5ae;
-      position: absolute;
-      border-radius: .25rem;
-      top: calc(50% - 0.25rem);
-      right: -.75rem; }
+    .pageheader .switchbutton .navlist .navicon {
+      position: relative; }
+      .pageheader .switchbutton .navlist .navicon .usericon {
+        width: 1.75rem;
+        height: 1.75rem;
+        vertical-align: top;
+        border: 1px solid #eee;
+        border-radius: .25rem;
+        box-shadow: 0 0 0.125rem 0 rgba(0, 0, 0, 0.2);
+        background: #ccc; }
+      .pageheader .switchbutton .navlist .navicon.unread:before {
+        content: '';
+        border: 0.1875rem solid #5ae;
+        position: absolute;
+        border-radius: .25rem;
+        top: calc(50% - 0.25rem);
+        left: 2rem; }
   .pageheader .nav {
     text-align: right; }
     .pageheader .nav .navlist {
@@ -335,15 +337,15 @@ a {
 .profilemetaleft {
   float: left; }
 
-.profileiconlink {
-  cursor: default; }
-
 .profilemetaright {
   float: right;
   width: calc(100% - 3.75rem); }
 
 .profiletext {
   font-size: .875rem; }
+
+.profileicon {
+  cursor: pointer; }
 
 .timeline {
   list-style: none;
@@ -651,6 +653,7 @@ a {
   width: calc(50% - .5rem);
   height: calc(50% - .5rem);
   border-radius: .25rem;
+  border: 1px solid #f0f0f0;
   margin: .25rem;
   cursor: pointer;
   overflow: hidden; }

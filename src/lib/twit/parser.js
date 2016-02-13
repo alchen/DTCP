@@ -32,6 +32,12 @@ Parser.prototype.parse = function (chunk) {
 
       if (!piece.length) { continue; } //empty object
 
+      if (piece === 'Exceeded connection limit for user') {
+        this.emit('connection-limit-exceeded',
+                  new Error('Twitter says: ' + piece + '. Only instantiate one stream per set of credentials.'));
+        continue;
+      }
+
       try {
         var msg = JSON.parse(piece)
       } catch (err) {

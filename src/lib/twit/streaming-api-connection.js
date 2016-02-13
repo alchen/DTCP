@@ -100,9 +100,9 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
         var error = helpers.makeTwitError('Bad Twitter streaming request: ' + self.response.statusCode)
         error.statusCode = response ? response.statusCode: null;
         helpers.attachBodyInfoToError(error, body)
-        self.emit('error', error);
         // stop the stream explicitly so we don't reconnect
-        self.emit('internet_error', err);
+        self.stop()
+        self.emit('fatal_error', err);
         body = null;
       });
       gunzip.on('error', function (err) {
@@ -112,7 +112,7 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
         var twitErr = helpers.makeTwitError(errMsg);
         twitErr.statusCode = self.response.statusCode;
         helpers.attachBodyInfoToError(twitErr, compressedBody);
-        self.emit('error', twitErr);
+        self.emit('parser-error', twitErr);
       });
     } else if (self.response.statusCode === 420) {
       // close the connection forcibly so a reconnect is scheduled by `self.onClose()`
@@ -289,7 +289,7 @@ StreamingAPIConnection.prototype._setupParser = function () {
     else if (msg.warning)         { self.emit('warning', msg) }
     else if (msg.status_withheld) { self.emit('status_withheld', msg) }
     else if (msg.user_withheld)   { self.emit('user_withheld', msg) }
-    else if (msg.friends || msg.friends_str)         { self.emit('friends', msg) }
+    else if (msg.friends || msg.friends_str) { self.emit('friends', msg) }
     else if (msg.direct_message)  { self.emit('direct_message', msg) }
     else if (msg.event)           {
       self.emit('user_event', msg)
@@ -311,13 +311,15 @@ StreamingAPIConnection.prototype._setupParser = function () {
       else if (ev === 'list_user_subscribed')   { self.emit('list_user_subscribed', msg) }
       else if (ev === 'list_user_unsubscribed') { self.emit('list_user_unsubscribed', msg) }
       else if (ev === 'quoted_tweet')           { self.emit('quoted_tweet', msg) }
+      else if (ev === 'favorited_retweet')      { self.emit('favorited_retweet', msg) }
+      else if (ev === 'retweeted_retweet')      { self.emit('retweeted_retweet', msg) }
       else                                      { self.emit('unknown_user_event', msg) }
     } else                                      { self.emit('tweet', msg) }
   })
 
   self.parser.on('error', function (err) {
-    self.emit('parser-error', err)
-  })
+    self.emit('parser_error', err)
+  });
 }
 
 StreamingAPIConnection.prototype._handleDisconnect = function (twitterMsg) {

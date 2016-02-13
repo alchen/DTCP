@@ -42,8 +42,6 @@ require('./messageByOne.frame.vue');
 require('./switches.frame.vue');
 require('./login.frame.vue');
 
-var scrollSpeed = 240;
-
 var Frames = Vue.extend({
   replace: true,
   props: ['frames', 'screenname', 'now'],
@@ -125,7 +123,7 @@ var Frames = Vue.extend({
     },
     scrollToTop: function () {
       var top = 0;
-      this.scrollTo(top);
+      this.scrollTo(top, 300);
     },
     scrollToNextTweet: function () {
       var frames = document.getElementsByClassName('frame');
@@ -198,12 +196,12 @@ var Frames = Vue.extend({
     scrollPageDown: function () {
       var frames = document.getElementsByClassName('frame');
       var currentFrame = frames[frames.length - 1];
-      this.scrollTo(currentFrame.scrollTop + currentFrame.getBoundingClientRect().height * 0.9);
+      this.scrollTo(currentFrame.scrollTop + currentFrame.getBoundingClientRect().height * 0.9, 300);
     },
     scrollPageUp: function () {
       var frames = document.getElementsByClassName('frame');
       var currentFrame = frames[frames.length - 1];
-      this.scrollTo(currentFrame.scrollTop - currentFrame.getBoundingClientRect().height * 0.9);
+      this.scrollTo(currentFrame.scrollTop - currentFrame.getBoundingClientRect().height * 0.9, 300);
     }
   },
   methods: {
@@ -214,7 +212,6 @@ var Frames = Vue.extend({
       var currentFrame = frames[frames.length - 1];
       var sy = currentFrame.scrollTop;
       var changed = false;
-      speed = typeof speed !== 'undefined' ? speed : scrollSpeed;
 
       // cancel frame is there is an scroll event happening
       if (this.animation) {
@@ -230,7 +227,7 @@ var Frames = Vue.extend({
       }
 
       function ease(k) {
-        return 0.5 * (1 - Math.cos(Math.PI * k));
+        return Math.sin(k * Math.PI / 2);
       }
 
       // scroll looping over a frame
@@ -243,22 +240,23 @@ var Frames = Vue.extend({
         // avoid elapsed times higher than one
         elapsed = elapsed > 1 ? 1 : elapsed;
 
-        if (changed || elapsed == 1 || Math.abs(destination - sy) < 16) {
-          if (!changed) {
-            startTime = now();
-            sy = currentFrame.scrollTop;
-            speed = Math.floor(speed / 2);
-            changed = true;
-          }
-          elapsed = (time - startTime) / speed;
+        var threshold = 96;
+        if (speed || changed || elapsed == 1 || Math.abs(destination - sy) < threshold) {
+          elapsed = (time - startTime) / (speed || threshold);
           elapsed = elapsed > 1 ? 1 : elapsed;
           value = ease(elapsed);
           cy = sy + (destination - sy) * value;
         } else {
-          cy = sy + Math.sign(destination - sy) * (time - startTime) * 1.5;
+          cy = sy + Math.sign(destination - sy) * (time - startTime) * 2;
 
           if ((destination > sy && cy > destination) || (destination < sy && cy < destination)) {
             cy = destination;
+          }
+
+          if (!changed && Math.abs(destination - cy) < threshold) {
+            startTime = now();
+            sy = currentFrame.scrollTop;
+            changed = true;
           }
         }
 
@@ -306,7 +304,8 @@ var Frames = Vue.extend({
       if (activeTweets.length > 0) {
         var activeTweet = activeTweets[0];
         var tweetRect = activeTweet.getBoundingClientRect();
-        if (!(tweetRect.top >= currentFrameRect.top && tweetRect.bottom <= currentFrameRect.bottom)) {
+        if (!((Math.floor(tweetRect.top) >= Math.floor(currentFrameRect.top) && Math.floor(tweetRect.top) <= Math.floor(currentFrameRect.bottom)) ||
+              (Math.floor(tweetRect.bottom) >= Math.floor(currentFrameRect.top) && Math.floor(tweetRect.bottom) <= Math.floor(currentFrameRect.bottom)))) {
           activeTweet.classList.remove('activetweet');
         }
       }

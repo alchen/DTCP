@@ -10,16 +10,31 @@
     <link rel="stylesheet" href="css/composer.css" />
   </head>
   <body>
-    <div id="content">
+    <div id="content" @dragenter="disable" @dragover="disable" @drop="drop">
       <div class="newtweet">
         <section class="newtweettext">
           <textarea class="newrawtweet" @keyup.esc="escape" @input="updateTweet" v-model="rawTweet" lazy autofocus="true"></textarea>
           <section class="newformattedtweet" v-html="formattedTweet"></section>
         </section>
+        <section class="newtweetmedia" v-if="mediaPaths.length">
+          <div class="newtweetmediacolumn" v-if="mediaType ==='image'" v-for="path in mediaPaths" track-by="$index">
+            <img :src="'file://' + path" />
+          </div>
+          <div class="newtweetmediacolumn" v-if="mediaType ==='video' && mediaPaths.length === 1">
+            <video :src="mediaPaths[0]" muted="true" controls="true" loop="true" autoplay="true"></video>
+          </div>
+        </section>
+        <section class="newtweetmessage" v-if="message">
+          <span v-text="message"></span>
+        </section>
         <section class="newtweetmeta">
           <img :src="composer.biggerIcon" class="composericon" @click="showSwitches" />
-          <span class="remaining" v-text="remainingLength"></span>
-          <button class="newtweetbutton" :class="{ active: isValid }" @click="sendTweet">Tweet</button>
+          <div class="newtweetmetacolumn mediacolumn">
+            <input type="file" id="fileElem" accept="image/jpeg,image/gif,image/png,image/gif,video/mp4,image/webp,.png,.jpg,.jpeg,.webp,.gif,.mp4" style="display:none" @change="inputFile">
+            <button class="newmediabutton" @click="addMedia">Add Media</button>
+          </div>
+          <div class="newtweetmetacolumn remainingcolumn"><span class="remaining" v-text="remainingLength"></span></div>
+          <div class="newtweetmetacolumn"><button class="newtweetbutton" :class="{ active: isValid }" @click="sendTweet">Tweet</button></div>
         </section>
         <div class="switches" v-if="showingSwitches" @click="dismiss">
           <ul class="switchlist">

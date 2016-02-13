@@ -7,7 +7,7 @@
     <div class="fattweet" @contextmenu="rightclick" @click="leftclick">
         <section class="fattweetmeta">
           <section class="fattweetmetaleft">
-            <img class="tweeticon" :src="tweet.user.biggerIcon" onerror="this.style.visibility=\'hidden\';" @click="doShowProfile" />
+            <img class="tweeticon" :src="tweet.user.biggerIcon" onerror="this.style.visibility='hidden';" @click="doShowProfile" />
           </section>
           <section class="fattweetmetaright">
             <span class="name" v-text="tweet.user.name" @click="doShowProfile"></span>
@@ -49,7 +49,7 @@
 
 var Vue = require('vue');
 var Tweet = require('./tweet.single.vue');
-var moment = require('moment');
+var dateformat = require('dateformat');
 
 var FatTweet = Tweet.extend({
   props: ['tweet', 'username', 'now'],
@@ -61,8 +61,8 @@ var FatTweet = Tweet.extend({
       return ', ' + this.tweet.favoriteCount + (this.tweet.favoriteCount > 1 ? ' Favorites' : ' Favorite');
     },
     formattedTime: function () {
-      var createdAt = moment(new Date(this.tweet.createdAt));
-      return createdAt.format('M/D/YY, h:mm A');
+      var createdAt = new Date(this.tweet.createdAt);
+      return dateformat(createdAt, "mmm d, yyyy, h:MM:ss TT");
     }
   }
 });

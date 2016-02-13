@@ -85,9 +85,13 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
   });
 
   this.stream.on('delete', function (deleteMessage) {
-    var deleteId = deleteMessage.delete.status.id_str;
-    self.timeline.deleteTweet(deleteId);
-    self.send('deleteTweet', self.screenname, deleteId);
+    if (deleteMessage.delete.status) {
+      var deleteId = deleteMessage.delete.status.id_str;
+      self.timeline.deleteTweet(deleteId);
+      self.send('deleteTweet', self.screenname, deleteId);
+    } else if (deleteMessage.delete.direct_message) {
+      // delete direct message
+    }
   });
 
   this.stream.on('favorite', function (favoriteMessage) {
@@ -118,14 +122,21 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
     }
   });
 
+  this.stream.on('disconnect', function (msg) {
+    console.log('Stream: disconnected. Try to reconnect');
+    console.log(msg);
+    self.stream.start();
+  });
+
   this.stream.on('error', function (err) {
     console.log('Stream: critical error');
     console.log(err);
   });
 
-  this.stream.on('internet_error', function (err) {
-    console.log('Stream: internet is down.');
+  this.stream.on('fatal_error', function (err) {
+    console.log('Stream: internet is down. Try to reconnect');
     console.log(err);
+    self.stream.start();
   });
 }
 
@@ -377,20 +388,58 @@ Stream.prototype.findContext = function findContext(tweetId) {
   this.send('newReplies', this.screenname, replies);
 };
 
-Stream.prototype.sendTweet = function sendTweet(tweet, replyTo, sender) {
+Stream.prototype.sendTweet = function sendTweet(tweet, replyTo, sender, mediaPaths) {
+  var self = this;
   var options = {status: tweet};
 
   if (replyTo) {
     options.in_reply_to_status_id = replyTo;
   }
 
-  this.T.post('statuses/update', options, function (err, data, response) {
-    if (!err) {
-      sender.close();
-    } else {
-      sender.show();
-    }
-  });
+  if (!mediaPaths || _.isEmpty(mediaPaths)) {
+    this.T.post('statuses/update', options, function (err, data, response) {
+      if (!err) {
+        sender.close();
+      } else {
+        sender.send('message', 'Cannot send tweet.');
+        sender.show();
+      }
+    });
+  } else {
+    console.log('Stream: update status with media path');
+    var mediaPromises = _.map(mediaPaths, function (path) {
+      return new Promise(function (resolve, reject) {
+        self.T.postMediaChunked({ file_path: path }, function (err, data, response) {
+          if (!err) {
+            resolve(data.media_id_string);
+          } else {
+            console.log('Stream: media upload errored');
+            sender.send('message', 'Cannot upload media.');
+            sender.show();
+            reject(err);
+          }
+        });
+      });
+    });
+
+    Promise.all(mediaPromises)
+      .then(function (media_ids) {
+        options.media_ids = media_ids;
+        self.T.post('statuses/update', options, function (err, data, response) {
+          if (!err) {
+            sender.close();
+          } else {
+            console.log('Stream: status upload error');
+            console.log(err);
+            sender.send('message', 'Cannot send tweet.');
+            sender.show();
+          }
+        });
+      }, function (errs) {
+        console.log('Stream: send tweet aborted');
+        console.log(errs);
+      });
+  }
 };
 
 Stream.prototype.favorite = function favorite(tweetId) {
@@ -418,6 +467,13 @@ Stream.prototype.retweet = function retweet(tweetId) {
       console.log('REST: retweeted and got ' + data.id_str);
     } else {
       console.log(err);
+      if (err.code && err.code === 327) {
+        var tweet = this.timeline.findTweet(tweetId);
+        if (tweet) {
+          tweet.isRetweeted = true;
+          self.send('updateTweet', self.screenname, tweet);
+        }
+      }
     }
   });
 };

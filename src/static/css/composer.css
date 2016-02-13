@@ -82,9 +82,14 @@ a {
   background-color: #ccc; }
 
 .newtweet {
-  -webkit-animation: fadeIn .2s; }
+  -webkit-animation: fadeIn .2s;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; }
   .newtweet .newtweettext {
-    height: calc(100vh - 2.75rem);
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 4rem;
     position: relative;
     word-break: break-all;
     overflow: auto;
@@ -95,12 +100,16 @@ a {
       width: 100%;
       background-color: transparent;
       border: none;
-      min-height: 100%;
       font-size: .75rem;
       padding: .75rem;
       resize: none;
       outline: none;
-      -webkit-text-fill-color: transparent; }
+      -webkit-text-fill-color: transparent;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0; }
     .newtweet .newtweettext .newformattedtweet {
       white-space: pre-wrap;
       width: 100%;
@@ -111,15 +120,44 @@ a {
       padding: .75rem;
       position: absolute;
       top: 0;
+      bottom: 0;
       left: 0;
+      right: 0;
       z-index: -1; }
-  .newtweet .newtweetmeta {
+  .newtweetmessage {
+    text-align: center;
+    background: #efefef;
+    padding: .5rem;
+    flex-shrink: 0;
+    color: #79a;
+    font-size: .875rem;
+    border-top: 1px solid #e0e0e0; }
+  .newtweetmedia {
+    flex-grow: 1;
+    flex-shrink: 0;
+    overflow: hidden;
+    flex-basis: 5rem;
+    display: flex; }
+    .newtweetmediacolumn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+      flex-basis: 0;
+      overflow: hidden; }
+  .newtweetmeta {
+    flex-shrink: 0;
     background-color: #f4f7f9;
-    height: 2.75rem;
-    text-align: right;
-    padding: 0 .75rem;
-    border-top: 1px solid #ddd; }
-    .newtweet .newtweetmeta .composericon {
+    padding: .5rem;
+    border-top: 1px solid #ddd;
+    display: flex; }
+    .mediacolumn {
+      flex-grow: 1; }
+    .remainingcolumn {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    .newtweetmeta .composericon {
       width: 3rem;
       height: 3rem;
       background: #fff;
@@ -130,12 +168,11 @@ a {
       box-shadow: 0 0 0.125rem 0.125rem rgba(0, 0, 0, 0.1);
       overflow: hidden;
       cursor: pointer; }
-    .newtweet .newtweetmeta .remaining {
+    .newtweetmeta .remaining {
       font-size: .75rem;
       padding: 0 .75rem;
-      line-height: 2.75rem;
       color: #aaa; }
-    .newtweet .newtweetmeta .newtweetbutton {
+    .newtweetmeta .newtweetbutton {
       background: #f0f0f0;
       border: 1px solid #ddd;
       border-radius: .25rem;
@@ -146,10 +183,20 @@ a {
       outline: none;
       transition: all .1s;
       cursor: default; }
-      .newtweet .newtweetmeta .newtweetbutton.active {
+      .newtweetmeta .newtweetbutton.active {
         color: #fff;
         background-color: #69c;
         cursor: pointer; }
+    .newtweetmeta .newmediabutton {
+      background-color: #f4f7f9;
+      border: 1px solid #ddd;
+      border-radius: .25rem;
+      text-align: center;
+      padding: .5rem .75rem;
+      font-size: .75rem;
+      color: #aaa;
+      outline: none;
+      transition: all .1s; }
   .newtweet .switches {
     background-color: rgba(255, 255, 255, 0);
     position: fixed;

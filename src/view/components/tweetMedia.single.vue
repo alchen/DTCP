@@ -56,7 +56,7 @@
 <template lang="html">
   <section class="tweetmedia" :class="{ one: media.length === 1, two: media.length === 2, three: media.length === 3, four: media.length === 4}">
     <div class="inflatecontainer">
-      <picture class="tweetmediaimage" v-for="image in media" @click="leftclick($index)">
+      <picture class="tweetmediaimage" v-for="image in media" @click="debouncedClick($index)">
         <source :srcset="image.url" media="(min-width: 400px)" />
         <img  :src="image.url + ':small'" />
       </picture>
@@ -76,7 +76,16 @@ var TweetMedia = Vue.extend({
   replace: true,
   props: ['media'],
   methods: {
-    leftclick: function (index) {
+    debouncedClick: function (index) {
+      if (!this._debouncedClick) {
+        this._debouncedClick = _.debounce(this.leftClick, 500, {
+          'leading': true,
+          'trailing': false
+        });
+      }
+      this._debouncedClick(index);
+    },
+    leftClick: function (index) {
       var media = _.map(this.media, function (m) {
         return _.cloneDeep(m);
       });

@@ -39,6 +39,7 @@ instrumented
 src/static/js
 src/entry.js
 src/static/css/bundle.css
-src/static/css/components.scss
+src/static/css/composer.css
 src/static/css/viewer.css
 src/static/css/preferences.css
+src/static/css/components.scss

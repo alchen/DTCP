@@ -76,15 +76,15 @@
 .profilemetaleft {
   float: left; }
 
-.profileiconlink {
-  cursor: default; }
-
 .profilemetaright {
   float: right;
   width: calc(100% - 3.75rem); }
 
 .profiletext {
   font-size: .875rem; }
+
+.profileicon {
+  cursor: pointer; }
 .timeline {
   list-style: none;
   padding: 0;
@@ -355,6 +355,7 @@
     width: calc(50% - .5rem);
     height: calc(50% - .5rem);
     border-radius: .25rem;
+    border: 1px solid #f0f0f0;
     margin: .25rem;
     cursor: pointer;
     overflow: hidden; }

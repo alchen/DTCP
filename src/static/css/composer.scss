@@ -10,9 +10,14 @@ $switch-transition-time: .2s;
 
 .newtweet {
   -webkit-animation: fadeIn .2s;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 
   .newtweettext {
-    height: calc(100vh - 2.75rem);
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 4rem;
     position: relative;
     word-break: break-all;
     overflow: auto;
@@ -24,12 +29,16 @@ $switch-transition-time: .2s;
       width: 100%;
       background-color: transparent;
       border: none;
-      min-height: 100%;
       font-size: .75rem;
       padding: .75rem;
       resize: none;
       outline: none;
       -webkit-text-fill-color: transparent;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
     }
 
     .newformattedtweet {
@@ -42,17 +51,56 @@ $switch-transition-time: .2s;
       padding: .75rem;
       position: absolute;
       top: 0;
+      bottom: 0;
       left: 0;
+      right: 0;
       z-index: -1;
     }
   }
 
-  .newtweetmeta {
+  @at-root .newtweetmessage {
+    text-align: center;
+    background: #efefef;
+    padding: .5rem;
+    flex-shrink: 0;
+    color: #79a;
+    font-size: .875rem;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  @at-root .newtweetmedia {
+    flex-grow: 1;
+    flex-shrink: 0;
+    overflow: hidden;
+    flex-basis: 5rem;
+    display: flex;
+
+    @at-root .newtweetmediacolumn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-grow: 1;
+      flex-basis: 0;
+      overflow: hidden;
+    }
+  }
+
+  @at-root .newtweetmeta {
+    flex-shrink: 0;
     background-color: #f4f7f9;
-    height: 2.75rem;
-    text-align: right;
-    padding: 0 .75rem;
+    padding: .5rem;
     border-top: 1px solid #ddd;
+    display: flex;
+
+    @at-root .mediacolumn {
+      flex-grow: 1;
+    }
+
+    @at-root .remainingcolumn {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     .composericon {
       width: 3rem;
@@ -70,7 +118,6 @@ $switch-transition-time: .2s;
     .remaining {
       font-size: .75rem;
       padding: 0 .75rem;
-      line-height: 2.75rem;
       color: #aaa;
     }
 
@@ -91,6 +138,18 @@ $switch-transition-time: .2s;
         background-color: #69c;
         cursor: pointer;
       }
+    }
+
+    .newmediabutton {
+      background-color: #f4f7f9;
+      border: 1px solid #ddd;
+      border-radius: .25rem;
+      text-align: center;
+      padding: .5rem .75rem;
+      font-size: .75rem;
+      color: #aaa;
+      outline: none;
+      transition: all .1s;
     }
   }
 

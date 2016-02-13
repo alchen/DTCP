@@ -4,14 +4,13 @@
 var ipc = require('electron').ipcRenderer;
 var _ = require('lodash');
 var Vue = require('vue');
-var moment = require('moment');
 require('../view/components/frames.vue');
 
 Vue.config.debug = process.env.NODE_ENV !== 'production';
 Vue.config.strict = true;
 
 var defaultLength = 50;
-var scrollThrottleRate = 60;
+var scrollThrottleRate = 140;
 
 var timeline = new Vue({
   el: 'html',
@@ -53,7 +52,7 @@ var timeline = new Vue({
     bundle: {},
     currentUser: undefined,
     availableUsers: {},
-    now: moment()
+    now: Math.floor(Date.now() / 1000)
   },
   methods: {
     showSwitches: function () {
@@ -494,13 +493,14 @@ var timeline = new Vue({
     },
     scrollPageUp: function () {
       this.$broadcast('scrollPageUp');
+    },
+    updateNow: function () {
+      this.now = Math.floor(Date.now() / 1000);
     }
   },
   compiled: function () {
     var self = this;
-    setInterval(function () {
-      self.now = moment();
-    }, 60 * 1000);
+    setInterval(this.updateNow, 60 * 1000);
 
     var throttledScrollToNextTweet = _.throttle(self.scrollToNextTweet, scrollThrottleRate);
     var throttledScrollToPreviousTweet = _.throttle(self.scrollToPreviousTweet, scrollThrottleRate);
@@ -521,6 +521,10 @@ var timeline = new Vue({
           self.scrollPageDown();
         }
       } else if (event.keyCode === 82) { // R
+        if (event.metaKey || event.ctrlKey) {
+          return;
+        }
+
         var tweet = self.getActiveTweet();
         if (!tweet) {
           return;
@@ -586,17 +590,17 @@ var timeline = new Vue({
     });
 
     ipc.on('deleteTweet', function (event, screenname, tweetId) {
-      self.now = moment();
+      self.updateNow();
       self.deleteTweet(screenname, tweetId);
     });
 
     ipc.on('updateTweet', function (event, screenname, tweet) {
-      self.now = moment();
+      self.updateNow();
       self.updateTweet(screenname, tweet);
     });
 
     ipc.on('newTweet', function (event, screenname, timeline, tweet) {
-      self.now = moment();
+      self.updateNow();
       self.addTweet(screenname, timeline, tweet);
       self.notify(screenname, timeline, tweet);
       if (self.screenname === screenname) {
@@ -611,7 +615,7 @@ var timeline = new Vue({
       if (!tweets || !tweets.length) {
         return;
       }
-      self.now = moment();
+      self.updateNow();
       _.each(tweets, function (tweet) {
         self.addTweet(screenname, timeline, tweet, true);
       });
@@ -621,7 +625,7 @@ var timeline = new Vue({
       if (!tweets || !tweets.length) {
         return;
       }
-      self.now = moment();
+      self.updateNow();
       self.addFiller(screenname, timeline, tweets);
       if (self.screenname === screenname) {
         self.keepPosition();
@@ -630,7 +634,7 @@ var timeline = new Vue({
 
     // New user object
     ipc.on('newProfileUser', function (event, screenname, user) {
-      self.now = moment();
+      self.updateNow();
       user = self.updateProfile(screenname, user);
       if (self.screenname === screenname && self.topFrame.profile &&
         self.topFrame.profile.screenname === user.screenname) {
@@ -640,7 +644,7 @@ var timeline = new Vue({
 
     // New user object and tweets
     ipc.on('newProfile', function (event, screenname, user, tweets) {
-      self.now = moment();
+      self.updateNow();
       user = self.updateProfile(screenname, user);
       if (self.screenname === screenname && self.topFrame.profile &&
         self.topFrame.profile.screenname === user.screenname) {
