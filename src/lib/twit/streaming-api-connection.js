@@ -53,6 +53,8 @@ StreamingAPIConnection.prototype._resetConnection = function () {
  * Resets the parameters used in determining the next reconnect time
  */
 StreamingAPIConnection.prototype._resetRetryParams = function () {
+  // reset close flag so we will reconnect
+  this._isExplicitClose = false;
   // delay for next reconnection attempt
   this._connectInterval = 0
   // flag indicating whether we used a 0-delay reconnect
@@ -112,7 +114,7 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
         var twitErr = helpers.makeTwitError(errMsg);
         twitErr.statusCode = self.response.statusCode;
         helpers.attachBodyInfoToError(twitErr, compressedBody);
-        self.emit('parser-error', twitErr);
+        self.emit('parser_error', twitErr);
       });
     } else if (self.response.statusCode === 420) {
       // close the connection forcibly so a reconnect is scheduled by `self.onClose()`
@@ -157,22 +159,19 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
  *
  */
 StreamingAPIConnection.prototype._onClose = function () {
-  var self = this;
-  self._stopStallAbortTimeout();
+  this._stopStallAbortTimeout();
   // We closed it explicitly - don't reconnect
-  if (self._abortedBy === 'twit-client')
-    return
+  if (this._isExplicitClose) {
+    return;
+  }
 
-  // we got disconnected by twitter - reconnect according to their guidelines
-  self._abortedBy = 'twitter';
-
-  if (self._scheduledReconnect) {
+  if (this._scheduledReconnect) {
     // if we already have a reconnect scheduled, don't schedule another one.
     // this race condition can happen if the http.ClientRequest and http.IncomingMessage both emit `close`
     return
   }
 
-  self._scheduleReconnect();
+  this._scheduleReconnect();
 }
 
 /**
@@ -190,7 +189,7 @@ StreamingAPIConnection.prototype.start = function () {
  *
  */
 StreamingAPIConnection.prototype.stop = function () {
-  this._abortedBy = 'twit-client';
+  this._isExplicitClose = true;
   // clear connection variables and timeout handles
   this._resetConnection();
   this._resetRetryParams();
@@ -320,11 +319,14 @@ StreamingAPIConnection.prototype._setupParser = function () {
   self.parser.on('error', function (err) {
     self.emit('parser_error', err)
   });
+  self.parser.on('connection_limit_exceeded', function (err) {
+    self.emit('error', err);
+  });
 }
 
 StreamingAPIConnection.prototype._handleDisconnect = function (twitterMsg) {
-  this.emit('disconnect', twitterMsg);
   this.stop();
+  this.emit('disconnect', twitterMsg);
 }
 
 module.exports = StreamingAPIConnection

@@ -1,6 +1,6 @@
 {
   "name": "DTCP",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "Desktop Twitter Client Project",
   "main": "src/entry.js",
   "private": true,
@@ -67,6 +67,7 @@
     "mkdirp": "^0.5.1",
     "oauth": "^0.9.14",
     "request": "^2.69.0",
+    "semver": "^5.1.0",
     "twitter-text": "^1.13.3",
     "vue": "^1.0.16",
     "which": "^1.2.4"

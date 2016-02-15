@@ -20,6 +20,7 @@
         :pretext.sync="frame.pretext"
         :replies.sync="frame.replies"
         :accounts="frame.accounts"
+        :update="update"
         :username="screenname"
         :now="now"
       ></component>
@@ -44,7 +45,7 @@ require('./login.frame.vue');
 
 var Frames = Vue.extend({
   replace: true,
-  props: ['frames', 'screenname', 'now'],
+  props: ['frames', 'screenname', 'now', 'update'],
   computed: {
     topFrame: function () {
       return this.frames[this.frames.length - 1];

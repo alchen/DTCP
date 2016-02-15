@@ -65,6 +65,23 @@ $switch-transition-time: .2s;
         font-size: 1.25rem;
         transition: color $switch-transition-time;
       }
+
+      @at-root .updatebutton {
+        width: 100%;
+        padding: .75rem;
+        border: 1px solid #5ae;
+        background: #fff;
+        outline: none;
+        border-radius: .25rem;
+        color: #333;
+        font-size: .875rem;
+        box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
+        transition: margin $switch-transition-time;
+
+        &:active {
+          margin-top: .25rem;
+        }
+      }
     }
   }
 }
@@ -82,6 +99,9 @@ $switch-transition-time: .2s;
         <section class="icon"><span class="iconic iconic-md" data-glyph="plus"></span></section>
         <section class="text">Add</section>
       </li>
+      <li class="switch" v-if="update">
+        <button class="updatebutton" @click="updateclick">Update available</button>
+      </li>
     </ul>
   </div>
 </template>
@@ -90,10 +110,12 @@ $switch-transition-time: .2s;
 'use strict';
 
 var Vue = require('vue');
+var shell = require('shell');
+var packageInfo = require('../../../package.json');
 
 var Switches = Vue.extend({
   replace: true,
-  props: ['accounts', 'username', 'now', 'view'],
+  props: ['accounts', 'update', 'username', 'now', 'view'],
   methods: {
     switchUser: function (screenname) {
       this.$dispatch('switchUser', screenname);
@@ -104,6 +126,10 @@ var Switches = Vue.extend({
     leftclick: function () {
       // dismiss Switches
       this.$dispatch('back');
+    },
+    updateclick: function (event) {
+      shell.openExternal(packageInfo.homepage + '/releases/latest');
+      event.stopPropagation();
     }
   }
 });

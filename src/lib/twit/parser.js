@@ -33,7 +33,7 @@ Parser.prototype.parse = function (chunk) {
       if (!piece.length) { continue; } //empty object
 
       if (piece === 'Exceeded connection limit for user') {
-        this.emit('connection-limit-exceeded',
+        this.emit('connection_limit_exceeded',
                   new Error('Twitter says: ' + piece + '. Only instantiate one stream per set of credentials.'));
         continue;
       }

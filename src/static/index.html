@@ -20,7 +20,7 @@
       <header class="pageheader">
         <section class="switchbutton">
           <ul class="navlist">
-            <li class="navicon" :class="{ unread: unreadFromOtherUser }">
+            <li class="navicon" :class="{ unread: unreadFromOtherUser || update }">
               <img :src="bundle[screenname].users[screenname].biggerIcon" v-if="bundle[screenname]" class="usericon" @click="showSwitches" />
             </li>
           </ul>
@@ -48,7 +48,7 @@
           </ul>
         </nav>
       </header>
-      <component is="frames" :frames.sync="frames" :screenname="screenname" :now="now"></component>
+      <component is="frames" :frames.sync="frames" :update="update" :screenname="screenname" :now="now"></component>
     </div>
     <script src="js/index.js"></script>
   </body>

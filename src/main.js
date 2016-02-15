@@ -8,6 +8,9 @@ process.on('uncaughtException', function (err) {
 var _ = require('lodash');
 var app = require('app');
 var ipc = require('electron').ipcMain;
+var request = require('request');
+var packageInfo = require('../package.json');
+var semver = require('semver');
 var windows;
 var menu;
 var tray;
@@ -70,6 +73,18 @@ app.on('quit', function () {
 
 ipc.on('focus', function () {
   windows.focusOnMainWindow();
+});
+
+ipc.on('checkUpdate', function () {
+  request.head({
+    url: packageInfo.homepage + '/releases/latest'
+  }, function (err, response) {
+    if (!err) {
+      var latestVersion = response.socket._httpMessage.path.split('/').pop();
+      var hasUpdate = semver.gt(latestVersion, packageInfo.version);
+      windows.getMainWindow().send('update', hasUpdate);
+    }
+  })
 });
 
 ipc.on('updateBadge', function (event, target) {

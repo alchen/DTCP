@@ -52,6 +52,7 @@ var timeline = new Vue({
     bundle: {},
     currentUser: undefined,
     availableUsers: {},
+    update: false,
     now: Math.floor(Date.now() / 1000)
   },
   methods: {
@@ -691,9 +692,18 @@ var timeline = new Vue({
       }
     });
 
+    ipc.on('update', function (event, hasUpdate) {
+      self.update = hasUpdate;
+    });
+
     ipc.send('getFontSize');
     ipc.send('getLastScreenname');
     ipc.send('initialLoad');
+    ipc.send('checkUpdate');
+
+    setInterval(function () {
+      ipc.send('checkUpdate');
+    }, 1000 * 60 * 60 * 6); // Check update every six hours
   }
 });
 
