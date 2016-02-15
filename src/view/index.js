@@ -141,7 +141,7 @@ var timeline = new Vue({
       return tweet;
     },
     dive: function () {
-      var tweet = this.getActiveTweet(tweetId);
+      var tweet = this.getActiveTweet();
       if (!tweet) {
         return;
       }

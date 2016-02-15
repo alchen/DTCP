@@ -53,8 +53,6 @@ StreamingAPIConnection.prototype._resetConnection = function () {
  * Resets the parameters used in determining the next reconnect time
  */
 StreamingAPIConnection.prototype._resetRetryParams = function () {
-  // reset close flag so we will reconnect
-  this._isExplicitClose = false;
   // delay for next reconnection attempt
   this._connectInterval = 0
   // flag indicating whether we used a 0-delay reconnect
@@ -179,6 +177,9 @@ StreamingAPIConnection.prototype._onClose = function () {
  *
  */
 StreamingAPIConnection.prototype.start = function () {
+  // reset close flag so we will reconnect
+  this._isExplicitClose = false;
+
   this._resetRetryParams();
   this._startPersistentConnection();
   return this;

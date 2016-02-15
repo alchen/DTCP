@@ -1,0 +1,67 @@
+.login {
+  @at-root .frame > .login {
+    background-color: $blue;
+  }
+  padding: 4rem 0;
+
+  .connect, .error, .result, .verify {
+    padding: .75rem;
+    text-align: center;
+  }
+
+  .connect {
+    button {
+      background: #fff;
+      border: 0;
+      border-radius: .25rem;
+      padding: .75rem;
+      color: $blue;
+      box-shadow: 0 0 .5rem 0 rgba(0, 0, 0, 0.2);
+
+      .iconic[data-glyph].iconic-sm:before {
+        font-size: 1.25rem;
+        margin-right: .5rem;
+        vertical-align: middle;
+      }
+    }
+  }
+
+  .result {
+    color: #5ae;
+    background: #fff;
+    border-radius: .25rem;
+    margin: 2rem;
+    box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .verify {
+    margin-top: 2rem;
+    backface-visibility: visible !important;
+
+    input, button {
+      padding: .75rem;
+      background: #fff;
+      border: 0;
+      box-shadow: 0 0 .5rem 0 rgba(0, 0, 0, 0.2);
+    }
+
+    input {
+      border-top-left-radius: .25rem;
+      border-bottom-left-radius: .25rem;
+    }
+
+    button {
+      border-top-right-radius: .25rem;
+      border-bottom-right-radius: .25rem;
+      color: $blue;
+    }
+  }
+
+  .verify-enter {
+    -webkit-animation: flipInX .3s;
+  }
+
+  .verify-out {
+    -webkit-animation: flipOutX .3s;
+  }
+}

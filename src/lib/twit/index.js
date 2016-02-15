@@ -365,7 +365,7 @@ Twitter.prototype.stream = function (path, params) {
     if (err) {
       // we can get an error if we fail to obtain a bearer token or construct reqOpts
       // surface this on the streamingConnection instance (where a user may register their error handler)
-      streamingConnection.emit('error', err)
+      streamingConnection.emit('fatal_error', err)
       return
     }
     // set the properties required to start the connection

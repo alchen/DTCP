@@ -10,11 +10,7 @@
     <div class="promptbackground"></div>
     <div id="content">
       <div class="promptcontainer">
-        <component
-          :is="stage"
-          :oauth-token.sync="oauthToken"
-          :oauth-token-secret.sync="oauthTokenSecret"
-        ></component>
+        <login></login>
       </div>
     </div>
     <script src="js/prompt.js"></script>

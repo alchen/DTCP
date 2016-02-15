@@ -1,87 +1,12 @@
-<style lang="sass">
-@import '../assets/const';
-
-.login {
-  @at-root .frame > .login {
-    background-color: $blue;
-  }
-  padding: 4rem 0;
-
-  .connect, .error, .result, .verify {
-    padding: .75rem;
-    text-align: center;
-  }
-
-  .connect {
-    button {
-      background: #fff;
-      border: 0;
-      border-radius: .25rem;
-      padding: .75rem;
-      color: $blue;
-      box-shadow: 0 0 .5rem 0 rgba(0, 0, 0, 0.2);
-
-      .iconic[data-glyph].iconic-sm:before {
-        font-size: 1.25rem;
-        margin-right: .5rem;
-        vertical-align: middle;
-      }
-    }
-  }
-
-  .error, .result {
-    color: #5ae;
-    background: #fff;
-    width: 8rem;
-    border-radius: .25rem;
-    margin: 4rem auto 0 auto;
-    box-shadow: 0 0 0.5rem 0 rgba(0, 0, 0, 0.2);
-  }
-
-  .verify {
-    padding-top: 4rem;
-    backface-visibility: visible !important;
-
-    input, button {
-      padding: .75rem;
-      background: #fff;
-      border: 0;
-      box-shadow: 0 0 .5rem 0 rgba(0, 0, 0, 0.2);
-    }
-
-    input {
-      border-top-left-radius: .25rem;
-      border-bottom-left-radius: .25rem;
-    }
-
-    button {
-      border-top-right-radius: .25rem;
-      border-bottom-right-radius: .25rem;
-      color: $blue;
-    }
-  }
-
-  .verify-enter {
-    -webkit-animation: flipInX .3s;
-  }
-
-  .verify-out {
-    -webkit-animation: flipOutX .3s;
-  }
-}
-</style>
-
 <template lang="html">
   <div class="login">
     <section class="connect">
       <button @click="connect"><span class="iconic iconic-sm" data-glyph="social-twitter"></span>Sign in with Twitter</button>
     </section>
-    <section class="error" v-if="error" v-text="error"></section>
     <section class="verify" v-if="stage === 'verify'" transition="verify">
-      <input type="text" v-model="pin" placeholder="Enter PIN" />
-      <button @click="verify">Verify</button>
+      <input type="text" v-model="pin" placeholder="Enter PIN" /><button @click="verify">Verify</button>
     </section>
-    <section class="result" v-if="result" v-text="result" transition="verify"></section>
+    <section class="result" v-if="message" v-text="message" transition="verify"></section>
   </div>
 </template>
 
@@ -90,72 +15,49 @@
 
 var Vue = require('vue');
 var ipc = require('electron').ipcRenderer;
-var shell = require('shell');
-var config = require('../../config');
-var OAuth = require('oauth');
-var oauth = new OAuth.OAuth(
-  'https://api.twitter.com/oauth/request_token',
-  'https://api.twitter.com/oauth/access_token',
-  config.consumerKey,
-  config.consumerSecret,
-  '1.0A',
-  'oob',
-  'HMAC-SHA1'
-);
-
-var template = '';
 
 var Login = Vue.extend({
   replace: true,
-  props: ['username', 'now', 'view'],
   data: function () {
     return {
       pin: '',
-      result: undefined,
-      error: undefined,
+      message: undefined,
       stage: 'login'
     };
   },
   methods: {
     connect: function () {
-      var self = this;
-      oauth.getOAuthRequestToken(function (error, oauthToken, oauthTokenSecret, results) {
-        if (error) {
-          console.log('Renderer: authenticate err ' + error);
-          self.error = 'Is internet down?';
-        } else {
-          self.oauthToken = oauthToken;
-          self.oauthTokenSecret = oauthTokenSecret;
-          var authenticateUrl = 'https://twitter.com/oauth/authenticate?oauth_token=' + oauthToken;
-          shell.openExternal(authenticateUrl);
-          self.stage = 'verify';
-        }
-      });
+      this.message = null;
+      ipc.send('prepareOAuth');
     },
     verify: function () {
-      var self = this;
-      oauth.getOAuthAccessToken(this.oauthToken, this.oauthTokenSecret, this.pin,
-        function (error, oauthAccessToken, oauthAccessTokenSecret, results) {
-          if (error) {
-            console.log('Renderer: verification err ' + error);
-            self.error = 'Is internet down?';
-          } else {
-            self.error = null;
-            self.result = 'Verified!';
-            ipc.send(
-              'newAccount',
-              oauthAccessToken,
-              oauthAccessTokenSecret,
-              results.screen_name
-            );
-            setTimeout(function () {
-              console.log('papa')
-              self.$dispatch('back');
-            }, 1200);
-          }
-        }
-      );
+      this.message = null;
+      ipc.send('verifyOAuth', this.pin);
     }
+  },
+  compiled: function () {
+    var self = this;
+
+    ipc.on('setLoginStage', function (event, newStage) {
+      self.stage = newStage;
+    });
+
+    ipc.on('setLoginMessage', function (event, newMessage) {
+      self.message = newMessage;
+    });
+
+    ipc.on('setLoginResult', function (event, accessToken, accessTokenSecret, screenname) {
+      self.message = 'Verified.';
+      ipc.send(
+        'newAccount',
+        accessToken,
+        accessTokenSecret,
+        screenname
+      );
+      setTimeout(function () {
+        self.$dispatch('back');
+      }, 1200);
+    });
   }
 });
 

@@ -7,6 +7,10 @@ $switch-transition-time: .2s;
     background-color: rgba(255, 255, 255, 0.9);
   }
 
+  & > .promptbackground {
+    z-index: auto;
+  }
+
   .switchlist {
     margin: 0;
     padding: 0;
