@@ -1,3 +1,5 @@
+'use strict';
+
 //
 //  Parser - for Twitter Streaming API
 //
@@ -5,7 +7,9 @@ var util = require('util')
   , EventEmitter = require('events').EventEmitter;
 
 var Parser = module.exports = function ()  {
-  this.message = ''
+  this.msgBuf = '';
+  this.nextMsgBytes = 0;
+  this.lastByteChecked = 0;
 
   EventEmitter.call(this);
 };
@@ -13,44 +17,85 @@ var Parser = module.exports = function ()  {
 util.inherits(Parser, EventEmitter);
 
 Parser.prototype.parse = function (chunk) {
-  this.message += chunk;
-  chunk = this.message;
+  // message var represents anything left in local buffer plus new chunk
+  var message = this.msgBuf += chunk;
+  var rest;
 
-  var size = chunk.length
-    , start = 0
-    , offset = 0
-    , curr
-    , next;
+  // do we have a known piece incoming?
+  if (this.nextMsgBytes > 0) {
+    if (message.length >= this.nextMsgBytes) { // we have what we need to process
 
-  while (offset < size) {
-    curr = chunk[offset];
-    next = chunk[offset + 1];
+      // separate active head piece of message from remainder
+      var splitPos = this.nextMsgBytes;
+      var piece = message.slice(0, splitPos);
+      rest  = message.slice(splitPos + 1);
 
-    if (curr === '\r' && next === '\n') {
-      var piece = chunk.slice(start, offset);
-      start = offset += 2;
+      // process that piece
+      this._processObj(piece);
 
-      if (!piece.length) { continue; } //empty object
+      // reset state, then call ourselves recursively with remainder of message
+      this.nextMsgBytes = 0;    // since we just processed it
+      this.msgBuf = '';         // reset state
+      this.lastByteChecked = 0; // reset state
+      this.parse(rest);
 
-      if (piece === 'Exceeded connection limit for user') {
-        this.emit('connection_limit_exceeded',
-                  new Error('Twitter says: ' + piece + '. Only instantiate one stream per set of credentials.'));
-        continue;
-      }
-
-      try {
-        var msg = JSON.parse(piece)
-      } catch (err) {
-        this.emit('error', new Error('Error parsing twitter reply: `'+piece+'`, error message `'+err+'`'));
-      } finally {
-        if (msg)
-          this.emit('element', msg)
-
-        continue
-      }
+    } else { // we are still expecting more data
+      this.msgBuf = message; // store what we have so far
+      // after this, function will exit, until it gets called with next chunk..
     }
-    offset++;
+
+  } else { // we don't have any known pieces coming, so search for EOLs
+
+    // parse until we find a full line
+    // (be sure to indicate the last searched point to make search faster)
+    var eolPos = message.indexOf('\r\n', this.lastByteChecked);
+    if (eolPos !== -1) {
+      // we have an EOL, take the first line for processing and reserve the rest
+      var line = message.slice(0, eolPos);
+      rest = message.slice(eolPos + 2);
+
+      // process that line
+      this._processLine(line);
+
+      // reset state, call ourselves recursively with remainder of message
+      this.msgBuf = '';
+      this.lastByteChecked = 0;
+      this.parse(rest);
+
+    } else {
+      // we haven't found an EOL yet--indicate how far we have read so that we
+      // don't recheck it on next chunk, and store in local buffer to it can be
+      // resurrected when we get the next chunk.
+      this.lastByteChecked = message.length - 1;
+      this.msgBuf = message;
+    }
+
+  }
+};
+
+// a line can contain either a delimeted: length hint, or a JSON object
+Parser.prototype._processLine = function (line) {
+  // if entire line is an integer, assume we are getting delimited: length
+  var hint = parseInt(line);
+  if (!isNaN(hint)) {
+    this.nextMsgBytes = hint;
+  } else {
+    this._processObj(line);
+  }
+};
+
+
+// process what we assume should be a JSON object (but allow for errors..)
+Parser.prototype._processObj = function (piece) {
+  if (piece === 'Exceeded connection limit for user') {
+    this.emit('connection_limit_exceeded', new Error('Twitter says: ' + piece + '. Only instantiate one stream per set of credentials.'));
+    return;
   }
 
-  this.message = chunk.slice(start, size);
+  try {
+    var msg = JSON.parse(piece);
+    this.emit('element', msg);
+  } catch (err) {
+    this.emit('error', new Error('Error parsing twitter reply: `'+piece+'`, error message `'+err+'`'));
+  }
 };

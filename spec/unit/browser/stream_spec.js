@@ -211,7 +211,7 @@ describe('Stream', function () {
       var subscriberStub = {webContents: {send: function () {}}};
       var webContentsMock = sinon.mock(subscriberStub.webContents);
       stream.subscribe(subscriberStub);
-      webContentsMock.expects('send').calledWith('newFiller', timeline, filler);
+      webContentsMock.expects('send').calledWith('newSinceFiller', timeline, filler);
       webContentsMock.expects('send').calledWith('updateTweet', gap);
 
       stream.timeline.push('home', tweets.slice(10));

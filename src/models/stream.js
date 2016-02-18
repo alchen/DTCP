@@ -16,14 +16,16 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
     consumer_key: config.consumerKey,
     consumer_secret: config.consumerSecret,
     access_token: oauthToken,
-    access_token_secret: oauthTokenSecret
+    access_token_secret: oauthTokenSecret,
+    timeout_ms: 60*1000
   });
 
   this.screenname = screenname;
   this.timeline = new Timeline(screenname);
 
   this.stream = this.T.stream('user', {
-    stringify_friend_ids: true
+    stringify_friend_ids: true,
+    delimited: 'length'
   });
 
   this.stream.on('friends', function (friendsMsg) {
@@ -122,21 +124,37 @@ function Stream(oauthToken, oauthTokenSecret, screenname) {
     }
   });
 
+  this.stream.on('connect', function (req, resp, interval) {
+    console.log('Stream: connecting');
+  });
+
+  this.stream.on('connected', function (req, resp, interval) {
+    console.log('Stream: connected');
+  });
+
+  this.stream.on('reconnect', function (req, resp, interval) {
+    console.log('Stream: reconnect scheduled in ' + interval);
+  });
+
   this.stream.on('disconnect', function (msg) {
     console.log('Stream: disconnected. Try to reconnect');
     console.log(msg);
-    self.stream.start();
+    process.nextTick(function () {
+      self.stream.start();
+    });
   });
 
   this.stream.on('error', function (err) {
-    console.log('Stream: critical error');
+    console.log('Stream: Twit streaming error');
     console.log(err);
   });
 
   this.stream.on('fatal_error', function (err) {
     console.log('Stream: internet is down. Try to reconnect');
     console.log(err);
-    self.stream.start();
+    process.nextTick(function () {
+      self.stream.start();
+    });
   });
 }
 
@@ -229,10 +247,6 @@ Stream.prototype.sendTweets = function (timeline, maxId) {
   this.send('newTweets', this.screenname, timeline, payload);
 };
 
-Stream.prototype.sendFiller = function (timeline, filler) {
-  this.send('newFiller', this.screenname, timeline, filler);
-};
-
 Stream.prototype.loadSince = function (timeline, sinceId) {
   var self = this;
   var options = {
@@ -246,8 +260,8 @@ Stream.prototype.loadSince = function (timeline, sinceId) {
       var tweets = _.map(rawTweets, function (rawTweet) {
         return new Tweet(rawTweet, self.screenname);
       });
-      var filler = self.timeline.closeGap(timeline, sinceId, tweets);
-      self.sendFiller(timeline, filler);
+      var filler = self.timeline.closeSince(timeline, sinceId, tweets);
+      self.send('newSinceFiller', self.screenname, timeline, filler);
     }
   });
 };
@@ -462,6 +476,7 @@ Stream.prototype.unfavorite = function unfavorite(tweetId) {
 };
 
 Stream.prototype.retweet = function retweet(tweetId) {
+  var self = this;
   this.T.post('statuses/retweet/' + tweetId, function (err, data, response) {
     if (!err) {
       console.log('REST: retweeted and got ' + data.id_str);
@@ -485,7 +500,7 @@ Stream.prototype.unretweet = function unretweet(tweetId) {
     self.T.post('statuses/destroy/' + retweetId, function (err, data, response) {
       if (!err) {
         console.log('REST: unretweeted');
-        tweet = self.timeline.unretweetTweet(new Tweet(data, self.screenname));
+        var tweet = self.timeline.unretweetTweet(new Tweet(data, self.screenname));
         self.send('updateTweet', self.screenname, tweet);
       }
     });

@@ -201,7 +201,7 @@ describe('Timeline', function () {
     mentions[0].gaps.mentions.should.equal(true);
   });
 
-  it('should close gaps', function () {
+  it('should close gaps upwards', function () {
     var timeline = new Timeline(screenname);
     var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
 
@@ -224,14 +224,47 @@ describe('Timeline', function () {
     timeline.get('home')[1].gaps.home.should.equal(true);
     timeline.get('home')[3].gaps.home.should.equal(true);
 
-    timeline.closeGap('home', gaps[0].id, tweets.slice(0, 10));
+    timeline.closeSince('home', gaps[0].id, tweets.slice(0, 10));
 
     var finalHome = timeline.get('home');
     finalHome.should.have.length(20);
     finalHome.should.deep.equal(tweets);
   });
 
-  it('should leave a gap when filler might be incomplete', function () {
+  it('should close gaps downwards', function () {
+    var timeline = new Timeline(screenname);
+    var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
+
+    timeline.push('home', tweets.slice(10, 15));
+    timeline.get('home').should.have.length(5);
+
+    timeline.insertGap();
+
+    timeline.push('home', tweets.slice(15));
+    timeline.get('home').should.have.length(10);
+
+    _.each(tweets.slice(1, 5).reverse(), function (tweet) {
+      timeline.addTweet(tweet);
+    });
+
+    var gaps = timeline.insertGap();
+    timeline.get('home').should.have.length(14);
+    timeline.addTweet(tweets[0]);
+    timeline.get('home')[1].gaps.home.should.equal(true);
+    timeline.get('home')[5].gaps.home.should.equal(true);
+
+    timeline.closeMax('home', gaps[0].id, tweets.slice(1, 11));
+
+    _.each(tweets.slice(0, 1).reverse(), function (tweet) {
+      timeline.addTweet(tweet);
+    });
+
+    var finalHome = timeline.get('home');
+    finalHome.should.have.length(20);
+    finalHome.should.deep.equal(tweets);
+  });
+
+  it('should leave a gap upwards when filler might be incomplete', function () {
     var timeline = new Timeline(screenname);
     var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
 
@@ -248,7 +281,7 @@ describe('Timeline', function () {
     timeline.get('home').should.have.length(12);
     timeline.get('home')[2].gaps.home.should.equal(true);
 
-    timeline.closeGap('home', gaps[0].id, tweets.slice(0, 10));
+    timeline.closeSince('home', gaps[0].id, tweets.slice(0, 10));
 
     var finalHome = timeline.get('home');
     finalHome.should.have.length(20);

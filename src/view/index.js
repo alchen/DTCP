@@ -622,7 +622,7 @@ var timeline = new Vue({
       });
     });
 
-    ipc.on('newFiller', function (event, screenname, timeline, tweets) {
+    ipc.on('newSinceFiller', function (event, screenname, timeline, tweets) {
       if (!tweets || !tweets.length) {
         return;
       }

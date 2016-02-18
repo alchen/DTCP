@@ -71,6 +71,16 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       },
       updateTweet: function (event) {
         this.rawTweet = event.target.value;
+
+        var mentions = twitterText.extractMentionsWithIndices(this.rawTweet);
+        var textarea = document.getElementsByClassName('newrawtweet')[0];
+        var caretPosition = textarea.selectionStart;
+        var currentName = _.find(mentions, function (mention) {
+          return caretPosition >= mention.indices[0] && caretPosition <= mention.indices[1];
+        });
+        if (currentName) {
+          // find relevant name
+        }
       },
       addMedia: function () {
         var fileElem = document.getElementById("fileElem");

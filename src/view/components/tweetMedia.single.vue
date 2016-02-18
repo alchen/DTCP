@@ -6,6 +6,21 @@
   padding-bottom: calc(66% + 1rem);
   position: relative;
 
+  &.video::after {
+    content: 'video';
+    color: #fff;
+    border: 1px solid #fff;
+    position: absolute;
+    bottom: .75rem;
+    left: .75rem;
+    padding: .25rem;
+    text-transform: uppercase;
+    font-size: .5rem;
+    border-radius: .25rem;
+    box-shadow: 0 0 0.25rem 0 rgba(0, 0, 0, 0.5);
+    text-shadow: 0 0 0.25rem #000;
+  }
+
   @at-root .tweetmediaimage {
     flex-grow: 1;
     width: calc(50% - .5rem);
@@ -54,7 +69,7 @@
 </style>
 
 <template lang="html">
-  <section class="tweetmedia" :class="{ one: media.length === 1, two: media.length === 2, three: media.length === 3, four: media.length === 4}">
+  <section class="tweetmedia" :class="{ one: media.length === 1, two: media.length === 2, three: media.length === 3, four: media.length === 4, video: media.length === 1 && media[0].video }">
     <div class="inflatecontainer">
       <picture class="tweetmediaimage" v-for="image in media" @click="debouncedClick($index)">
         <source :srcset="image.url" media="(min-width: 400px)" />

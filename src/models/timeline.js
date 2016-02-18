@@ -36,7 +36,7 @@ Timeline.prototype.insertGap = function () {
   return gaps;
 };
 
-Timeline.prototype.closeGap = function (timeline, sinceId, newTweets) {
+Timeline.prototype.closeSince = function (timeline, sinceId, newTweets) {
   var self = this;
   var oldTweets;
   var hash;
@@ -52,21 +52,56 @@ Timeline.prototype.closeGap = function (timeline, sinceId, newTweets) {
     return oldTweet.id === sinceId;
   });
 
+  // Add the anchor tweet to the end.
+  // At this point the tweets are arrange from new to old.
   local.push(oldTweets[index]);
   local[0].gaps[timeline] = true;
 
+  // Get reverse to work from the anchor tweet up to the newest
   _.each(local.reverse(), function (tweet) {
-    if (index >= 0 && tweet.id === oldTweets[index].id) {
+    if (index >= 0 && tweet.id === oldTweets[index].id) { // tweet already included
       oldTweets[index].gaps[timeline] = false;
       index--;
-    } else if (!hash[tweet.id]) {
+    } else if (!hash[tweet.id]) { // new (previously missing) tweet
       if (index < 0) {
         oldTweets.unshift(tweet);
       } else {
+        // place the new tweet behind the current exisiting element
         oldTweets.splice(index + 1, 0, tweet);
       }
       hash[tweet.id] = tweet;
     }
+  });
+
+  return local;
+};
+
+Timeline.prototype.closeMax = function (timeline, maxId, newTweets) {
+  var self = this;
+  var oldTweets;
+  var hash;
+
+  oldTweets = this[timeline];
+  hash = this.hash[timeline];
+
+  var local = _.map(newTweets, function (newTweet) {
+    return self.saveTweet(newTweet);
+  });
+
+  var index = _.findIndex(oldTweets, function (oldTweet) {
+    return oldTweet.id === maxId;
+  });
+
+  // At this point the tweets are arrange from new to old.
+  _.each(local, function (tweet) {
+    if (index >= 0 && tweet.id === oldTweets[index].id) { // tweet already included
+      oldTweets[index].gaps[timeline] = false;
+    } else if (!hash[tweet.id]) { // new (previously missing) tweet
+      // place the new tweet behind the current exisiting element
+      oldTweets.splice(index, 0, tweet);
+      hash[tweet.id] = tweet;
+    }
+    index++;
   });
 
   return local;

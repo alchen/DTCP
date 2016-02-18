@@ -1,3 +1,5 @@
+'use strict';
+
 var assert = require('assert');
 var fs = require('fs');
 var mime = require('mime');
@@ -18,14 +20,14 @@ var MAX_FILE_CHUNK_BYTES = 5 * 1024 * 1024;
  * @param  {Twit(object)}   twit    Twit instance.
  */
 var FileUploader = function (params, twit) {
-  assert(params)
-  assert(params.file_path, 'Must specify `file_path` to upload a file. Got: ' + params.file_path + '.')
+  assert(params);
+  assert(params.file_path, 'Must specify `file_path` to upload a file. Got: ' + params.file_path + '.');
   var self = this;
   self._file_path = params.file_path;
   self._twit = twit;
   self._isUploading = false;
   self._isFileStreamEnded = false;
-}
+};
 
 /**
  * Upload a file to Twitter via the /media/upload (chunked) API.
@@ -76,12 +78,12 @@ FileUploader.prototype.upload = function (cb) {
         }
       });
     }
-  })
-}
+  });
+};
 
 FileUploader.prototype._isUploadComplete = function () {
   return !this._isUploading && this._isFileStreamEnded;
-}
+};
 
   /**
    * Send FINALIZE command for media object with id `media_id`.
@@ -95,7 +97,7 @@ FileUploader.prototype._finalizeMedia = function(media_id, cb) {
     command: 'FINALIZE',
     media_id: media_id
   }, cb);
-}
+};
 
   /**
    * Send APPEND command for media object with id `media_id`.
@@ -114,7 +116,7 @@ FileUploader.prototype._appendMedia = function(media_id_string, chunk_part, segm
     segment_index: segment_index,
     media: chunk_part,
   }, cb);
-}
+};
 
 /**
  * Send INIT command for our underlying media object.
@@ -138,6 +140,6 @@ FileUploader.prototype._initMedia = function (cb) {
     var errMsg = util.format('This file is too large. Max size is %dB. Got: %dB.', MAX_FILE_SIZE_BYTES, mediaFileSizeBytes);
     cb(new Error(errMsg));
   }
-}
+};
 
-module.exports = FileUploader
+module.exports = FileUploader;

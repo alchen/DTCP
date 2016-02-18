@@ -8,4 +8,4 @@ module.exports = {
   , MEDIA_UPLOAD  : 'https://upload.twitter.com/1.1/'
   , OA_REQ        : 'https://api.twitter.com/oauth/request_token'
   , OA_ACCESS     : 'https://api.twitter.com/oauth/access_token'
-}
+};
