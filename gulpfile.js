@@ -9,9 +9,9 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 gulp.task('default', ['webpack', 'sass']);
 
 gulp.task('sass', ['webpack'], function () {
-  gulp.src(['./src/static/css/bundle.scss', './src/static/css/composer.scss'])
+  gulp.src(['./src/assets/css/bundle.scss', './src/assets/css/composer.scss', './src/assets/css/viewer.scss', './src/assets/css/preferences.scss'])
       .pipe(sass().on('error', sass.logError))
-      .pipe(gulp.dest('./src/static/css/'));
+      .pipe(gulp.dest('./src/assets/css/'));
 });
 
 gulp.task('webpack', function (cb) {
@@ -22,17 +22,17 @@ gulp.task('webpack', function (cb) {
       __dirname: false
     },
     entry: {
-      'static/js/index': './view/index.js',
-      'static/js/prompt': './view/prompt.js',
-      'static/js/composer': './view/composer.js',
-      'static/js/about': './view/about.js',
-      'static/js/viewer': './view/viewer.js',
-      'static/js/preferences': './view/preferences.js',
+      'index': './view/index.js',
+      'prompt': './view/prompt.js',
+      'composer': './view/composer.js',
+      'about': './view/about.js',
+      'viewer': './view/viewer.js',
+      'preferences': './view/preferences.js',
       'entry': './main.js'
     },
     output: {
-      path: __dirname + '/src/',
-      publicPath: '/static/',
+      path: __dirname + '/src/assets/js',
+      publicPath: './js/',
       filename: '[name].js',
       chunkFilename: '[id].js'
     },
@@ -56,7 +56,7 @@ gulp.task('webpack', function (cb) {
     },
     plugins: [
       new RestoreDirname(),
-      new ExtractTextPlugin('./static/css/components.scss')
+      new ExtractTextPlugin('../css/components.scss')
     ],
     devtool: 'source-map'
   }, cb);

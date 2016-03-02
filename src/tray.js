@@ -5,12 +5,13 @@ const app = electron.app;
 const Menu = electron.Menu;
 const windows = require('./windows');
 const preferences = require('./preferences');
+const path = require('path');
 
 var appIcon = null;
 
 module.exports = {
   createTray: function () {
-    appIcon = new electron.Tray(__dirname + '/static/image/trayicon.png');
+    appIcon = new electron.Tray(path.resolve(__dirname, '../image/trayicon.png'));
 
     var contextMenu = Menu.buildFromTemplate([
       {

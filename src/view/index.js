@@ -489,6 +489,9 @@ var timeline = new Vue({
     scrollToTop: function () {
       this.$broadcast('scrollToTop');
     },
+    scrollToBottom: function () {
+      this.$broadcast('scrollToBottom');
+    },
     scrollPageDown: function () {
       this.$broadcast('scrollPageDown');
     },
@@ -507,7 +510,7 @@ var timeline = new Vue({
     var throttledScrollToPreviousTweet = _.throttle(self.scrollToPreviousTweet, scrollThrottleRate);
 
     document.onkeydown = function (event) {
-      if (event.keyCode === 27 || event.keyCode === 72 || event.keyCode === 37) { // ESC or h or left
+      if (event.keyCode === 8 || event.keyCode === 27 || event.keyCode === 72 || event.keyCode === 37) { // Backspace or ESC or h or left
         self.back();
       } else if (event.keyCode === 74 || event.keyCode === 40) { // j or down
         throttledScrollToNextTweet();
@@ -515,12 +518,20 @@ var timeline = new Vue({
         throttledScrollToPreviousTweet();
       } else if (event.keyCode === 76 || event.keyCode === 39) { // l or right
         self.dive();
-      } else if (event.keyCode === 32) {
+      } else if (event.keyCode === 32) { // space
         if (event.shiftKey) {
           self.scrollPageUp();
         } else {
           self.scrollPageDown();
         }
+      } else if (event.keyCode === 33) { // page up
+        self.scrollPageUp();
+      } else if (event.keyCode === 34) { // page down
+        self.scrollPageDown();
+      } else if (event.keyCode === 35) { // end
+        self.scrollToBottom();
+      } else if (event.keyCode === 36) { // home
+        self.scrollToTop();
       } else if (event.keyCode === 82) { // R
         if (event.metaKey || event.ctrlKey) {
           return;
@@ -574,7 +585,12 @@ var timeline = new Vue({
       }
 
       switch (event.keyCode) {
+        case 8:
         case 32:
+        case 33:
+        case 34:
+        case 35:
+        case 36:
         case 37:
         case 38:
         case 39:

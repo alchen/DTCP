@@ -219,14 +219,19 @@ Stream.prototype.send = function () {
       });
     });
 
-    this.subscriber.webContents.send.apply(
-      this.subscriber.webContents,
+    this.subscriber.send.apply(
+      this.subscriber,
       payload
     );
   }
 };
 
 Stream.prototype.initialLoad = function initialLoad() {
+  var self = this;
+  this.stream.stop();
+  process.nextTick(function () {
+    self.stream.start();
+  });
   this.send('initialLoad', this.screenname);
 };
 
@@ -483,7 +488,7 @@ Stream.prototype.retweet = function retweet(tweetId) {
     } else {
       console.log(err);
       if (err.code && err.code === 327) {
-        var tweet = this.timeline.findTweet(tweetId);
+        var tweet = self.timeline.findTweet(tweetId);
         if (tweet) {
           tweet.isRetweeted = true;
           self.send('updateTweet', self.screenname, tweet);

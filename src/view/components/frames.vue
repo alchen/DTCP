@@ -122,6 +122,12 @@ var Frames = Vue.extend({
       this.pushFrame(newFrame);
       ipc.send('loadScreenname', this.screenname, screenname);
     },
+    scrollToBottom: function () {
+      var frames = document.getElementsByClassName('frame');
+      var currentFrame = frames[frames.length - 1];
+      var bottom = currentFrame.scrollHeight;
+      this.scrollTo(bottom, 300);
+    },
     scrollToTop: function () {
       var top = 0;
       this.scrollTo(top, 300);

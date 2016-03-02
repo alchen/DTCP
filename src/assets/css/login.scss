@@ -17,6 +17,12 @@
       padding: .75rem;
       color: $blue;
       box-shadow: 0 0 .5rem 0 rgba(0, 0, 0, 0.2);
+      outline: none;
+      transition: transform .1s;
+
+      &:active {
+        transform: translateY(.25rem);
+      }
 
       .iconic[data-glyph].iconic-sm:before {
         font-size: 1.25rem;

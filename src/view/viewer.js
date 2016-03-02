@@ -17,6 +17,11 @@ ipc.on('pretext', function (event, media, index) {
       index: index,
       currentView: undefined
     },
+    methods: {
+      imageLoaded: function () {
+        console.log('loaded!');
+      }
+    },
     compiled: function () {
       this.currentView = this.media[this.index];
     }

@@ -36,10 +36,9 @@ coverage
 instrumented
 
 *.map
-src/static/js
-src/entry.js
-src/static/css/bundle.css
-src/static/css/composer.css
-src/static/css/viewer.css
-src/static/css/preferences.css
-src/static/css/components.scss
+src/assets/js
+src/assets/css/bundle.css
+src/assets/css/composer.css
+src/assets/css/viewer.css
+src/assets/css/preferences.css
+src/assets/css/components.scss

@@ -352,10 +352,6 @@ Twitter.prototype.stream = function (path, params) {
     // set the properties required to start the connection
     streamingConnection.reqOpts = reqOpts;
     streamingConnection.twitOptions = twitOptions;
-
-    process.nextTick(function () {
-      streamingConnection.start();
-    });
   });
 
   return streamingConnection;

@@ -25,10 +25,24 @@ util.inherits(StreamingAPIConnection, EventEmitter);
  * - stops the stall abort timeout handle (if one was scheduled)
  */
 StreamingAPIConnection.prototype._resetConnection = function () {
+  if (this.response) {
+    this.response.removeAllListeners();
+    this.response.destroy();
+    this.response = null;
+  }
+
+  if (this.request) {
+    this.request.removeAllListeners();
+    this.request.destroy();
+    this.request = null;
+  }
+
   // ensure a scheduled reconnect does not occur (if one was scheduled)
   // this can happen if we get a close event before .stop() is called
-  clearTimeout(this._scheduledReconnect);
-  delete this._scheduledReconnect;
+  if (this._scheduledReconnect) {
+    clearTimeout(this._scheduledReconnect);
+    this._scheduledReconnect = null;
+  }
 
   // clear our stall abort timeout
   this._stopStallAbortTimeout();
@@ -38,6 +52,7 @@ StreamingAPIConnection.prototype._resetConnection = function () {
  * Resets the parameters used in determining the next reconnect time
  */
 StreamingAPIConnection.prototype._resetRetryParams = function () {
+  console.log('Twit: reset retry params');
   // delay for next reconnection attempt
   this._connectInterval = 0;
   // flag indicating whether we used a 0-delay reconnect
@@ -45,7 +60,12 @@ StreamingAPIConnection.prototype._resetRetryParams = function () {
 };
 
 StreamingAPIConnection.prototype._startPersistentConnection = function () {
+  console.log('Twit: start persistent connection')
   var self = this;
+  if (this._scheduledReconnect) {
+    clearTimeout(this._scheduledReconnect);
+    this._scheduledReconnect = null;
+  }
   self._resetConnection();
   self._setupParser();
   self.request = request.post(this.reqOpts);
@@ -65,7 +85,7 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
       self.emit('error', err);
     });
 
-    var gunzip;
+    var gunzip = zlib.createGunzip();
     if (STATUS_CODES_TO_ABORT_ON.indexOf(self.response.statusCode) !== -1) {
       console.log('Twit: should abort from response');
       // We got a status code telling us we should abort the connection.
@@ -77,7 +97,6 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
         compressedBody += chunk.toString('utf8');
       });
 
-      gunzip = zlib.createGunzip();
       self.response.pipe(gunzip);
       gunzip.on('data', function (chunk) {
         body += chunk.toString('utf8');
@@ -94,9 +113,7 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
         var error = helpers.makeTwitError('Bad Twitter streaming request: ' + self.response.statusCode);
         error.statusCode = response ? response.statusCode: null;
         helpers.attachBodyInfoToError(error, body);
-        // stop the stream explicitly so we don't reconnect
-        self.stop();
-        self.emit('fatal_error', error);
+        self.emit('error', error);
         body = null;
       });
       gunzip.on('error', function (err) {
@@ -110,13 +127,15 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
       });
     } else if (self.response.statusCode === 420) {
       console.log('Twit: code 420 rate limited');
-      // close the connection forcibly so a reconnect is scheduled by `self.onClose()`
+      if (self.request) {
+        self.request.destroy();
+        self.request = null;
+      }
       self._onClose();
     } else {
       console.log('Twit: response okay');
       // We got an OK status code - the response should be valid.
       // Read the body from the response and return to the user.
-      gunzip = zlib.createGunzip();
       self.response.pipe(gunzip);
 
       //pass all response data to parser
@@ -127,12 +146,18 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
         self.parser.parse(chunk.toString('utf8'));
       });
 
+      gunzip.on('error', function (err) {
+        console.log('Twit: response gunzip error');
+        self.emit('error', err);
+      });
+
       gunzip.on('close', function () {
         console.log('Twit: gunzip close');
         self._onClose();
       });
-      gunzip.on('error', function (err) {
-        self.emit('error', err);
+
+      gunzip.on('end', function () {
+        console.log('Twit: gunzip end');
       });
 
       // connected without an error response from Twitter, emit `connected` event
@@ -159,17 +184,12 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
  *
  */
 StreamingAPIConnection.prototype._onClose = function () {
+  console.log('Twit: handle onClose');
+  this._started = false;
   this._stopStallAbortTimeout();
   // We closed it explicitly - don't reconnect
   if (this._isExplicitClose) {
     console.log('Twit: no reschedule because explictly closed');
-    return;
-  }
-
-  if (this._scheduledReconnect) {
-    // if we already have a reconnect scheduled, don't schedule another one.
-    // this race condition can happen if the http.ClientRequest and http.IncomingMessage both emit `close`
-    console.log('Twit: already rescheduled');
     return;
   }
 
@@ -181,6 +201,7 @@ StreamingAPIConnection.prototype._onClose = function () {
  *
  */
 StreamingAPIConnection.prototype.start = function () {
+  console.log('Twit: start');
   // reset close flag so we will reconnect
   this._isExplicitClose = false;
 
@@ -211,7 +232,7 @@ StreamingAPIConnection.prototype._resetStallAbortTimeout = function () {
   var self = this;
   // stop the previous stall abort timer
   self._stopStallAbortTimeout();
-  //start a new 90s timeout to trigger a close & reconnect if no data received
+  // start a new 90s timeout to trigger a close & reconnect if no data received
   self._stallAbortTimeout = setTimeout(function () {
     console.log('Twit: stalled');
     self._onClose();
@@ -226,7 +247,7 @@ StreamingAPIConnection.prototype._resetStallAbortTimeout = function () {
 StreamingAPIConnection.prototype._stopStallAbortTimeout = function () {
   clearTimeout(this._stallAbortTimeout);
   // mark the timer as `null` so it is clear via introspection that the timeout is not scheduled
-  delete this._stallAbortTimeout;
+  this._stallAbortTimeout = null;
   return this;
 };
 
@@ -239,10 +260,11 @@ StreamingAPIConnection.prototype._stopStallAbortTimeout = function () {
 StreamingAPIConnection.prototype._scheduleReconnect = function () {
   console.log('Twit: rescheduling');
   var self = this;
+  var initialInterval = 100;
   if (self.response && self.response.statusCode === 420) {
     // we are being rate limited
-    // start with a 1 minute wait and double each attempt
-    if (!self._connectInterval) {
+    // start with a 60s wait, double each attempt
+    if (self._connectInterval <= 60000) {
       self._connectInterval = 60000;
     } else {
       self._connectInterval *= 2;
@@ -261,8 +283,9 @@ StreamingAPIConnection.prototype._scheduleReconnect = function () {
     // we did not get an HTTP response from our last connection attempt.
     // DNS/TCP error, or a stall in the stream (and stall timer closed the connection)
     if (!self._usedFirstReconnect) {
+      console.log('Twit: first reconnect, reset connect interval');
       // first reconnection attempt on a valid connection should occur immediately
-      self._connectInterval = 0;
+      self._connectInterval = initialInterval;
       self._usedFirstReconnect = true;
     } else if (self._connectInterval < 16000) {
       // linearly increase delay by 250ms up to 16s
@@ -274,6 +297,7 @@ StreamingAPIConnection.prototype._scheduleReconnect = function () {
   }
 
   // schedule the reconnect
+  clearTimeout(this._scheduledReconnect);
   self._scheduledReconnect = setTimeout(function () {
     self._startPersistentConnection();
   }, self._connectInterval);

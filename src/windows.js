@@ -5,6 +5,8 @@ var shell = require('shell');
 var BrowserWindow = require('browser-window');
 var preferences = require('./preferences');
 
+const path = require('path');
+
 var mainWindow;
 var aboutWindow;
 var preferencesWindow;
@@ -18,7 +20,6 @@ var windows = {
       return mainWindow;
     }
 
-    var self = this;
     var windowState = preferences.windowState;
     if (windowState &&
       windowState.bounds &&
@@ -127,7 +128,7 @@ var windows = {
       autoHideMenuBar: true,
       titleBarStyle: 'hidden'
     });
-    aboutWindow.loadURL('file://' + __dirname + '/static/about.html');
+    aboutWindow.loadURL('file://' + path.resolve(__dirname, '../about.html'));
 
     aboutWindow.on('close', function () {
       aboutWindow.hide();
@@ -159,7 +160,7 @@ var windows = {
       useContentSize: true,
       autoHideMenuBar: true
     });
-    preferencesWindow.loadURL('file://' + __dirname + '/static/preferences.html');
+    preferencesWindow.loadURL('file://' + path.resolve(__dirname, '../preferences.html'));
 
     preferencesWindow.on('close', function () {
       preferencesWindow.hide();
@@ -193,7 +194,7 @@ var windows = {
       autoHideMenuBar: true,
       show: false
     });
-    newWindow.loadURL('file://' + __dirname + '/static/composer.html');
+    newWindow.loadURL('file://' + path.resolve(__dirname, '../composer.html'));
     newTweetWindows.push(newWindow);
 
     newWindow.on('close', function () {
@@ -234,7 +235,7 @@ var windows = {
       autoHideMenuBar: true,
       titleBarStyle: 'hidden'
     });
-    newWindow.loadURL('file://' + __dirname + '/static/viewer.html');
+    newWindow.loadURL('file://' + path.resolve(__dirname, '../viewer.html'));
     newViewerWindows.push(newWindow);
 
     newWindow.setAspectRatio(width / height);
@@ -302,14 +303,14 @@ var windows = {
   },
   loadPrompt: function () {
     this.unloadTimeline();
-    mainWindow.loadURL('file://' + __dirname + '/static/prompt.html');
+    mainWindow.loadURL('file://' + path.resolve(__dirname, '../prompt.html'));
   },
   loadTimeline: function (streams) {
     this.streams = streams;
     _.each(streams, function (stream) {
       stream.subscribe(mainWindow);
     });
-    mainWindow.loadURL('file://' + __dirname + '/static/index.html');
+    mainWindow.loadURL('file://' + path.resolve(__dirname, '../index.html'));
   },
   unloadTimeline: function () {
     var self = this;

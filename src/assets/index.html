@@ -28,7 +28,7 @@
         <nav class="nav">
           <ul class="navlist">
             <li class="navicon" v-if="frames.length > 1">
-              <button class="navbutton" @click="back"><span class="iconic" data-glyph="carriage-return"></span></button>
+              <button class="navbutton" @click="back"><span class="iconic" data-glyph="arrow-left"></span></button>
             </li>
             <li class="navicon" :class="{ active: topFrame.view === 'home', unread: bundle[screenname] && bundle[screenname].unread.home > 0 }">
               <button class="navbutton" @click="changeTimeline('home')"><span class="iconic" data-glyph="home"></span></button>

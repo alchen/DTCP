@@ -15,14 +15,14 @@
       <div class="square-spin">
         <div></div>
       </div>
-      <div class="media" v-if="currentView && currentView.type === 'image'" :class="{ active: currentView.type === 'image'}">
-        <img :src="currentView.url" />
+      <div class="media" v-if="currentView && currentView.type === 'image'">
+        <img :src="currentView.url" onload="this.parentElement.classList.add('active')" />
       </div>
-      <div class="media" v-if="currentView && currentView.type === 'photo'" :class="{ active: currentView.type === 'photo'}">
-        <img :src="currentView.url + ':large'" />
+      <div class="media" v-if="currentView && currentView.type === 'photo'">
+        <img :src="currentView.url + ':large'" onload="this.parentElement.classList.add('active')" />
       </div>
-      <div class="media" v-if="currentView && currentView.video" :class="{ active: currentView.video }">
-        <video :src="currentView.video.url" :poster="currentView.url + ':large'" muted="true" controls="true" loop="true" autoplay="true"></video>
+      <div class="media" v-if="currentView && currentView.video">
+        <video :src="currentView.video.url" onloadeddata="this.parentElement.classList.add('active')" :poster="currentView.url + ':large'" muted="true" controls="true" loop="true" autoplay="true"></video>
       </div>
     </div>
     <script src="js/viewer.js"></script>
