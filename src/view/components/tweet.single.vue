@@ -442,7 +442,7 @@ var Tweet = Vue.extend({
       event.stopPropagation();
     },
     loadMissing: function (event) {
-      this.$dispatch('loadSince', this.tweet.id);
+      this.$dispatch('loadMissing', this.tweet.id);
     }
   },
   transitions: {

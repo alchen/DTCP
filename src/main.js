@@ -175,8 +175,8 @@ ipc.on('loadMore', function (event, screenname, streamToLoad, maxId) {
   streams[screenname].loadMore(streamToLoad, maxId);
 });
 
-ipc.on('loadSince', function (event, screenname, streamToLoad, sinceId) {
-  streams[screenname].loadSince(streamToLoad, sinceId);
+ipc.on('loadMissing', function (event, screenname, streamToLoad, sinceId) {
+  streams[screenname].loadMissing(streamToLoad, sinceId);
 });
 
 ipc.on('loadUser', function (event, screenname, screennameToLoad, maxId) {
@@ -195,11 +195,16 @@ ipc.on('showViewer', function (event, media, index) {
   windows.getNewViewerWindow(media, index);
 });
 
+ipc.on('resizeViewer', function (event, width, height) {
+  var sender = windows.findWindowFromWebContents(event.sender);
+  sender.setContentSize(width, height);
+});
+
 ipc.on('compose', function (event, screenname, availableUsers, replyTo, pretext, options) {
   windows.getNewTweetWindow(screenname, availableUsers, replyTo, pretext, options);
 });
 
-ipc.on('stopComposing', function (event) {
+ipc.on('dismiss', function (event) {
   var sender = windows.findWindowFromWebContents(event.sender);
   sender.close();
 });

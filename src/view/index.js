@@ -268,12 +268,11 @@ var timeline = new Vue({
         }
       }
     },
-    addFiller: function (screenname, target, tweets) {
+    addSinceFiller: function (screenname, target, tweets) {
       if (!(screenname in this.bundle)) {
         return;
       }
       var self = this;
-
       var oldTweet;
       var timeline = this.bundle[screenname][target];
       var sinceTweet = tweets[0];
@@ -299,6 +298,36 @@ var timeline = new Vue({
             }
           }
         }
+      });
+    },
+    addMaxFiller: function (screenname, target, tweets) {
+      if (!(screenname in this.bundle)) {
+        return;
+      }
+      var self = this;
+      var oldTweet;
+      var timeline = this.bundle[screenname][target];
+      var maxTweet = tweets[0];
+
+      var index = _.findIndex(timeline, function (tweet) {
+        return tweet.id === maxTweet.id;
+      });
+
+      _.each(tweets, function (tweet) {
+        tweet = self.updateTweet(screenname, tweet);
+        if (index >= 0 && index < timeline.length && tweet.id === timeline[index].id) { // tweet already included
+          // let update take care of the gap
+        } else {
+          // new (previously missing) tweet
+          // place the new tweet behind the current exisiting element
+          oldTweet = _.find(timeline, function (old) {
+            return old.id === tweet.id;
+          });
+          if (!oldTweet) {
+            timeline.splice(index, 0, tweet);
+          }
+        }
+        index++;
       });
     },
     switchUser: function (screenname) {
@@ -582,6 +611,23 @@ var timeline = new Vue({
         }
 
         ipc.send('retweet', self.screenname, tweet.id, !tweet.isRetweeted);
+      } else if (event.keyCode === 73) { // I
+        var tweet = self.getActiveTweet();
+        if (!tweet) {
+          return;
+        }
+        var media;
+        if (event.shiftKey && tweet.quote && tweet.quote.media) {
+          media = _.map(tweet.quote.media, function (m) {
+            return _.cloneDeep(m);
+          });
+          ipc.send('showViewer', media, 0);
+        } else if (tweet.media || (tweet.quote && tweet.quote.media)) {
+          media = _.map(tweet.media || tweet.quote.media, function (m) {
+            return _.cloneDeep(m);
+          });
+          ipc.send('showViewer', media, 0);
+        }
       }
 
       switch (event.keyCode) {
@@ -643,7 +689,18 @@ var timeline = new Vue({
         return;
       }
       self.updateNow();
-      self.addFiller(screenname, timeline, tweets);
+      self.addSinceFiller(screenname, timeline, tweets);
+      if (self.screenname === screenname) {
+        self.keepPosition();
+      }
+    });
+
+    ipc.on('newMaxFiller', function (event, screenname, timeline, tweets) {
+      if (!tweets || !tweets.length) {
+        return;
+      }
+      self.updateNow();
+      self.addMaxFiller(screenname, timeline, tweets);
       if (self.screenname === screenname) {
         self.keepPosition();
       }

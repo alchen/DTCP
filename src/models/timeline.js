@@ -58,11 +58,14 @@ Timeline.prototype.closeSince = function (timeline, sinceId, newTweets) {
   local[0].gaps[timeline] = true;
 
   // Get reverse to work from the anchor tweet up to the newest
-  _.each(local.reverse(), function (tweet) {
-    if (index >= 0 && tweet.id === oldTweets[index].id) { // tweet already included
+  local = local.reverse();
+  _.each(local, function (tweet) {
+    if (index >= 0 && tweet.id === oldTweets[index].id) {
+      // tweet already included
       oldTweets[index].gaps[timeline] = false;
       index--;
-    } else if (!hash[tweet.id]) { // new (previously missing) tweet
+    } else if (!hash[tweet.id]) {
+      // new (previously missing) tweet
       if (index < 0) {
         oldTweets.unshift(tweet);
       } else {
@@ -94,7 +97,7 @@ Timeline.prototype.closeMax = function (timeline, maxId, newTweets) {
 
   // At this point the tweets are arrange from new to old.
   _.each(local, function (tweet) {
-    if (index >= 0 && tweet.id === oldTweets[index].id) { // tweet already included
+    if (index >= 0 && index < oldTweets.length && tweet.id === oldTweets[index].id) { // tweet already included
       oldTweets[index].gaps[timeline] = false;
     } else if (!hash[tweet.id]) { // new (previously missing) tweet
       // place the new tweet behind the current exisiting element
@@ -199,7 +202,7 @@ Timeline.prototype.mergeTweet = function (dstTweet, srcTweet) {
   if (dstTweet.retweetedBy && srcTweet.retweetedBy) {
     var retweetedBy = (dstTweet.retweetedBy || [])
       .concat(srcTweet.retweetedBy || []);
-    dstTweet.retweetedBy = _.uniq(retweetedBy);
+    dstTweet.retweetedBy = _.uniqWith(retweetedBy, function (a, b) { return a.screenname === b.screenname });
   } else if (dstTweet.retweetedBy || srcTweet.retweetedBy) {
     dstTweet.retweetedBy = srcTweet.retweetedBy || dstTweet.retweetedBy;
   }

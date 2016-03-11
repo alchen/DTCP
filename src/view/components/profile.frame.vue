@@ -1,6 +1,7 @@
 <style lang="sass">
 .profile {
   background: #fff;
+  user-select: text;
 }
 
 .profilemeta {
@@ -112,7 +113,7 @@
                 <button class="relationshipbutton" :class="{'following': this.user.isFollowing, 'pending': this.user.isPending, 'self': this.user.screenname == username }" @click="toggleFollow" v-text="relationship"></button>
               </section>
             </section>
-            <section class="profiletext" v-text="user.description"></section>
+            <section class="profiletext" v-html="user.description" @click="descriptionClick"></section>
             <section class="profilelocation" v-text="user.location"></section>
             <section class="profileurl"><a :href="user.expandedUrl" v-text="user.expandedUrl" target="_blank"></a></section>
             <section class="profilecounts">
@@ -188,6 +189,15 @@ var Profile = Vue.extend({
           height: 520
         }
       }], 0);
+    },
+    descriptionClick: function (event) {
+      if (event.target.tagName === 'A') {
+        var screenname = event.target.getAttribute('data-screen-name');
+        if (screenname) {
+          this.$dispatch('showScreenname', screenname);
+        }
+      }
+      event.stopPropagation();
     },
     rightclick: function (event) {
       var menu = contextmenu.profile(this);

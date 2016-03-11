@@ -52,8 +52,8 @@ var Frames = Vue.extend({
     }
   },
   events: {
-    loadSince: function (sinceId) {
-      ipc.send('loadSince', this.screenname, this.topFrame.view, sinceId);
+    loadMissing: function (sinceId) {
+      ipc.send('loadMissing', this.screenname, this.topFrame.view, sinceId);
     },
     loadMore: function (maxId) {
       if (this.topFrame.view !== 'profile') {

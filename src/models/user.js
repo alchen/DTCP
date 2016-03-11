@@ -1,5 +1,20 @@
 'use strict';
 
+var twitterText = require('twitter-text');
+
+var options = {
+  targetBlank: true,
+  usernameIncludeSymbol: true,
+  suppressDataScreenName: false,
+  suppressNoFollow: true,
+  linkAttributeBlock: function (entity, attributes) {
+    if (attributes['data-screen-name']) {
+      // Prevent linking to profile
+      attributes.target = '_self';
+    }
+  }
+};
+
 var User = function (user) {
   // Accommodate different type of events
   this.type = 'user';
@@ -18,7 +33,9 @@ var User = function (user) {
     this.profileBackground = user.profile_banner_url + '/web_retina';
   }
 
-  this.description = user.description;
+  this.description = user.description ? twitterText.autoLink(user.description, options) : '';
+
+
   this.url = user.url;
 
   this.expandedUrl = user.url && user.entities ?

@@ -166,8 +166,8 @@ Stream.prototype.insertGap = function () {
   });
 };
 
-Stream.prototype.subscribe = function (window) {
-  this.subscriber = window;
+Stream.prototype.subscribe = function (subscriber) {
+  this.subscriber = subscriber;
 };
 
 Stream.prototype.unsubscribe = function () {
@@ -252,21 +252,34 @@ Stream.prototype.sendTweets = function (timeline, maxId) {
   this.send('newTweets', this.screenname, timeline, payload);
 };
 
-Stream.prototype.loadSince = function (timeline, sinceId) {
+Stream.prototype.loadMissing = function (timeline, tweetId) {
   var self = this;
-  var options = {
-    count: config.loadThreshold,
-    since_id: sinceId
-  };
 
-  this.T.get('statuses/' + timeline + '_timeline', options,
+  this.T.get('statuses/' + timeline + '_timeline', {
+    count: config.loadThreshold,
+    since_id: tweetId
+  },
   function (err, rawTweets, response) {
     if (!err) {
       var tweets = _.map(rawTweets, function (rawTweet) {
         return new Tweet(rawTweet, self.screenname);
       });
-      var filler = self.timeline.closeSince(timeline, sinceId, tweets);
+      var filler = self.timeline.closeSince(timeline, tweetId, tweets);
       self.send('newSinceFiller', self.screenname, timeline, filler);
+    }
+  });
+
+  this.T.get('statuses/' + timeline + '_timeline', {
+    count: config.loadThreshold,
+    max_id: tweetId
+  },
+  function (err, rawTweets, response) {
+    if (!err) {
+      var tweets = _.map(rawTweets, function (rawTweet) {
+        return new Tweet(rawTweet, self.screenname);
+      });
+      var filler = self.timeline.closeMax(timeline, tweetId, tweets);
+      self.send('newMaxFiller', self.screenname, timeline, filler);
     }
   });
 };

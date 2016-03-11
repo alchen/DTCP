@@ -62,7 +62,7 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
         this.showingSwitches = false;
       },
       escape: function () {
-        ipc.send('stopComposing');
+        ipc.send('dismiss');
       },
       sendTweet: function (event) {
         if (this.isValid) {

@@ -47,8 +47,8 @@ describe('Stream', function () {
       var tweet = new Tweet(mentionJson, screenname);
 
       sinon.spy(stream.timeline, 'addTweet');
-      var subscriberStub = {webContents: {send: function () {}}};
-      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      var subscriberStub = {send: function () {}};
+      var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newTweet', 'home', tweet);
       webContentsMock.expects('send').calledWith('newTweet', 'mentions', tweet);
@@ -63,8 +63,8 @@ describe('Stream', function () {
       var stream = new Stream('access', 'secret', screenname);
       var tweet = new Tweet(mentionJson, screenname);
 
-      var subscriberStub = {webContents: {send: function () {}}};
-      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      var subscriberStub = {send: function () {}};
+      var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('deleteTweet', tweet.id);
 
@@ -80,8 +80,8 @@ describe('Stream', function () {
       var user = new User(userJson);
       user.isFollowing = true;
 
-      var subscriberStub = {webContents: {send: function () {}}};
-      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      var subscriberStub = {send: function () {}};
+      var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newProfileUser', user);
 
@@ -98,8 +98,8 @@ describe('Stream', function () {
       var user = new User(userJson);
       user.isFollowing = false;
 
-      var subscriberStub = {webContents: {send: function () {}}};
-      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      var subscriberStub = {send: function () {}};
+      var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newProfileUser', user);
 
@@ -128,8 +128,8 @@ describe('Stream', function () {
       });
       sinon.spy(stream, 'saveTweetsToTimeline');
       sinon.spy(stream, 'sendTweets');
-      var subscriberStub = {webContents: {send: function () {}}};
-      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      var subscriberStub = {send: function () {}};
+      var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newTweets', timeline, tweets);
 
@@ -154,8 +154,8 @@ describe('Stream', function () {
       });
       sinon.spy(stream, 'saveTweetsToTimeline');
       sinon.spy(stream, 'sendTweets');
-      var subscriberStub = {webContents: {send: function () {}}};
-      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      var subscriberStub = {send: function () {}};
+      var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newTweets', timeline, tweets.slice(0, config.sendThreshold));
 
@@ -178,8 +178,8 @@ describe('Stream', function () {
       });
       sinon.spy(stream, 'saveTweetsToTimeline');
       sinon.spy(stream, 'sendTweets');
-      var subscriberStub = {webContents: {send: function () {}}};
-      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      var subscriberStub = {send: function () {}};
+      var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newTweets', timeline, tweets.slice(0, 5));
 
@@ -194,24 +194,30 @@ describe('Stream', function () {
     });
   });
 
-  describe('load since', function () {
+  describe('load missing', function () {
     it('should close gap and send filler', function () {
       var timeline = 'home';
       var stream = new Stream('access', 'secret', screenname);
       var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
-      var filler = tweets.slice(0, 11);
+      var sinceFiller = tweets.slice(0, 11);
+      var maxFiller = tweets.slice(10, 20);
       var target = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
       target[0].gaps[timeline] = true;
       var gap = new Tweet(tweetsJson[10], screenname);
       gap.gaps[timeline] = true;
 
       var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
-        callback(null, tweetsJson.slice(0, 10), null);
+        if (options.since_id) {
+          callback(null, tweetsJson.slice(0, 10), null);
+        } else {
+          callback(null, tweetsJson.slice(10, 20), null);
+        }
       });
-      var subscriberStub = {webContents: {send: function () {}}};
-      var webContentsMock = sinon.mock(subscriberStub.webContents);
+      var subscriberStub = {send: function () {}};
+      var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
-      webContentsMock.expects('send').calledWith('newSinceFiller', timeline, filler);
+      webContentsMock.expects('send').calledWith('newSinceFiller', timeline, sinceFiller);
+      webContentsMock.expects('send').calledWith('newMaxFiller', timeline, maxFiller);
       webContentsMock.expects('send').calledWith('updateTweet', gap);
 
       stream.timeline.push('home', tweets.slice(10));
@@ -219,7 +225,7 @@ describe('Stream', function () {
       _.each(tweets.slice(3, 5).reverse(), function (tweet) {
         stream.timeline.addTweet(tweet);
       });
-      stream.loadSince(timeline, gap.id);
+      stream.loadMissing(timeline, gap.id);
 
       getStub.called.should.equal(true);
       webContentsMock.verify();

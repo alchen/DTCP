@@ -68,11 +68,13 @@ describe('Timeline', function () {
     var tweet = new Tweet(tweetJson, screenname);
     tweet.retweetedBy = [{
       name: '17th',
+      screenname: '17th'
     },];
 
     var copy = new Tweet(tweetJson, screenname);
     copy.retweetedBy = [{
       name: 'uinoka',
+      screenname: 'uinoka'
     },];
 
     timeline.addTweet(tweet);

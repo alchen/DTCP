@@ -185,7 +185,6 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
  */
 StreamingAPIConnection.prototype._onClose = function () {
   console.log('Twit: handle onClose');
-  this._started = false;
   this._stopStallAbortTimeout();
   // We closed it explicitly - don't reconnect
   if (this._isExplicitClose) {
