@@ -6,7 +6,7 @@ var should = chai.should();
 var _ = require('lodash');
 var events = require('events');
 var sinon = require('sinon');
-var proxyquire = require('proxyquire');
+var proxyquire = require('proxyquire').noCallThru();
 
 var streamStub = new events.EventEmitter();
 var twitStub = function () {

@@ -50,8 +50,14 @@ ipc.on('pretext', function (event, media, index) {
           ipc.send('dismiss');
         } else if (event.keyCode === 72 || event.keyCode === 37 || event.keyCode === 75 || event.keyCode === 38) { // h or left or k or up
           self.back();
-        } else if (event.keyCode === 74 || event.keyCode === 40 || event.keyCode === 76 || event.keyCode === 39 || event.keyCode === 32) { // j or down or l or right or space
+        } else if (event.keyCode === 74 || event.keyCode === 40 || event.keyCode === 76 || event.keyCode === 39) { // j or down or l or right
           self.next();
+        } else if (event.keyCode === 32) {
+          if (event.shiftKey) {
+            self.back();
+          } else {
+            self.next();
+          }
         }
 
         switch (event.keyCode) {

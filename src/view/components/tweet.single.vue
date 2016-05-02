@@ -144,6 +144,10 @@
       color: #333;
     }
 
+    &.disabled {
+      cursor: default;
+    }
+
     &.disabled #{&}icon:empty:before {
       color: #999;
       cursor: default;
@@ -158,12 +162,20 @@
       -webkit-text-stroke: 1px #c93;
     }
 
-    &icon:hover:empty:before {
+    &:hover .tweetbuttonicon:empty:before {
       color: $blue;
     }
 
-    &icon:active:empty:before {
+    &:active .tweetbuttonicon:empty:before {
       transform: translateY(.0625rem);
+    }
+
+    &.disabled:hover .tweetbuttonicon:empty:before {
+      color: #999;
+    }
+
+    &.disabled:active .tweetbuttonicon:empty:before {
+      transform: translateY(0);
     }
   }
 }
@@ -320,8 +332,8 @@
         <component is="tweetMedia" v-if="tweet.media" :media="tweet.media"></component>
         <section class="quotedtweet" v-if="tweet.quote" @click="quoteclick">
           <section class="quotedmeta">
-            <span class="name" v-text="tweet.quote.user.name"></span>
-            <span class="screenname" v-text="tweet.quote.user.screenname | at"></span>
+            <span class="name" v-text="tweet.quote.user.name" @click="doShowQuoteProfile"></span>
+            <span class="screenname" v-text="tweet.quote.user.screenname | at" @click="doShowQuoteProfile"></span>
           </section>
           <section class="quotedtext" v-html="tweet.quote.status"></section>
           <component is="tweetMedia" v-if="tweet.quote.media" :media="tweet.quote.media"></component>
@@ -377,9 +389,15 @@ var Tweet = Vue.extend({
       this.$dispatch('compose', this.username, this.tweet.id, mentions);
     },
     doRetweet: function (event) {
+      if (this.tweet.user.isProtected) {
+        return;
+      }
       ipc.send('retweet', this.username, this.tweet.id, !this.tweet.isRetweeted);
     },
     doQuote: function (event) {
+      if (this.tweet.user.isProtected) {
+        return;
+      }
       var tweetUrl = 'https://twitter.com/' +
         this.tweet.user.screenname +
         '/status/' +
@@ -408,6 +426,9 @@ var Tweet = Vue.extend({
     },
     doShowProfile: function () {
       this.$dispatch('showProfile', this.tweet.user);
+    },
+    doShowQuoteProfile: function () {
+      this.$dispatch('showProfile', this.tweet.quote.user);
     },
     rightclick: function (event) {
       var menu = contextmenu.tweet(this);

@@ -8,11 +8,7 @@ var path = require('path');
 var app = require('electron').app;
 
 function getPath() {
-  if (process.platform === 'win32') {
-    return app.getPath('userData');
-  } else {
-    return path.join(process.env.HOME, '/Library/Application Support/com.lab704.dtcp');
-  }
+  return app.getPath('userData');
 }
 
 var filePath = path.join(getPath(), 'preferences.json');

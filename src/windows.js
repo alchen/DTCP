@@ -146,7 +146,7 @@ var windows = {
     }
 
     var width = 330;
-    var height = 440;
+    var height = 220;
     var margin = 40;
     var position = this.getNewWindowPosition(width, height, margin, false);
 
