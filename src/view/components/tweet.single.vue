@@ -347,10 +347,9 @@
 'use strict';
 
 var Vue = require('vue');
-var remote = require('remote');
+const {remote, shell} = require('electron');
 var contextmenu = require('./contextmenu');
 var ipc = require('electron').ipcRenderer;
-var shell = require('shell');
 var _ = require('lodash');
 const timefrom = require('./timefrom');
 require('./tweetMedia.single.vue');

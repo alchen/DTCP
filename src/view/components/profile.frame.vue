@@ -133,8 +133,7 @@
 
 var Vue = require('vue');
 var ipc = require('electron').ipcRenderer;
-var remote = require('remote');
-var shell = require('shell');
+const {remote, shell} = require('electron');
 var contextmenu = require('./contextmenu');
 require('./timeline.frame.vue');
 

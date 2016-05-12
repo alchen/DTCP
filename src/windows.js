@@ -1,8 +1,9 @@
 'use strict';
 
 var _ = require('lodash');
-var shell = require('shell');
-var BrowserWindow = require('browser-window');
+const shell = require('electron').shell;
+const BrowserWindow = require('electron').BrowserWindow;
+const atomScreen = require('electron').screen;
 var preferences = require('./preferences');
 
 const path = require('path');
@@ -13,7 +14,6 @@ var preferencesWindow;
 var newTweetWindows = [];
 var newViewerWindows = [];
 
-var atomScreen = require('screen');
 var windows = {
   getMainWindow: function (streams) {
     if (mainWindow) {

@@ -1,7 +1,7 @@
 'use strict';
 
 const Vue = require('vue');
-const shell = require('shell');
+const shell = require('electron').shell;
 const app = require('electron').remote.app;
 
 var page = new Vue({

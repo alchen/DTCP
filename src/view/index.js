@@ -1,7 +1,7 @@
 /*jslint browser:true*/
 'use strict';
 
-var ipc = require('electron').ipcRenderer;
+const ipc = require('electron').ipcRenderer;
 var _ = require('lodash');
 var Vue = require('vue');
 require('../view/components/frames.vue');

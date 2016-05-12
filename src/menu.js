@@ -1,9 +1,9 @@
 'use strict';
 
-var app = require('app');
-var shell = require('shell');
-var Menu = require('menu');
-var BrowserWindow = require('browser-window');
+const app = require('electron').app;
+const shell = require('electron').shell;
+const Menu = require('electron').Menu;
+const BrowserWindow = require('electron').BrowserWindow;
 var preferences = require('./preferences');
 var windows = require('./windows');
 

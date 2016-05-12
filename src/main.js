@@ -5,12 +5,12 @@ process.on('uncaughtException', function (err) {
   console.error(err.stack);
 });
 
-var _ = require('lodash');
-var app = require('app');
-var ipc = require('electron').ipcMain;
-var request = require('request');
-var packageInfo = require('../package.json');
-var semver = require('semver');
+const _ = require('lodash');
+const app = require('electron').app;
+const ipc = require('electron').ipcMain;
+const request = require('request');
+const packageInfo = require('../package.json');
+const semver = require('semver');
 var windows;
 var menu;
 var tray;

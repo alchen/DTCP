@@ -114,7 +114,7 @@ $switch-transition-time: .2s;
 'use strict';
 
 var Vue = require('vue');
-var shell = require('shell');
+const {shell} = require('electron');
 var packageInfo = require('../../../package.json');
 
 var Switches = Vue.extend({

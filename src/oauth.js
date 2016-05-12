@@ -1,7 +1,7 @@
 'use strict';
 
 const request = require('./lib/twit/request');
-const shell = require('shell');
+const shell = require('electron').shell;
 const config = require('./config.js');
 const qs = require('qs');
 

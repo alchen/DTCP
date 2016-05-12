@@ -1,7 +1,7 @@
 'use strict';
 
-var remote = require('remote');
-var Menu = remote.require('menu');
+const remote = require('electron').remote;
+var Menu = remote.Menu;
 
 module.exports = {
   tweet: function (vm) {
