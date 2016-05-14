@@ -155,7 +155,7 @@ var timeline = new Vue({
           this.$broadcast('showThread', tweet);
         }
       } else if (this.topFrame.is === 'messages') {
-        this.$broadcast('showMessageGroup', tweet);
+        this.$broadcast('showMessageGroup', tweet.messages);
       }
     },
     updateBadge: function () {
@@ -230,6 +230,9 @@ var timeline = new Vue({
           ipc.send('focus');
         };
       } else if (timeline === 'messages') {
+        if (this.isRelevantMessage(screenname, message)) {
+          return;
+        }
         newNotification = new Notification('Message from ' + tweet.sender.screenname, {
           body: tweet.rawStatus,
           icon: tweet.sender.biggerIcon,
@@ -414,6 +417,30 @@ var timeline = new Vue({
       }
 
       return tweet;
+    },
+    isRelevantMessage: function (screenname, message) {
+      var messageSender = message.sender.screenname;
+      var messageRecipient = message.recipient.screenname;
+      var targetSender = this.topFrame.messages[0].sender.screenname;
+      var targetRecipient = this.topFrame.messages[0].recipient.screenname;
+      var correspondent = messageSender === screenname ? messageRecipient : messageSender;
+
+      if ((messageSender === messageRecipient && targetSender === targetRecipient) // message to self
+        || (messageSender !== messageRecipient // message to/from others
+          && (correspondent === targetSender || correspondent === targetRecipient))) {
+        return true;
+      }
+
+      return false;
+    },
+    saveMessage: function (screenname, message) {
+      if (this.isRelevantMessage(screenname, message)) {
+        this.topFrame.messages.unshift(message);
+        this.$nextTick(function () {
+          // move to bottom
+          this.scrollToBottom();
+        });
+      }
     },
     saveMessages: function (screenname, messages) {
       if (!(screenname in this.bundle)) {
@@ -737,9 +764,10 @@ var timeline = new Vue({
     });
 
     ipc.on('newMessage', function (event, screenname, message) {
-      if (message.sender.screenname !== screenname) {
+      if (message.sender.screenname !== screenname || message.sender.screenname === message.recipient.screenname) {
         self.notify(screenname, 'messages', message);
       }
+      self.saveMessage(screenname, message);
     });
 
     ipc.on('newPretext', function (event, screenname, tweets) {

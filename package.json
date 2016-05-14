@@ -1,6 +1,6 @@
 {
   "name": "DTCP",
-  "version": "0.4.15",
+  "version": "0.4.16",
   "description": "Desktop Twitter Client Project",
   "main": "src/assets/js/entry.js",
   "private": true,
@@ -29,7 +29,7 @@
     "chai": "^3.5.0",
     "css-loader": "^0.23.1",
     "del": "^2.2.0",
-    "electron-prebuilt": "^1.0.1",
+    "electron-prebuilt": "^1.0.2",
     "electron-rebrand": "^1.1.2",
     "extract-text-webpack-plugin": "^1.0.1",
     "formidable": "^1.0.17",
@@ -56,7 +56,7 @@
     "vue-loader": "^8.3.1",
     "vue-style-loader": "^1.0.0",
     "walkdir": "0.0.11",
-    "webpack": "2.1.0-beta.4"
+    "webpack": "^1.13.0"
   },
   "dependencies": {
     "agent-base": "^2.0.1",
