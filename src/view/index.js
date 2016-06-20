@@ -225,8 +225,11 @@ var timeline = new Vue({
         });
 
         newNotification.onclick = function () {
-          self.switchUser(this.data.screenname);
-          self.$broadcast('showThread', this.data.tweet);
+          var data = this.data;
+          self.switchUser(data.screenname);
+          self.$nextTick(function () {
+            self.$broadcast('showThread', data.tweet);
+          });
           ipc.send('focus');
         };
       } else if (timeline === 'messages') {
@@ -281,7 +284,7 @@ var timeline = new Vue({
       var sinceTweet = tweets[0];
 
       var index = _.findIndex(timeline, function (tweet) {
-        return tweet.id === sinceTweet.id;
+        return tweet.id === sinceTweet.id || tweet.retweetId === sinceTweet.retweetId;
       });
 
       // tweets is already reversed
@@ -313,7 +316,7 @@ var timeline = new Vue({
       var maxTweet = tweets[0];
 
       var index = _.findIndex(timeline, function (tweet) {
-        return tweet.id === maxTweet.id;
+        return tweet.id === maxTweet.id || tweet.retweetId === maxTweet.retweetId;
       });
 
       _.each(tweets, function (tweet) {
@@ -728,9 +731,6 @@ var timeline = new Vue({
       }
       self.updateNow();
       self.addMaxFiller(screenname, timeline, tweets);
-      if (self.screenname === screenname) {
-        self.keepPosition();
-      }
     });
 
     // New user object

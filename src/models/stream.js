@@ -269,19 +269,19 @@ Stream.prototype.loadMissing = function (timeline, tweetId) {
     }
   });
 
-  this.T.get('statuses/' + timeline + '_timeline', {
-    count: config.loadThreshold,
-    max_id: tweetId
-  },
-  function (err, rawTweets, response) {
-    if (!err) {
-      var tweets = _.map(rawTweets, function (rawTweet) {
-        return new Tweet(rawTweet, self.screenname);
-      });
-      var filler = self.timeline.closeMax(timeline, tweetId, tweets);
-      self.send('newMaxFiller', self.screenname, timeline, filler);
-    }
-  });
+  // this.T.get('statuses/' + timeline + '_timeline', {
+  //   count: config.loadThreshold,
+  //   max_id: tweetId
+  // },
+  // function (err, rawTweets, response) {
+  //   if (!err) {
+  //     var tweets = _.map(rawTweets, function (rawTweet) {
+  //       return new Tweet(rawTweet, self.screenname);
+  //     });
+  //     var filler = self.timeline.closeMax(timeline, tweetId, tweets);
+  //     self.send('newMaxFiller', self.screenname, timeline, filler);
+  //   }
+  // });
 };
 
 Stream.prototype.loadMore = function (timeline, maxId) {

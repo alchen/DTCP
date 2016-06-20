@@ -290,6 +290,13 @@
     font-size: .5rem;
     margin-right: .25rem;
   }
+
+  .ball-clip-rotate > div {
+    border: 1px solid #000;
+    height: 1rem;
+    width: 1rem;
+    margin: .25rem;
+  }
 }
 
 .gap-enter {
@@ -303,7 +310,10 @@
 
 <template lang="html">
   <li class="box" data-tweet-id="{{tweet.id}}">
-    <div class="gap" v-if="tweet.gaps[view]" @click="loadMissing" transition="gap"><span class="iconic" data-glyph="chevron-top" aria-hidden="true"></span> Load missing tweets</div>
+    <div class="gap" v-if="tweet.gaps[view]" @click="loadMissing" transition="gap">
+      <div v-if="!loading"><span class="iconic" data-glyph="chevron-top" aria-hidden="true"></span> Load missing tweets</div>
+      <div v-if="loading" class="ball-clip-rotate"><div></div></div>
+    </div>
     <div class="tweet" @contextmenu="rightclick" @click="leftclick">
       <div class="tweetleft">
         <img class="tweeticon" :src="tweet.user.biggerIcon" onerror="this.style.visibility='hidden';" @click="doShowProfile" />
@@ -357,6 +367,11 @@ require('./tweetMedia.single.vue');
 var Tweet = Vue.extend({
   replace: true,
   props: ['tweet', 'username', 'now', 'view', 'fat'],
+  data: function () {
+    return {
+      loading: false
+    }
+  },
   filters: {
     at: function (name) {
       return '@' + name;
@@ -462,7 +477,13 @@ var Tweet = Vue.extend({
       event.stopPropagation();
     },
     loadMissing: function (event) {
-      this.$dispatch('loadMissing', this.tweet.id);
+      this.$dispatch('loadMissing', this.tweet.retweetId || this.tweet.id);
+
+      this.loading = true;
+      var self = this;
+      setTimeout(function () {
+        self.loading = false;
+      }, 7000);
     }
   },
   transitions: {

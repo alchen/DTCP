@@ -24,7 +24,6 @@ var Tweet = function (tweet, screenname) {
   // Tweet status
   if (tweet.retweeted_status) {
     if (tweet.user.screen_name === screenname) {
-      this.retweetId = tweet.id_str;
       this.isRetweeted = true;
     } else {
       this.retweetedBy = [
@@ -34,6 +33,7 @@ var Tweet = function (tweet, screenname) {
         }
       ];
     }
+    this.retweetId = tweet.id_str;
     tweet = tweet.retweeted_status;
   }
 

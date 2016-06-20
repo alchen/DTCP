@@ -49,7 +49,7 @@ Timeline.prototype.closeSince = function (timeline, sinceId, newTweets) {
   });
 
   var index = _.findIndex(oldTweets, function (oldTweet) {
-    return oldTweet.id === sinceId;
+    return oldTweet.id === sinceId || oldTweet.retweetId === sinceId;
   });
 
   // Add the anchor tweet to the end.
@@ -92,7 +92,7 @@ Timeline.prototype.closeMax = function (timeline, maxId, newTweets) {
   });
 
   var index = _.findIndex(oldTweets, function (oldTweet) {
-    return oldTweet.id === maxId;
+    return oldTweet.id === maxId || oldTweet.retweetId === maxId;
   });
 
   // At this point the tweets are arrange from new to old.

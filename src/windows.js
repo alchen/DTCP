@@ -219,10 +219,17 @@ var windows = {
     });
   },
   getNewViewerWindow: function (media, index) {
+    var margin = 40;
     var width = media[index].size.width || 320;
     var height = media[index].size.height || 240;
-    var position = this.getNewWindowPosition(width, height, 40, false);
+
+    var size = this.getNewWindowSize(width, height, width / height, margin);
+    width = size.width;
+    height = size.height;
+
+    var position = this.getNewWindowPosition(width, height, margin, false);
     var newWindow = new BrowserWindow({
+      title: '',
       x: position.x,
       y: position.y,
       width: Math.max(width, 144),
@@ -232,8 +239,7 @@ var windows = {
       fullscreen: false,
       acceptFirstMouse: false,
       useContentSize: true,
-      autoHideMenuBar: true,
-      titleBarStyle: 'hidden'
+      autoHideMenuBar: true
     });
     newWindow.loadURL('file://' + path.resolve(__dirname, '../viewer.html'));
     newViewerWindows.push(newWindow);
@@ -261,6 +267,24 @@ var windows = {
       newWindow.show();
     });
   },
+  getNewWindowSize: function (width, height, aspect, margin) {
+    var x;
+    var y;
+    var mainBounds = mainWindow.getBounds();
+    var display = atomScreen.getDisplayMatching(mainBounds);
+
+    if (width + margin * 2 > display.bounds.width) {
+      width = display.bounds.width - margin * 2;
+      height = Math.floor(width / aspect);
+    }
+
+    if (height + margin * 2 > display.bounds.height) {
+      height = display.bounds.height - margin * 2;
+      width = Math.floor(height * aspect);
+    }
+
+    return {width: width, height: height};
+  },
   getNewWindowPosition: function (width, height, margin, useCursor) {
     var x;
     var y;
@@ -271,6 +295,9 @@ var windows = {
 
     if ((x + width) > (display.bounds.x + display.bounds.width)) {
       x = mainBounds.x - width - margin;
+      if (x <= display.bounds.x) {
+        return {x: undefined, y: undefined};
+      }
     }
 
     if (useCursor) {
@@ -282,6 +309,9 @@ var windows = {
 
     if ((y + height) > (display.bounds.y + display.bounds.height)) {
       y = mainBounds.y + mainBounds.height - height - margin;
+      if (y <= display.bounds.y) {
+        return {x: undefined, y: undefined};
+      }
     }
 
     return {x: x, y: y};
