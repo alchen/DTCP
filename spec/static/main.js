@@ -4,10 +4,10 @@
 var mkdirp = require('mkdirp');
 var path = require('path');
 var fs = require('fs');
-var app = require('app');
+var app = require('electron').app;
 var ipc = require('electron').ipcMain;
-var dialog = require('dialog');
-var BrowserWindow = require('browser-window');
+var dialog = require('electron').dialog;
+var BrowserWindow = require('electron').BrowserWindow;
 
 var window = null;
 

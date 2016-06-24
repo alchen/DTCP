@@ -217,7 +217,7 @@ describe('Stream', function () {
       var webContentsMock = sinon.mock(subscriberStub);
       stream.subscribe(subscriberStub);
       webContentsMock.expects('send').calledWith('newSinceFiller', timeline, sinceFiller);
-      webContentsMock.expects('send').calledWith('newMaxFiller', timeline, maxFiller);
+      // webContentsMock.expects('send').calledWith('newMaxFiller', timeline, maxFiller);
       webContentsMock.expects('send').calledWith('updateTweet', gap);
 
       stream.timeline.push('home', tweets.slice(10));

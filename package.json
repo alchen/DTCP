@@ -51,7 +51,7 @@
     "sass-loader": "^3.2.0",
     "sinon": "^1.17.4",
     "temp": "^0.8.3",
-    "vue-hot-reload-api": "^2.0.1",
+    "vue-hot-reload-api": "^1.2.0",
     "vue-html-loader": "^1.2.2",
     "vue-loader": "^8.5.2",
     "vue-style-loader": "^1.0.0",
