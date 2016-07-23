@@ -58,7 +58,8 @@ gulp.task('webpack', function (cb) {
       new RestoreDirname(),
       new ExtractTextPlugin('../css/components.scss')
     ],
-    devtool: 'source-map'
+    devtool: 'source-map',
+    externals: { spellchecker: "commonjs spellchecker" }  
   }, cb);
 });
 
