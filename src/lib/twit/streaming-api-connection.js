@@ -349,6 +349,10 @@ StreamingAPIConnection.prototype._setupParser = function () {
         self.emit('follow', msg);
       } else if (ev === 'unfollow') {
         self.emit('unfollow', msg);
+      } else if (ev === 'mute') {
+        self.emit('mute', msg)
+      } else if (ev === 'unmute') {
+        self.emit('unmute', msg)
       } else if (ev === 'user_update') {
         self.emit('user_update', msg);
       } else if (ev === 'list_created') {

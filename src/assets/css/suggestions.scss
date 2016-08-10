@@ -1,0 +1,45 @@
+ul {
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  padding: .5rem;
+  height: 2rem;
+
+  &.active {
+    color: #fff;
+    background-color: #39d;
+
+    .name {
+      color: #fff;
+    }
+  }
+}
+
+img {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #eee;
+  border-radius: .25rem;
+}
+
+.right {
+  padding-left: .5rem;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.screenname {
+  font-size: .75rem;
+}
+
+.name {
+  font-size: .625rem;
+  color: #666;
+}

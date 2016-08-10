@@ -20,6 +20,8 @@ var oauth;
 var Stream;
 var streams = {};
 
+var suggestionRequester;
+
 app.on('ready', function () {
   global.willQuit = false;
 
@@ -48,6 +50,7 @@ app.on('ready', function () {
   }
 
   windows.getMainWindow(streams);
+  windows.getSuggestionsWindow();
 });
 
 // Handle Events
@@ -131,12 +134,43 @@ ipc.on('newAccount', function (event, oauthToken, oauthTokenSecret, screenname) 
   stream.initialLoad();
 });
 
-ipc.on('getProxy', function (event) {
-  event.sender.send('proxy', preferences.proxyConfig);
+ipc.on('getSuggestions', function (event, screenname, target, top, left) {
+  var stream = streams[screenname];
+  var suggestions = stream.getMentionSuggestions(target);
+  windows.setSuggestions(suggestions, top, left);
+  suggestionRequester = event.sender;
 });
 
-ipc.on('setProxy', function (event, proxyConfig) {
-  preferences.proxyConfig = proxyConfig;
+ipc.on('clearSuggestions', function (event) {
+  windows.clearSuggestions();
+});
+
+ipc.on('giveSuggestion', function (event, screenname) {
+  suggestionRequester.send('suggest', screenname);
+  suggestionRequester.focus();
+});
+
+ipc.on('hideSuggestions', function (event) {
+  windows.hideSuggestions();
+});
+
+ipc.on('getSavedTweet', function (event) {
+  if (preferences.saveLastTweet) {
+    event.sender.send('savedTweet', preferences.savedTweet);
+    preferences.savedTweet = '';
+  }
+});
+
+ipc.on('setSavedTweet', function (event, tweet) {
+  preferences.savedTweet = preferences.saveLastTweet ? tweet : '';
+});
+
+ipc.on('getSaveLastTweet', function (event) {
+  event.sender.send('saveLastTweet', preferences.saveLastTweet);
+});
+
+ipc.on('setSaveLastTweet', function (event, saveLastTweet) {
+  preferences.saveLastTweet = saveLastTweet;
 });
 
 ipc.on('getFontSize', function (event) {
@@ -188,10 +222,12 @@ ipc.on('showViewer', function (event, media, index) {
 
 ipc.on('resizeViewer', function (event, width, height) {
   var sender = windows.findWindowFromWebContents(event.sender);
-  sender.setContentSize(width, height);
+  windows.refitWindow(sender, width, height);
 });
 
 ipc.on('compose', function (event, screenname, availableUsers, replyTo, pretext, options) {
+  options = options || {};
+  options.saveLastTweet = preferences.saveLastTweet;
   windows.getNewTweetWindow(screenname, availableUsers, replyTo, pretext, options);
 });
 

@@ -176,6 +176,12 @@ Timeline.prototype.findUser = function (screenname) {
   return this.users[screenname];
 };
 
+Timeline.prototype.getRelevantUsers = function (target) {
+  return _.pickBy(this.users, function(value) {
+    return _.startsWith(value.screenname.toLowerCase(), target.toLowerCase());
+  });
+};
+
 Timeline.prototype.get = function (timeline, maxId, sinceId) {
   if (maxId || sinceId) {
     return this.sliceTweets(this[timeline], maxId, sinceId);

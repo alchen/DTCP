@@ -4,6 +4,7 @@ var _ = require('lodash');
 const shell = require('electron').shell;
 const BrowserWindow = require('electron').BrowserWindow;
 const atomScreen = require('electron').screen;
+const dialog = require('electron').dialog;
 var preferences = require('./preferences');
 
 const path = require('path');
@@ -11,8 +12,11 @@ const path = require('path');
 var mainWindow;
 var aboutWindow;
 var preferencesWindow;
+var suggestionsWindow;
 var newTweetWindows = [];
 var newViewerWindows = [];
+
+var margin = 15;
 
 var windows = {
   getMainWindow: function (streams) {
@@ -72,7 +76,7 @@ var windows = {
       event.preventDefault();
     });
 
-    mainWindow.on('close', function (event, x, y, z) {
+    mainWindow.on('close', function (event) {
       mainWindow.hide();
       if (!global.willQuit) {
         event.preventDefault();
@@ -114,8 +118,7 @@ var windows = {
 
     var aboutWidth = 360;
     var aboutHeight = 240;
-    var margin = 40;
-    var position = this.getNewWindowPosition(aboutWidth, aboutHeight, margin, false);
+    var position = this.getNewWindowPosition(aboutWidth, aboutHeight, margin);
 
     aboutWindow = new BrowserWindow({
       width: aboutWidth,
@@ -145,17 +148,16 @@ var windows = {
       return preferencesWindow;
     }
 
-    var width = 330;
-    var height = 220;
-    var margin = 40;
-    var position = this.getNewWindowPosition(width, height, margin, false);
+    var width = 350;
+    var height = 320;
+    var position = this.getNewWindowPosition(width, height, margin);
 
     preferencesWindow = new BrowserWindow({
       width: width,
       height: height,
       x: position.x,
       y: position.y,
-      resizable: false,
+      resizable: true,
       alwaysOnTop: true,
       useContentSize: true,
       autoHideMenuBar: true
@@ -172,11 +174,81 @@ var windows = {
 
     return preferencesWindow;
   },
+  getSuggestionsWindow: function () {
+    if (suggestionsWindow) {
+      return suggestionsWindow;
+    }
+
+    var aboutWidth = 150;
+    var aboutHeight = 0;
+    var position = this.getNewWindowPosition(aboutWidth, aboutHeight, margin);
+
+    suggestionsWindow = new BrowserWindow({
+      width: aboutWidth,
+      height: aboutHeight,
+      x: position.x,
+      y: position.y,
+      resizable: false,
+      alwaysOnTop: true,
+      useContentSize: true,
+      autoHideMenuBar: true,
+      frame: false,
+      show: false,
+      skipTaskbar: true,
+      alwaysOnTop: true,
+      acceptFirstMouse: true
+    });
+    suggestionsWindow.loadURL('file://' + path.resolve(__dirname, '../suggestions.html'));
+
+    suggestionsWindow.on('close', function (event) {
+      suggestionsWindow.hide();
+      if (!global.willQuit) {
+        event.preventDefault();
+      }
+    });
+
+    suggestionsWindow.on('closed', function () {
+      suggestionsWindow = null;
+    });
+
+    return suggestionsWindow;
+  },
+  setSuggestions: function (suggestions, top, left) {
+    var suggestHeight = 48;
+    var toSuggest = _.take(suggestions, 5);
+    var width = 150;
+    var height = suggestHeight * toSuggest.length;
+    suggestionsWindow.webContents.send('setSuggestions', toSuggest);
+    if (toSuggest.length > 0) {
+      var composerBounds = (BrowserWindow.getFocusedWindow() || mainWindow).getBounds();
+      suggestionsWindow.setBounds({
+        x: composerBounds.x + left + 60,
+        y: composerBounds.y + top + 50,
+        width: suggestionsWindow.getSize()[0],
+        height: suggestHeight * toSuggest.length
+      });
+      suggestionsWindow.showInactive();
+    } else {
+      suggestionsWindow.hide();
+    }
+  },
+  clearSuggestions: function () {
+    if (suggestionsWindow) {
+      suggestionsWindow.hide();
+      suggestionsWindow.webContents.send('setSuggestions', []);
+    }
+  },
+  hideSuggestions: function () {
+    if (suggestionsWindow && !suggestionsWindow.isFocused()) {
+      suggestionsWindow.hide();
+    }
+  },
   getNewTweetWindow: function (screenname, availableUsers, replyTo, pretext, options) {
+    var self = this;
+
     var newWindowWidth = 320;
     var newWindowHeight = 144;
-    var margin = 40;
-    var newWindowPosition = this.getNewWindowPosition(newWindowWidth, newWindowHeight, margin, replyTo);
+    var newWindowPosition = this.getNewWindowPositionBelow(newWindowWidth, newWindowHeight, margin);
     var x = newWindowPosition.x;
     var y = newWindowPosition.y;
 
@@ -197,10 +269,6 @@ var windows = {
     newWindow.loadURL('file://' + path.resolve(__dirname, '../composer.html'));
     newTweetWindows.push(newWindow);
 
-    newWindow.on('close', function () {
-      newWindow.hide();
-    });
-
     newWindow.on('closed', function () {
       var index = newTweetWindows.indexOf(this);
       if (index !== -1) {
@@ -218,8 +286,27 @@ var windows = {
       newWindow.show();
     });
   },
+  refitWindow: function (target, width, height) {
+    var size = this.getNewWindowSize(width, height, width / height, margin);
+    width = size.width;
+    height = size.height;
+    var position = this.getNewWindowPosition(width, height, margin);
+    if (!position.x || !position.y) {
+      target.setSize(
+        Math.max(width, 144),
+        Math.max(height, 100)
+      );
+      target.center();
+    } else {
+      target.setBounds({
+        x: position.x,
+        y: position.y,
+        width: Math.max(width, 144),
+        height: Math.max(height, 100)
+      });
+    }
+  },
   getNewViewerWindow: function (media, index) {
-    var margin = 40;
     var width = media[index].size.width || 320;
     var height = media[index].size.height || 240;
 
@@ -227,7 +314,7 @@ var windows = {
     width = size.width;
     height = size.height;
 
-    var position = this.getNewWindowPosition(width, height, margin, false);
+    var position = this.getNewWindowPosition(width, height, margin);
     var newWindow = new BrowserWindow({
       title: '',
       x: position.x,
@@ -238,7 +325,6 @@ var windows = {
       minHeight: 100,
       fullscreen: false,
       acceptFirstMouse: false,
-      useContentSize: true,
       autoHideMenuBar: true
     });
     newWindow.loadURL('file://' + path.resolve(__dirname, '../viewer.html'));
@@ -267,10 +353,10 @@ var windows = {
       newWindow.show();
     });
   },
-  getNewWindowSize: function (width, height, aspect, margin) {
+  getNewWindowSize: function (width, height, aspect, margin, target) {
     var x;
     var y;
-    var mainBounds = mainWindow.getBounds();
+    var mainBounds = (target || mainWindow).getBounds();
     var display = atomScreen.getDisplayMatching(mainBounds);
 
     if (width + margin * 2 > display.bounds.width) {
@@ -285,10 +371,10 @@ var windows = {
 
     return {width: width, height: height};
   },
-  getNewWindowPosition: function (width, height, margin, useCursor) {
+  getNewWindowPosition: function (width, height, margin, target) {
     var x;
     var y;
-    var mainBounds = mainWindow.getBounds();
+    var mainBounds = (target || mainWindow).getBounds();
     var display = atomScreen.getDisplayMatching(mainBounds);
 
     x = mainBounds.x + mainBounds.width + margin;
@@ -300,15 +386,41 @@ var windows = {
       }
     }
 
-    if (useCursor) {
-      var cursorPoint = atomScreen.getCursorScreenPoint();
-      y = cursorPoint.y;
-    } else {
-      y = mainBounds.y + margin;
-    }
+    y = mainBounds.y + margin;
 
     if ((y + height) > (display.bounds.y + display.bounds.height)) {
       y = mainBounds.y + mainBounds.height - height - margin;
+      if (y <= display.bounds.y) {
+        return {x: undefined, y: undefined};
+      }
+    }
+
+    return {x: x, y: y};
+  },
+  getNewWindowPositionBelow: function (width, height, margin) {
+    var x;
+    var y;
+    var focusedWindow = BrowserWindow.getFocusedWindow();
+
+    if (focusedWindow == mainWindow) {
+      return this.getNewWindowPosition(width, height, margin);
+    }
+
+    var mainBounds = focusedWindow.getBounds();
+    var display = atomScreen.getDisplayMatching(mainBounds);
+
+    x = mainBounds.x;
+    y = mainBounds.y + mainBounds.height + margin;
+
+    if ((x + width) > (display.bounds.x + display.bounds.width)) {
+      x = mainBounds.x - width - margin;
+      if (x <= display.bounds.x) {
+        return {x: undefined, y: undefined};
+      }
+    }
+
+    if ((y + height) > (display.bounds.y + display.bounds.height)) {
+      y = mainBounds.y + mainBounds.height - height;
       if (y <= display.bounds.y) {
         return {x: undefined, y: undefined};
       }

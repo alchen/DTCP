@@ -431,8 +431,9 @@ Stream.prototype.sendTweet = function sendTweet(tweet, replyTo, sender, mediaPat
   if (!mediaPaths || _.isEmpty(mediaPaths)) {
     this.T.post('statuses/update', options, function (err, data, response) {
       if (!err) {
-        sender.close();
+        sender.destroy();
       } else {
+        sender.send('saveTweet');
         sender.send('message', 'Cannot send tweet.');
         sender.show();
       }
@@ -446,8 +447,6 @@ Stream.prototype.sendTweet = function sendTweet(tweet, replyTo, sender, mediaPat
             resolve(data.media_id_string);
           } else {
             console.log('Stream: media upload errored');
-            sender.send('message', 'Cannot upload media.');
-            sender.show();
             reject(err);
           }
         });
@@ -459,10 +458,11 @@ Stream.prototype.sendTweet = function sendTweet(tweet, replyTo, sender, mediaPat
         options.media_ids = media_ids;
         self.T.post('statuses/update', options, function (err, data, response) {
           if (!err) {
-            sender.close();
+            sender.destroy();
           } else {
             console.log('Stream: status upload error');
             console.log(err);
+            sender.send('saveTweet');
             sender.send('message', 'Cannot send tweet.');
             sender.show();
           }
@@ -470,25 +470,44 @@ Stream.prototype.sendTweet = function sendTweet(tweet, replyTo, sender, mediaPat
       }, function (errs) {
         console.log('Stream: send tweet aborted');
         console.log(errs);
+        sender.send('saveTweet');
+        sender.send('message', 'Cannot upload media.');
+        sender.show();
       });
   }
 };
 
 Stream.prototype.favorite = function favorite(tweetId) {
+  var self = this;
   this.T.post('favorites/create', {id: tweetId}, function (err, data, response) {
     if (!err) {
       console.log('REST: favorited');
     } else {
-      console.log(err);
+      if (err.code && err.code === 139) {
+        var tweet = self.timeline.findTweet(tweetId);
+        if (tweet) {
+          tweet.isFavorited = true;
+          self.send('updateTweet', self.screenname, tweet);
+        }
+      }
     }
   });
 };
 
 Stream.prototype.unfavorite = function unfavorite(tweetId) {
+  var self = this;
   this.T.post('favorites/destroy', {id: tweetId},
   function (err, data, response) {
     if (!err) {
       console.log('REST: unfavorited');
+    } else {
+      if (err.code && err.code === 144) {
+        var tweet = self.timeline.findTweet(tweetId);
+        if (tweet) {
+          tweet.isFavorited = false;
+          self.send('updateTweet', self.screenname, tweet);
+        }
+      }
     }
   });
 };
@@ -591,6 +610,12 @@ Stream.prototype.unfollow = function (screenname) {
     } else {
       console.log(err);
     }
+  });
+};
+
+Stream.prototype.getMentionSuggestions = function (target) {
+  return _.map(this.timeline.getRelevantUsers(target), function (user) {
+    return _.pick(user, ['screenname', 'name', 'biggerIcon']);
   });
 };
 

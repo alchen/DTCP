@@ -23,8 +23,23 @@
           <span class="fontsizevalue">{{ fontSize }}</span>
         </section>
       </section>
-      <section class="save">
-        <button :class="{ active: changed }" class="savebutton" @click="save">Save</button>
+      <hr />
+      <section class="confirm">
+        <header>
+          <h2 class="title">Save unposted tweet</h2>
+          <div class="corner">
+            <div class="onoffswitch">
+              <input type="checkbox" name="proxy" class="onoffswitch-checkbox" id="proxyswitch" v-model="saveLastTweet">
+              <label class="onoffswitch-label" for="proxyswitch">
+                <span class="onoffswitch-inner"></span>
+                <span class="onoffswitch-switch"></span>
+              </label>
+            </div>
+          </div>
+        </header>
+        <section class="form">
+          <p>When enabled, DTCP will save the last unposted tweet automatically and the composer window will exit without confirmation.</p>
+        </section>
       </section>
     </div>
     <script src="js/preferences.js"></script>

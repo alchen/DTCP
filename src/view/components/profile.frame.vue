@@ -1,7 +1,7 @@
 <style lang="sass">
 .profile {
   background: #fff;
-  user-select: text;
+  cursor: default;
 }
 
 .profilemeta {
@@ -9,6 +9,10 @@
   font-size: .75rem;
   border-bottom: .1rem solid #ccc;
   line-height: 1.25rem;
+}
+
+.profiletext, .profilelocation, .profileurl {
+  user-select: text;
 }
 
 .profilecounts > section {

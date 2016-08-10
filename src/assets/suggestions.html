@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <title></title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/iconic-glyphs.css" />
+    <link rel="stylesheet" href="css/suggestions.css" />
+  </head>
+  <body>
+    <div id="content">
+      <ul>
+        <li v-for="user in users" v-bind:class="{ 'active': $index == activeIndex }" v-bind:data-index="$index" v-on:mouseenter="setActive" v-on:click="select">
+          <div class="left">
+            <img v-bind:src="user.biggerIcon">
+          </div>
+          <div class="right">
+            <span class="screenname">{{ '@' + user.screenname }}</span>
+            <br>
+            <span class="name">{{ user.name }}</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <script src="js/suggestions.js"></script>
+  </body>
+</html>

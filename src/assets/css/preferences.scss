@@ -52,6 +52,11 @@ body {
     @at-root .form {
       margin-top: 1rem;
 
+      @at-root p {
+        font-size: 0.875rem;
+        color: #666;
+      }
+
       @at-root .proxyhost, .proxyport {
         line-height: 2rem;
         padding: 0 .25rem;

@@ -5,6 +5,8 @@ var ipc = require('electron').ipcRenderer;
 var Vue = require('vue');
 var twitterText = require('twitter-text');
 
+var getCaretCoordinates = require('../lib/textarea-caret-position');
+
 Vue.config.debug = process.env.NODE_ENV !== 'production';
 Vue.config.strict = true;
 
@@ -72,15 +74,38 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       updateTweet: function (event) {
         this.rawTweet = event.target.value;
 
+        ipc.send('setSavedTweet', this.rawTweet);
+        this.checkSuggestion();
+      },
+      checkSuggestion: function () {
         var mentions = twitterText.extractMentionsWithIndices(this.rawTweet);
         var textarea = document.getElementsByClassName('newrawtweet')[0];
         var caretPosition = textarea.selectionStart;
-        var currentName = _.find(mentions, function (mention) {
+        var currentMention = _.find(mentions, function (mention) {
           return caretPosition >= mention.indices[0] && caretPosition <= mention.indices[1];
         });
-        if (currentName) {
+        if (currentMention) {
           // find relevant name
+          var coordinates = getCaretCoordinates(textarea, currentMention.indices[0]);
+          ipc.send('getSuggestions', this.screenname, currentMention.screenName, coordinates.top, coordinates.left);
+        } else {
+          ipc.send('clearSuggestions');
         }
+      },
+      hideSuggestions: function () {
+        ipc.send('hideSuggestions');
+      },
+      acceptSuggestion: function (screenname) {
+        var mentions = twitterText.extractMentionsWithIndices(this.rawTweet);
+        var textarea = document.getElementsByClassName('newrawtweet')[0];
+        var caretPosition = textarea.selectionStart;
+        var currentMention = _.find(mentions, function (mention) {
+          return caretPosition >= mention.indices[0] && caretPosition <= mention.indices[1];
+        });
+
+        var before = this.rawTweet.substring(0, currentMention.indices[0]);
+        var after = this.rawTweet.substring(currentMention.indices[1]) || ' ';
+        this.rawTweet = before + '@' + screenname + after;
       },
       addMedia: function () {
         var fileElem = document.getElementById("fileElem");
@@ -128,6 +153,51 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
     },
     compiled: function () {
       var self = this;
+      var textarea = document.getElementsByClassName('newrawtweet')[0];
+
+      window.addEventListener('beforeunload', function (event) {
+        var remote = require('electron').remote;
+        var currentWindow = remote.getCurrentWindow();
+        ipc.send('clearSuggestions');
+        if (options.saveLastTweet || !self.rawTweet) {
+          currentWindow.hide();
+        } else {
+          var dialog = remote.dialog;
+          var choice = dialog.showMessageBox(
+            currentWindow,
+            {
+              type: 'question',
+              buttons: ['Discard', 'Cancel'],
+              title: 'Are you sure you want to discard this unsaved tweet?',
+              message: 'Your tweet will be lost.'
+            }
+          );
+          if (choice != 0) {
+            event.returnValue = false;
+          }
+        }
+      });
+
+      ipc.send('getSavedTweet');
+
+      ipc.on('saveTweet', function (event) {
+        ipc.send('setSavedTweet', self.rawTweet);
+      });
+
+      ipc.on('savedTweet', function (event, savedTweet) {
+        var prevLength = self.rawTweet.length;
+        self.rawTweet = self.rawTweet + (savedTweet || '');
+        var currentLength = self.rawTweet.length;
+
+        Vue.nextTick(function () {
+          textarea.selectionStart = prevLength;
+          textarea.selectionEnd = currentLength;
+        });
+      });
+
+      ipc.on('suggest', function (event, screenname) {
+        self.acceptSuggestion(screenname);
+      });
 
       // Handle keyboard shortcut
       ipc.on('tweet', function () {
@@ -138,12 +208,11 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
         self.message = message;
       });
 
-      var textarea = document.getElementsByClassName('newrawtweet')[0];
       textarea.focus();
       if (!this.frontFocus) {
         var len = textarea.value.length;
         textarea.selectionStart = len;
-        textarea.selectionENd = len;
+        textarea.selectionEnd = len;
       } else {
         textarea.selectionStart = 0;
         textarea.selectionEnd = 0;

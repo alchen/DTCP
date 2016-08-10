@@ -60,37 +60,32 @@ Twitter.prototype.request = function (method, path, params, callback) {
     params = {};
   }
 
-  return new Promise(function (resolve, reject) {
-    var _returnErrorToUser = function (err) {
-      if (callback && typeof callback === 'function') {
-        callback(err, null, null);
-      }
-      reject(err);
-    };
+  var _returnErrorToUser = function (err) {
+    if (callback && typeof callback === 'function') {
+      callback(err, null, null);
+    }
+  };
 
-    self._buildReqOpts(method, path, params, false, function (err, reqOpts) {
-      if (err) {
-        _returnErrorToUser(err);
-        return;
-      }
+  self._buildReqOpts(method, path, params, false, function (err, reqOpts) {
+    if (err) {
+      _returnErrorToUser(err);
+      return;
+    }
 
-      var twitOptions = (params && params.twit_options) || {};
+    var twitOptions = (params && params.twit_options) || {};
 
-      process.nextTick(function () {
-        // ensure all HTTP i/o occurs after the user has a chance to bind their event handlers
-        self._doRestApiRequest(reqOpts, twitOptions, method, function (err, parsedBody, resp) {
-          if (err) {
-            _returnErrorToUser(err);
-            return;
-          }
-
-          if (callback && typeof callback === 'function') {
-            callback(err, parsedBody, resp);
-          }
-
-          resolve({ data: parsedBody, resp: resp });
+    process.nextTick(function () {
+      // ensure all HTTP i/o occurs after the user has a chance to bind their event handlers
+      self._doRestApiRequest(reqOpts, twitOptions, method, function (err, parsedBody, resp) {
+        if (err) {
+          _returnErrorToUser(err);
           return;
-        });
+        }
+
+        if (callback && typeof callback === 'function') {
+          callback(err, parsedBody, resp);
+        }
+        return;
       });
     });
   });
@@ -164,7 +159,10 @@ Twitter.prototype._buildReqOpts = function (method, path, params, isStreaming, c
     return;
   }
 
-  if (isStreaming) {
+  if (path.match(/^https?:\/\//i)) {
+    // This is a full url request
+    reqOpts.url = path
+  } else if (isStreaming) {
     // This is a Streaming API request.
 
     var stream_endpoint_map = {

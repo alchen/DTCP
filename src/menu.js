@@ -33,6 +33,12 @@ module.exports = {
               }
             },
             {
+              label: 'suggestions...',
+              click: function () {
+                windows.getSuggestionsWindow();
+              }
+            },
+            {
               type: 'separator'
             },
             {

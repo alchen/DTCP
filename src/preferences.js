@@ -24,6 +24,7 @@ var excludeMethods = function (key, value) {
 var preferences = {
   authenticated: false,
   accounts: {},
+  saveLastTweet: false,
   fontSize: 16,
   save: function (preferences) {
     mkdirp.sync(getPath());

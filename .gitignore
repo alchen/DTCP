@@ -38,6 +38,7 @@ instrumented
 *.map
 src/assets/js
 src/assets/css/bundle.css
+src/assets/css/suggestions.css
 src/assets/css/composer.css
 src/assets/css/viewer.css
 src/assets/css/preferences.css

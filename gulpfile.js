@@ -9,7 +9,13 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 gulp.task('default', ['webpack', 'sass']);
 
 gulp.task('sass', ['webpack'], function () {
-  gulp.src(['./src/assets/css/bundle.scss', './src/assets/css/composer.scss', './src/assets/css/viewer.scss', './src/assets/css/preferences.scss'])
+  gulp.src([
+    './src/assets/css/bundle.scss',
+    './src/assets/css/composer.scss',
+    './src/assets/css/viewer.scss',
+    './src/assets/css/preferences.scss',
+    './src/assets/css/suggestions.scss'
+  ])
       .pipe(sass().on('error', sass.logError))
       .pipe(gulp.dest('./src/assets/css/'));
 });
@@ -27,6 +33,7 @@ gulp.task('webpack', function (cb) {
       'composer': './view/composer.js',
       'about': './view/about.js',
       'viewer': './view/viewer.js',
+      'suggestions': './view/suggestions.js',
       'preferences': './view/preferences.js',
       'entry': './main.js'
     },
@@ -59,7 +66,7 @@ gulp.task('webpack', function (cb) {
       new ExtractTextPlugin('../css/components.scss')
     ],
     devtool: 'source-map',
-    externals: { spellchecker: "commonjs spellchecker" }  
+    externals: { spellchecker: "commonjs spellchecker" }
   }, cb);
 });
 

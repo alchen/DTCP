@@ -13,7 +13,7 @@
     <div id="content" @dragenter="disable" @dragover="disable" @drop="drop">
       <div class="newtweet">
         <section class="newtweettext">
-          <textarea class="newrawtweet" @keyup.esc="escape" @input="updateTweet" v-model="rawTweet" lazy autofocus="true"></textarea>
+          <textarea class="newrawtweet" @keyup.esc="escape" @input="updateTweet" @focus="checkSuggestion" @blur="hideSuggestions" v-model="rawTweet" lazy autofocus="true"></textarea>
           <section class="newformattedtweet" v-html="formattedTweet"></section>
         </section>
         <section class="newtweetmedia" v-if="mediaPaths.length">

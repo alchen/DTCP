@@ -11,41 +11,26 @@ Vue.config.strict = true;
 var newPreferencePane = new Vue({
   el: 'html',
   data: {
-    useProxy: false,
-    proxyHost: '',
-    proxyPort: '',
+    saveLastTweet: false,
     fontSize: 16,
     changed: false
   },
   methods: {
     save: function () {
-      ipc.send('setProxy', this.useProxy ? {
-        host: this.proxyHost,
-        port: this.proxyPort
-      } : undefined);
       this.changed = false
     }
   },
   compiled: function () {
     var self = this;
-    ipc.send('getProxy');
+    ipc.send('getSaveLastTweet');
     ipc.send('getFontSize');
 
-    ipc.on('proxy', function (event, proxyConfig) {
-      if (proxyConfig) {
-        self.useProxy = true;
-        self.proxyHost = proxyConfig.host;
-        self.proxyPort = proxyConfig.port;
-      } else {
-        self.useProxy = false;
-      }
+    ipc.on('saveLastTweet', function (event, saveLastTweet) {
+      self.saveLastTweet = saveLastTweet;
 
-      var markChange = function () {
-        self.changed = true;
-      };
-      self.$watch('useProxy', markChange);
-      self.$watch('proxyHost', markChange);
-      self.$watch('proxyPort', markChange);
+      self.$watch('saveLastTweet', function () {
+        ipc.send('setSaveLastTweet', self.saveLastTweet);
+      });
     });
 
     ipc.on('fontSize', function (event, fontSize) {

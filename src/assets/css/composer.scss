@@ -19,7 +19,6 @@ $switch-transition-time: .2s;
     flex-shrink: 0;
     flex-basis: 4rem;
     position: relative;
-    word-break: break-all;
     overflow: auto;
     margin-left: 3.5rem;
 
@@ -42,6 +41,7 @@ $switch-transition-time: .2s;
     }
 
     .newformattedtweet {
+      overflow-wrap: break-word;
       white-space: pre-wrap;
       width: 100%;
       background-color: transparent;
