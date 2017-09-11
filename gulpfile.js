@@ -47,18 +47,18 @@ gulp.task('webpack', function (cb) {
       loaders: [
         {
           test: /\.vue$/,
-          loader: 'vue'
+          loader: 'vue-loader'
         },
         {
           test: /\.json$/,
-          loader: 'json'
+          loader: 'json-loader'
         }
       ],
       noParse: /node_modules\/json-schema\/lib\/validate\.js/
     },
     vue: {
       loaders: {
-        sass: ExtractTextPlugin.extract('css!sass')
+        sass: ExtractTextPlugin.extract('css-loader!sass-loader')
       }
     },
     plugins: [
