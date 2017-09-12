@@ -8,9 +8,9 @@ DTCP is a Twitter client built with [`electron`][1] and [`Vue.js`][2].
 
 # Downloads
 
-[<img src="docs/apple.png" width="32" /> OS X](https://github.com/alchen/DTCP/releases/download/v0.4.20/DTCP-mac.zip)
+[<img src="docs/apple.png" width="32" /> OS X](https://github.com/alchen/DTCP/releases/download/v0.4.21/DTCP-mac.zip)
 
-[<img src="docs/windows.png" width="32" /> Windows Installer](https://github.com/alchen/DTCP/releases/download/v0.4.20/DTCP-win32.zip)
+[<img src="docs/windows.png" width="32" /> Windows Installer](https://github.com/alchen/DTCP/releases/download/v0.4.21/DTCP-win32.zip)
 
 # Development
 
@@ -19,10 +19,6 @@ npm install  # Install dependencies
 gulp         # Bundle up javascript files and style sheets
 npm start    # Start the program with electron-prebuilt
 ```
-
-# Questions
-
-You can always find me at [@uinoka](https://twitter.com/uinoka).
 
 [1]:https://github.com/atom/electron
 [2]:https://github.com/vuejs/vue
