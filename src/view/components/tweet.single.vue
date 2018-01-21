@@ -148,16 +148,16 @@
       cursor: default;
     }
 
-    &.disabled #{&}icon:empty:before {
+    &.disabled .tweetbuttonicon:empty:before {
       color: #999;
       cursor: default;
     }
 
-    &.active.retweetbutton #{&}icon:empty:before {
+    &.active.retweetbutton .tweetbuttonicon:empty:before {
       color: $blue;
     }
 
-    &.active.favoritebutton #{&}icon:empty:before {
+    &.active.favoritebutton .tweetbuttonicon:empty:before {
       color: $yellow;
       -webkit-text-stroke: 1px #c93;
     }
@@ -211,7 +211,6 @@
   @at-root .fattweettext {
     margin-top: .75rem;
     font-size: 1.125rem;
-    font-weight: lighter;
     color: #333;
     white-space: pre-wrap;
     user-select: text;
@@ -393,7 +392,7 @@ var Tweet = Vue.extend({
         return k !== self.username;
       });
       mentions.unshift(this.tweet.user.screenname);
-      if (this.tweet.quote) {
+      if (this.tweet.quote && this.tweet.quote.user.screenname !== self.username) {
         mentions.push(this.tweet.quote.user.screenname);
       }
       mentions = _.map(_.uniq(mentions), function (m) {

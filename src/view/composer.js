@@ -16,7 +16,7 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
   newTweet = new Vue({
     el: '#content',
     data: {
-      rawTweet: pretext ? (!(options && options.frontFocus) ? pretext + ' ' : ' ' + pretext) : '',
+      rawTweet: pretext ? (options && options.frontFocus ? ' ' + pretext : pretext + ' ') : '',
       replyTo: replyTo,
       frontFocus: options && options.frontFocus,
       screenname: screenname,
@@ -39,11 +39,26 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       composer: function () {
         return this.availableUsers[this.screenname];
       },
-      isValid: function () {
-        return twitterText.isValidTweetText(this.rawTweet);
+      parsedTweet: function () {
+        return twitterText.parseTweet(this.rawTweet);
       },
-      remainingLength: function () {
-        return 140 - twitterText.getTweetLength(this.rawTweet);
+      isValid: function () {
+        return this.parsedTweet.valid || (!this.rawTweet && this.mediaPaths.length);
+      },
+      permillage: function () {
+        return this.parsedTweet.permillage;
+      },
+      strokeDashoffset: function () {
+        var RADIUS = 10;
+        var CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+        var totalSteps = 50;
+        var stepLength = 1000 / totalSteps;
+
+        var currentStep = (this.permillage - this.permillage % stepLength) / stepLength;
+        var progress = Math.min(currentStep / totalSteps, 1);
+        var dashoffset = CIRCUMFERENCE * (1 - progress);
+
+        return dashoffset;
       },
       formattedTweet: function () {
         return twitterText.autoLink(this.rawTweet, {
@@ -69,6 +84,7 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       sendTweet: function (event) {
         if (this.isValid) {
           ipc.send('sendTweet', this.screenname, this.rawTweet, this.replyTo, this.mediaPaths);
+          ipc.send('setSavedTweet', '');
         }
       },
       updateTweet: function (event) {
@@ -185,14 +201,23 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       });
 
       ipc.on('savedTweet', function (event, savedTweet) {
-        var prevLength = self.rawTweet.length;
-        self.rawTweet = self.rawTweet + (savedTweet || '');
-        var currentLength = self.rawTweet.length;
+        if (!self.frontFocus) {
+          var prevLength = self.rawTweet.length;
+          self.rawTweet = self.rawTweet + (savedTweet || '');
+          var currentLength = self.rawTweet.length;
 
-        Vue.nextTick(function () {
-          textarea.selectionStart = prevLength;
-          textarea.selectionEnd = currentLength;
-        });
+          Vue.nextTick(function () {
+            textarea.selectionStart = prevLength;
+            textarea.selectionEnd = currentLength;
+          });
+        } else {
+          self.rawTweet = self.rawTweet + (savedTweet || '');
+          var savedLength = (savedTweet || '').length;
+          Vue.nextTick(function () {
+            textarea.selectionStart = 0;
+            textarea.selectionEnd = savedLength;
+          });
+        }
       });
 
       ipc.on('suggest', function (event, screenname) {
@@ -206,9 +231,14 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
 
       ipc.on('message', function (event, message) {
         self.message = message;
+        var contentEl = document.getElementById('content');
+        self.$nextTick(function () {
+          ipc.send('resizeComposerToHeight', contentEl.scrollHeight);
+        });
       });
 
       textarea.focus();
+      console.log(textarea.value)
       if (!this.frontFocus) {
         var len = textarea.value.length;
         textarea.selectionStart = len;

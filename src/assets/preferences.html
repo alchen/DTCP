@@ -41,6 +41,21 @@
           <p>When enabled, DTCP will save the last unposted tweet automatically and the composer window will exit without confirmation.</p>
         </section>
       </section>
+      <hr />
+      <section class="mute">
+        <header>
+          <h2 class="title">Mute video by default</h2>
+          <div class="corner">
+            <div class="onoffswitch">
+              <input type="checkbox" name="mute" class="onoffswitch-checkbox" id="muteswitch" v-model="muteVideo">
+              <label class="onoffswitch-label" for="muteswitch">
+                <span class="onoffswitch-inner"></span>
+                <span class="onoffswitch-switch"></span>
+              </label>
+            </div>
+          </div>
+        </header>
+      </section>
     </div>
     <script src="js/preferences.js"></script>
   </body>

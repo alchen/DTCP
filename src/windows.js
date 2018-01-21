@@ -148,8 +148,8 @@ var windows = {
       return preferencesWindow;
     }
 
-    var width = 350;
-    var height = 320;
+    var width = 360;
+    var height = 360;
     var position = this.getNewWindowPosition(width, height, margin);
 
     preferencesWindow = new BrowserWindow({
@@ -287,26 +287,39 @@ var windows = {
     });
   },
   refitWindow: function (target, width, height) {
-    var size = this.getNewWindowSize(width, height, width / height, margin);
-    width = size.width;
-    height = size.height;
-    var position = this.getNewWindowPosition(width, height, margin);
-    if (!position.x || !position.y) {
+    width = width || 320;
+    height = height|| 240;
+
+    var currentSize = target.getSize();
+    if (width <= currentSize[0] && height <= currentSize[1]) {
       target.setSize(
         Math.max(width, 144),
         Math.max(height, 100)
       );
-      target.center();
+      return;
     } else {
-      target.setBounds({
-        x: position.x,
-        y: position.y,
-        width: Math.max(width, 144),
-        height: Math.max(height, 100)
-      });
+      var size = this.getNewWindowSize(width, height, width / height, margin);
+      width = size.width;
+      height = size.height;
+      var position = this.getNewWindowPosition(width, height, margin);
+      target.setAspectRatio(width / height);
+      if (!position.x || !position.y) {
+        target.setSize(
+          Math.max(width, 144),
+          Math.max(height, 100)
+        );
+        target.center();
+      } else {
+        target.setBounds({
+          x: position.x,
+          y: position.y,
+          width: Math.max(width, 144),
+          height: Math.max(height, 100)
+        });
+      }
     }
   },
-  getNewViewerWindow: function (media, index) {
+  getNewViewerWindow: function (media, index, muteVideo) {
     var width = media[index].size.width || 320;
     var height = media[index].size.height || 240;
 
@@ -317,20 +330,32 @@ var windows = {
     var position = this.getNewWindowPosition(width, height, margin);
     var newWindow = new BrowserWindow({
       title: '',
-      x: position.x,
-      y: position.y,
-      width: Math.max(width, 144),
-      height: Math.max(height, 100),
       minWidth: 144,
       minHeight: 100,
       fullscreen: false,
       acceptFirstMouse: false,
       autoHideMenuBar: true
     });
-    newWindow.loadURL('file://' + path.resolve(__dirname, '../viewer.html'));
-    newViewerWindows.push(newWindow);
 
     newWindow.setAspectRatio(width / height);
+
+    if (!position.x || !position.y) {
+      newWindow.setSize(
+        Math.max(width, 144),
+        Math.max(height, 100)
+      );
+      newWindow.center();
+    } else {
+      newWindow.setBounds({
+        x: position.x,
+        y: position.y,
+        width: Math.max(width, 144),
+        height: Math.max(height, 100)
+      });
+    }
+
+    newWindow.loadURL('file://' + path.resolve(__dirname, '../viewer.html'));
+    newViewerWindows.push(newWindow);
 
     newWindow.on('close', function () {
       newWindow.hide();
@@ -349,7 +374,7 @@ var windows = {
     });
 
     newWindow.webContents.on('did-finish-load', function () {
-      newWindow.webContents.send('pretext', media, index);
+      newWindow.webContents.send('pretext', media, index, muteVideo);
       newWindow.show();
     });
   },
@@ -400,7 +425,7 @@ var windows = {
   getNewWindowPositionBelow: function (width, height, margin) {
     var x;
     var y;
-    var focusedWindow = BrowserWindow.getFocusedWindow();
+    var focusedWindow = BrowserWindow.getFocusedWindow() || mainWindow;
 
     if (focusedWindow == mainWindow) {
       return this.getNewWindowPosition(width, height, margin);

@@ -8,6 +8,11 @@ var Parser = require('./parser');
 var request = require('./request');
 var zlib = require('zlib');
 
+var zlibOptions = {
+  flush: zlib.Z_SYNC_FLUSH,
+  finishFlush: zlib.Z_SYNC_FLUSH
+}
+
 var STATUS_CODES_TO_ABORT_ON = require('./settings').STATUS_CODES_TO_ABORT_ON;
 
 var StreamingAPIConnection = function (reqOpts, twitOptions) {
@@ -85,7 +90,7 @@ StreamingAPIConnection.prototype._startPersistentConnection = function () {
       self.emit('error', err);
     });
 
-    var gunzip = zlib.createGunzip();
+    var gunzip = zlib.createGunzip(zlibOptions);
     if (STATUS_CODES_TO_ABORT_ON.indexOf(self.response.statusCode) !== -1) {
       console.log('Twit: should abort from response');
       // We got a status code telling us we should abort the connection.

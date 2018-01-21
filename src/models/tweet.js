@@ -38,10 +38,12 @@ var Tweet = function (tweet, screenname) {
   }
 
   this.id = tweet.id_str;
-  this.rawStatus = tweet.text;
+
+  var base = tweet.extended_tweet || tweet;
+  this.rawStatus = base.full_text || base.text;
   this.status = (
-    tweet.entities ? twitterText.autoLinkWithJSON(tweet.text, tweet.entities, options)
-    : twitterText.autoLink(tweet.text, options)
+    base.entities ? twitterText.autoLinkWithJSON(this.rawStatus, base.entities, options)
+    : twitterText.autoLink(this.rawStatus, options)
   );
   this.inReplyTo = tweet.in_reply_to_status_id_str;
   this.isRetweeted = this.isRetweeted || tweet.retweeted;
@@ -52,14 +54,14 @@ var Tweet = function (tweet, screenname) {
 
   this.user = new User(tweet.user);
 
-  this.mentions = (tweet.entities ?
-    _.map(tweet.entities.user_mentions, function (k) {
+  this.mentions = (base.entities ?
+    _.map(base.entities.user_mentions, function (k) {
       return k.screen_name;
     }) : []
   );
 
-  this.media = (tweet.extended_entities ?
-    _.map(tweet.extended_entities.media, function (k) {
+  this.media = (base.extended_entities ?
+    _.map(base.extended_entities.media, function (k) {
       var mediaObj = {
         url: k.media_url_https,
         type: k.type,

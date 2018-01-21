@@ -25,6 +25,7 @@ var preferences = {
   authenticated: false,
   accounts: {},
   saveLastTweet: false,
+  muteVideo: false,
   fontSize: 16,
   save: function (preferences) {
     mkdirp.sync(getPath());

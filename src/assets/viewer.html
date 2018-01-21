@@ -22,7 +22,7 @@
         <img :src="currentView.url + ':large'" onload="this.parentElement.classList.add('active')" />
       </div>
       <div class="media" v-if="currentView && currentView.video">
-        <video :src="currentView.video.url" onloadeddata="this.parentElement.classList.add('active')" :poster="currentView.url + ':large'" muted="true" controls="true" loop="true" autoplay="true"></video>
+        <video :src="currentView.video.url" onloadeddata="this.parentElement.classList.add('active')" :poster="currentView.url + ':large'" :muted="!!muteVideo" controls="true" loop="true" autoplay="true"></video>
       </div>
     </div>
     <script src="js/viewer.js"></script>

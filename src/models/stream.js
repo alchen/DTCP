@@ -257,7 +257,8 @@ Stream.prototype.loadMissing = function (timeline, tweetId) {
 
   this.T.get('statuses/' + timeline + '_timeline', {
     count: config.loadThreshold,
-    since_id: tweetId
+    since_id: tweetId,
+    tweet_mode: 'extended'
   },
   function (err, rawTweets, response) {
     if (!err) {
@@ -271,7 +272,8 @@ Stream.prototype.loadMissing = function (timeline, tweetId) {
 
   // this.T.get('statuses/' + timeline + '_timeline', {
   //   count: config.loadThreshold,
-  //   max_id: tweetId
+  //   max_id: tweetId,
+  //   tweet_mode: 'extended'
   // },
   // function (err, rawTweets, response) {
   //   if (!err) {
@@ -289,7 +291,10 @@ Stream.prototype.loadMore = function (timeline, maxId) {
 
   var payload = this.timeline.get(timeline, maxId);
   var payloadSize = _.size(payload);
-  var options = {count: config.loadThreshold};
+  var options = {
+    count: config.loadThreshold,
+    tweet_mode: 'extended'
+  };
 
   if (payloadSize > config.loadThreshold) {
     this.send('newTweets', this.screenname, timeline, payload.slice(0, config.sendThreshold));
@@ -333,7 +338,11 @@ Stream.prototype.loadScreenname = function (screenname) {
 
 Stream.prototype.loadUser = function loadUser(screenname, maxId) {
   var self = this;
-  var options = {screen_name: screenname, count: config.loadThreshold};
+  var options = {
+    screen_name: screenname,
+    count: config.loadThreshold,
+    tweet_mode: 'extended'
+  };
 
   if (maxId) {
     options.max_id = maxId;
@@ -475,6 +484,24 @@ Stream.prototype.sendTweet = function sendTweet(tweet, replyTo, sender, mediaPat
         sender.show();
       });
   }
+};
+
+Stream.prototype.sendMessage = function sendTweet(recipient, message) {
+  var self = this;
+  var options = {
+    screen_name: recipient,
+    text: message
+  };
+
+  this.T.post('direct_messages/new', options, function (err, data, response) {
+    if (!err) {
+      // yay!
+      console.log('Rest: message sent')
+    } else {
+      // do nothing
+      console.log('Rest: message send failed')
+    }
+  });
 };
 
 Stream.prototype.favorite = function favorite(tweetId) {

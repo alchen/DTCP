@@ -52,6 +52,12 @@ var Frames = Vue.extend({
     }
   },
   events: {
+    scrollToBottom: function () {
+      this.scrollToBottom();
+    },
+    scrollToTop: function () {
+      this.scrollToTop();
+    },
     loadMissing: function (sinceId) {
       ipc.send('loadMissing', this.screenname, this.topFrame.view, sinceId);
     },
@@ -121,6 +127,78 @@ var Frames = Vue.extend({
       };
       this.pushFrame(newFrame);
       ipc.send('loadScreenname', this.screenname, screenname);
+    },
+  },
+  methods: {
+    scrollTo: function (destination, speed) {
+      var self = this;
+      var startTime = now();
+      var frames = document.getElementsByClassName('frame');
+      var currentFrame = frames[frames.length - 1];
+      var sy = currentFrame.scrollTop;
+      var changed = false;
+
+      // cancel frame is there is an scroll event happening
+      if (this.animation) {
+        window.cancelAnimationFrame(this.animation);
+      }
+
+      function now() {
+        if (window.performance !== undefined && window.performance.now !== undefined) {
+          return window.performance.now();
+        }
+
+        return Date.now();
+      }
+
+      function ease(k) {
+        return Math.sin(k * Math.PI / 2);
+      }
+
+      // scroll looping over a frame
+      function step() {
+        var time = now();
+        var value;
+        var cy;
+        var elapsed = (time - startTime) / speed;
+
+        // avoid elapsed times higher than one
+        elapsed = elapsed > 1 ? 1 : elapsed;
+
+        var threshold = 96;
+        if (speed || changed || elapsed == 1 || Math.abs(destination - sy) < threshold) {
+          elapsed = (time - startTime) / (speed || threshold);
+          elapsed = elapsed > 1 ? 1 : elapsed;
+          value = ease(elapsed);
+          cy = sy + (destination - sy) * value;
+        } else {
+          cy = sy + Math.sign(destination - sy) * (time - startTime) * 2;
+
+          if ((destination > sy && cy > destination) || (destination < sy && cy < destination)) {
+            cy = destination;
+          }
+
+          if (!changed && Math.abs(destination - cy) < threshold) {
+            startTime = now();
+            sy = currentFrame.scrollTop;
+            changed = true;
+          }
+        }
+
+        currentFrame.scrollTop = Math.floor(cy);
+
+        // return if end points have been reached
+        if (cy === destination) {
+          sy = startTime = null;
+          window.cancelAnimationFrame(self.animation);
+          self.animation = null;
+          return;
+        }
+
+        self.animation = window.requestAnimationFrame(step);
+      }
+
+      this.animation = window.requestAnimationFrame(step);
     },
     scrollToBottom: function () {
       var frames = document.getElementsByClassName('frame');
@@ -204,82 +282,13 @@ var Frames = Vue.extend({
       var frames = document.getElementsByClassName('frame');
       var currentFrame = frames[frames.length - 1];
       this.scrollTo(currentFrame.scrollTop + currentFrame.getBoundingClientRect().height * 0.9, 300);
+      this.removeActiveTweet();
     },
     scrollPageUp: function () {
       var frames = document.getElementsByClassName('frame');
       var currentFrame = frames[frames.length - 1];
       this.scrollTo(currentFrame.scrollTop - currentFrame.getBoundingClientRect().height * 0.9, 300);
-    }
-  },
-  methods: {
-    scrollTo: function (destination, speed) {
-      var self = this;
-      var startTime = now();
-      var frames = document.getElementsByClassName('frame');
-      var currentFrame = frames[frames.length - 1];
-      var sy = currentFrame.scrollTop;
-      var changed = false;
-
-      // cancel frame is there is an scroll event happening
-      if (this.animation) {
-        window.cancelAnimationFrame(this.animation);
-      }
-
-      function now() {
-        if (window.performance !== undefined && window.performance.now !== undefined) {
-          return window.performance.now();
-        }
-
-        return Date.now();
-      }
-
-      function ease(k) {
-        return Math.sin(k * Math.PI / 2);
-      }
-
-      // scroll looping over a frame
-      function step() {
-        var time = now();
-        var value;
-        var cy;
-        var elapsed = (time - startTime) / speed;
-
-        // avoid elapsed times higher than one
-        elapsed = elapsed > 1 ? 1 : elapsed;
-
-        var threshold = 96;
-        if (speed || changed || elapsed == 1 || Math.abs(destination - sy) < threshold) {
-          elapsed = (time - startTime) / (speed || threshold);
-          elapsed = elapsed > 1 ? 1 : elapsed;
-          value = ease(elapsed);
-          cy = sy + (destination - sy) * value;
-        } else {
-          cy = sy + Math.sign(destination - sy) * (time - startTime) * 2;
-
-          if ((destination > sy && cy > destination) || (destination < sy && cy < destination)) {
-            cy = destination;
-          }
-
-          if (!changed && Math.abs(destination - cy) < threshold) {
-            startTime = now();
-            sy = currentFrame.scrollTop;
-            changed = true;
-          }
-        }
-
-        currentFrame.scrollTop = Math.floor(cy);
-
-        // return if end points have been reached
-        if (cy === destination) {
-          sy = startTime = null;
-          window.cancelAnimationFrame(self.animation);
-          return;
-        }
-
-        self.animation = window.requestAnimationFrame(step);
-      }
-
-      this.animation = window.requestAnimationFrame(step);
+      this.removeActiveTweet();
     },
     pushFrame: function (newFrame) {
       var switched = _.find(this.frames, function (frame) {
@@ -294,15 +303,24 @@ var Frames = Vue.extend({
       }
     },
     scroll: function (event) {
-      // TODO: Add a debounced check for activetweet visibility
-      this.userScrollHandler();
+      if (!self.animation) {
+        this.debouncedUserScrollHandler();
+      }
       if (this.frames.length === 1 && event.target.scrollTop === 0 && (this.topFrame.view === 'home' || this.topFrame.view === 'mentions')) {
         this.$dispatch('rewind');
       }
-    }
-  },
-  compiled: function () {
-    this.userScrollHandler = _.debounce(function () {
+    },
+    removeActiveTweet: function () {
+      var frames = document.getElementsByClassName('frame');
+      var currentFrame = frames[frames.length - 1];
+      var activeTweets = currentFrame.getElementsByClassName('activetweet');
+
+      if (activeTweets.length > 0) {
+        var activeTweet = activeTweets[0];
+        activeTweet.classList.remove('activetweet');
+      }
+    },
+    removeInvisibleActiveTweet: function () {
       var frames = document.getElementsByClassName('frame');
       var currentFrame = frames[frames.length - 1];
       var currentFrameRect = currentFrame.getBoundingClientRect();
@@ -316,7 +334,40 @@ var Frames = Vue.extend({
           activeTweet.classList.remove('activetweet');
         }
       }
-    }, 500);
+    }
+  },
+  compiled: function () {
+    var self = this;
+    var scrollThrottleRate = 140;
+
+    this.debouncedUserScrollHandler = _.debounce(function () {
+        self.removeInvisibleActiveTweet();
+    }, 50);
+
+    var throttledScrollToNextTweet = _.throttle(this.scrollToNextTweet, scrollThrottleRate);
+    var throttledScrollToPreviousTweet = _.throttle(this.scrollToPreviousTweet, scrollThrottleRate);
+
+    document.addEventListener('keydown', function (event) {
+      if (event.keyCode === 74 || event.keyCode === 40) { // j or down
+        throttledScrollToNextTweet();
+      } else if (event.keyCode === 75 || event.keyCode === 38) { // k or up
+        throttledScrollToPreviousTweet();
+      } else if (event.keyCode === 32) { // space
+        if (event.shiftKey) {
+          self.scrollPageUp();
+        } else {
+          self.scrollPageDown();
+        }
+      } else if (event.keyCode === 33) { // page up
+        self.scrollPageUp();
+      } else if (event.keyCode === 34) { // page down
+        self.scrollPageDown();
+      } else if (event.keyCode === 35) { // end
+        self.scrollToBottom();
+      } else if (event.keyCode === 36) { // home
+        self.scrollToTop();
+      }
+    });
   }
 });
 

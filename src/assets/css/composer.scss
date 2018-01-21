@@ -115,10 +115,27 @@ $switch-transition-time: .2s;
       cursor: pointer;
     }
 
-    .remaining {
-      font-size: .75rem;
-      padding: 0 .75rem;
-      color: #aaa;
+    .progress {
+      transform: rotate(-90deg);
+    }
+
+    .progressmeter,
+    .progressvalue {
+      fill: none;
+    }
+
+    .progressmeter {
+      stroke: #e6e6e6;
+    }
+
+    .progressvalue {
+      stroke: #0ca;
+      &.nearlimit {
+        stroke: #ffd270;
+      }
+      &.overlimit {
+        stroke: #f22;
+      }
     }
 
     .newtweetbutton {

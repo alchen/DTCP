@@ -9,12 +9,13 @@ Vue.config.strict = true;
 
 var newViewer;
 
-ipc.on('pretext', function (event, media, index) {
+ipc.on('pretext', function (event, media, index, muteVideo) {
   newViewer = new Vue({
     el: '#content',
     data: {
       media: media,
       index: index,
+      muteVideo: muteVideo,
       currentView: undefined
     },
     methods: {
@@ -24,6 +25,9 @@ ipc.on('pretext', function (event, media, index) {
         ipc.send('resizeViewer', width, height);
       },
       next: function () {
+        if (this.media.length <= 1) {
+          return;
+        }
         this.index = (this.index + 1) % this.media.length;
         this.currentView = null;
         this.resizeViewer();
@@ -32,6 +36,9 @@ ipc.on('pretext', function (event, media, index) {
         });
       },
       back: function () {
+        if (this.media.length <= 1) {
+          return;
+        }
         var length = this.media.length;
         this.index = (((this.index - 1) % length) + length) % length;
         this.currentView = null;

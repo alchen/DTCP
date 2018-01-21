@@ -182,6 +182,15 @@ ipc.on('setFontSize', function (event, fontSize) {
   windows.getMainWindow().send('fontSize', fontSize);
 });
 
+ipc.on('getMuteVideo', function (event) {
+  event.sender.send('muteVideo', preferences.muteVideo);
+});
+
+ipc.on('setMuteVideo', function (event, muteVideo) {
+  preferences.muteVideo = muteVideo;
+  windows.getMainWindow().send('muteVideo', muteVideo);
+});
+
 ipc.on('setLastScreenname', function (event, screenname) {
   preferences.lastScreenname = screenname;
 });
@@ -217,7 +226,7 @@ ipc.on('loadMessages', function (event, screenname) {
 });
 
 ipc.on('showViewer', function (event, media, index) {
-  windows.getNewViewerWindow(media, index);
+  windows.getNewViewerWindow(media, index, preferences.muteVideo);
 });
 
 ipc.on('resizeViewer', function (event, width, height) {
@@ -250,6 +259,10 @@ ipc.on('sendTweet', function (event, screenname, tweet, replyTo, mediaPath) {
   var sender = windows.findWindowFromWebContents(event.sender);
   sender.hide();
   streams[screenname].sendTweet(tweet, replyTo, sender, mediaPath);
+});
+
+ipc.on('sendMessage', function (event, screenname, recipient, message) {
+  streams[screenname].sendMessage(recipient, message);
 });
 
 ipc.on('favorite', function (event, screenname, tweetId, positive) {

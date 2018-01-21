@@ -13,6 +13,7 @@ var newPreferencePane = new Vue({
   data: {
     saveLastTweet: false,
     fontSize: 16,
+    muteVideo: false,
     changed: false
   },
   methods: {
@@ -24,6 +25,7 @@ var newPreferencePane = new Vue({
     var self = this;
     ipc.send('getSaveLastTweet');
     ipc.send('getFontSize');
+    ipc.send('getMuteVideo');
 
     ipc.on('saveLastTweet', function (event, saveLastTweet) {
       self.saveLastTweet = saveLastTweet;
@@ -38,6 +40,14 @@ var newPreferencePane = new Vue({
 
       self.$watch('fontSize', function () {
         ipc.send('setFontSize', self.fontSize);
+      });
+    });
+
+    ipc.on('muteVideo', function (event, muteVideo) {
+      self.muteVideo = muteVideo;
+
+      self.$watch('muteVideo', function () {
+        ipc.send('setMuteVideo', self.muteVideo);
       });
     });
   }

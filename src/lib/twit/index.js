@@ -31,6 +31,13 @@ var FORMDATA_PATHS = [
   'account/update_profile_background_image',
 ];
 
+var JSONPAYLOAD_PATHS = [
+  'media/metadata/create',
+  'direct_messages/events/new',
+  'direct_messages/welcome_messages/new',
+  'direct_messages/welcome_messages/rules/new',
+];
+
 //
 //  Twitter
 //
@@ -51,9 +58,12 @@ Twitter.prototype.post = function (path, params, callback) {
   return this.request('POST', path, params, callback);
 };
 
+Twitter.prototype.delete = function (path, params, callback) {
+  return this.request('DELETE', path, params, callback)
+}
 Twitter.prototype.request = function (method, path, params, callback) {
   var self = this;
-  assert(method === 'GET' || method === 'POST');
+  assert(method == 'GET' || method == 'POST' || method == 'DELETE');
   // if no `params` is specified but a callback is, use default params
   if (typeof params === 'function') {
     callback = params;
@@ -174,7 +184,7 @@ Twitter.prototype._buildReqOpts = function (method, path, params, isStreaming, c
   } else {
     // This is a REST API request.
 
-    if (path === 'media/upload') {
+    if (path.indexOf('media/') !== -1) {
       // For media/upload, use a different entpoint and formencode.
       reqOpts.url = endpoints.MEDIA_UPLOAD + 'media/upload.json';
     } else {
@@ -186,6 +196,12 @@ Twitter.prototype._buildReqOpts = function (method, path, params, isStreaming, c
       reqOpts.form = finalParams;
        // set finalParams to empty object so we don't append a query string
       // of the params
+      finalParams = {};
+    } else if (JSONPAYLOAD_PATHS.indexOf(path) !== -1) {
+      reqOpts.headers['Content-type'] = 'application/json';
+      reqOpts.json = true;
+      reqOpts.body = finalParams;
+      // as above, to avoid appending query string for body params
       finalParams = {};
     } else {
       reqOpts.headers['Content-type'] = 'application/json';
@@ -275,26 +291,6 @@ Twitter.prototype._doRestApiRequest = function (reqOpts, twitOptions, method, ca
 
   req.on('response', function (resp) {
     response = resp;
-
-    if (self.config.trusted_cert_fingerprints) {
-      var err;
-      if (!resp.socket.authorized) {
-        // The peer certificate was not signed by one of the authorized CA's.
-        var authErrMsg = resp.socket.authorizationError.toString();
-        err = helpers.makeTwitError('The peer certificate was not signed; ' + authErrMsg);
-        callback(err, body, response);
-        return;
-      }
-      var fingerprint = resp.socket.getPeerCertificate().fingerprint;
-      var trustedFingerprints = self.config.trusted_cert_fingerprints;
-      if (trustedFingerprints.indexOf(fingerprint) === -1) {
-        var errMsg = util.format('Certificate untrusted. Trusted fingerprints are: %s. Got fingerprint: %s.',
-                                 trustedFingerprints.join(','), fingerprint);
-        err = new Error(errMsg);
-        callback(err, body, response);
-        return;
-      }
-    }
 
     // read data from `request` object which contains the decompressed HTTP response body,
     // `response` is the unmodified http.IncomingMessage object which may contain compressed data

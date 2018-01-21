@@ -33,7 +33,12 @@
             <input type="file" id="fileElem" accept="image/jpeg,image/gif,image/png,image/gif,video/mp4,image/webp,.png,.jpg,.jpeg,.webp,.gif,.mp4" style="display:none" @change="inputFile">
             <button class="newmediabutton" @click="addMedia">Add Media</button>
           </div>
-          <div class="newtweetmetacolumn remainingcolumn"><span class="remaining" v-text="remainingLength"></span></div>
+          <div class="newtweetmetacolumn remainingcolumn">
+            <svg class="progress" width="32" height="32" viewBox="0 0 32 32">
+                <circle class="progressmeter" cx="16" cy="16" r="10" stroke-width="1" />
+                <circle class="progressvalue" :class="{ nearlimit: permillage > 800, overlimit: permillage > 1000 }" cx="16" cy="16" r="10" stroke-width="2" stroke-dasharray="62.832" :stroke-dashoffset="strokeDashoffset" />
+            </svg>
+          </div>
           <div class="newtweetmetacolumn"><button class="newtweetbutton" :class="{ active: isValid }" @click="sendTweet">Tweet</button></div>
         </section>
         <div class="switches" v-if="showingSwitches" @click="dismiss">

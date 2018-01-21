@@ -10,7 +10,6 @@ Vue.config.debug = process.env.NODE_ENV !== 'production';
 Vue.config.strict = true;
 
 var defaultLength = 50;
-var scrollThrottleRate = 140;
 
 var timeline = new Vue({
   el: 'html',
@@ -45,7 +44,6 @@ var timeline = new Vue({
   },
   data: {
     blur: false,
-    fontSize: 16,
     screenname: '',
     lastScreenname: undefined,
     frames: [],
@@ -56,6 +54,12 @@ var timeline = new Vue({
     now: Math.floor(Date.now() / 1000)
   },
   methods: {
+    scrollToTop: function () {
+      this.$broadcast('scrollToTop');
+    },
+    scrollToBottom: function () {
+      this.$broadcast('scrollToBottom');
+    },
     showSwitches: function () {
       this.$broadcast('showSwitches', this.availableUsers);
     },
@@ -85,12 +89,6 @@ var timeline = new Vue({
       if (!pretext) {
         if (this.topFrame.view === 'profile') {
           pretext = '@' + this.topFrame.profile.screenname;
-        } else if (this.topFrame.view === 'messageGroup' && !_.isEmpty(this.topFrame.messages)) {
-          if (this.topFrame.messages[0].sender.screenname !== this.screenname) {
-            pretext = 'd ' + this.topFrame.messages[0].sender.screenname;
-          } else {
-            pretext = 'd ' + this.topFrame.messages[0].recipient.screenname;
-          }
         }
       }
 
@@ -216,7 +214,7 @@ var timeline = new Vue({
 
       if (timeline === 'mentions') {
         newNotification = new Notification('Mention from ' + tweet.user.screenname, {
-          body: tweet.rawStatus,
+          body: _.unescape(tweet.rawStatus),
           icon: tweet.user.biggerIcon,
           data: {
             screenname: screenname,
@@ -233,7 +231,7 @@ var timeline = new Vue({
           ipc.send('focus');
         };
       } else if (timeline === 'messages') {
-        if (this.isRelevantMessage(screenname, message)) {
+        if (this.isRelevantMessage(screenname, tweet)) {
           return;
         }
         newNotification = new Notification('Message from ' + tweet.sender.screenname, {
@@ -440,8 +438,8 @@ var timeline = new Vue({
       if (this.isRelevantMessage(screenname, message)) {
         this.topFrame.messages.unshift(message);
         this.$nextTick(function () {
-          // move to bottom
-          this.scrollToBottom();
+          // move to bottom for newest message
+          this.$broadcast('scrollToMessageBottom');
         });
       }
     },
@@ -539,24 +537,6 @@ var timeline = new Vue({
         el.scrollTop = toBottom ? target : 0;
       });
     },
-    scrollToNextTweet: function () {
-      this.$broadcast('scrollToNextTweet');
-    },
-    scrollToPreviousTweet: function () {
-      this.$broadcast('scrollToPreviousTweet');
-    },
-    scrollToTop: function () {
-      this.$broadcast('scrollToTop');
-    },
-    scrollToBottom: function () {
-      this.$broadcast('scrollToBottom');
-    },
-    scrollPageDown: function () {
-      this.$broadcast('scrollPageDown');
-    },
-    scrollPageUp: function () {
-      this.$broadcast('scrollPageUp');
-    },
     updateNow: function () {
       this.now = Math.floor(Date.now() / 1000);
     }
@@ -565,32 +545,11 @@ var timeline = new Vue({
     var self = this;
     setInterval(this.updateNow, 60 * 1000);
 
-    var throttledScrollToNextTweet = _.throttle(self.scrollToNextTweet, scrollThrottleRate);
-    var throttledScrollToPreviousTweet = _.throttle(self.scrollToPreviousTweet, scrollThrottleRate);
-
-    document.onkeydown = function (event) {
+    document.addEventListener('keydown', function (event) {
       if (event.keyCode === 8 || event.keyCode === 27 || event.keyCode === 72 || event.keyCode === 37) { // Backspace or ESC or h or left
         self.back();
-      } else if (event.keyCode === 74 || event.keyCode === 40) { // j or down
-        throttledScrollToNextTweet();
-      } else if (event.keyCode === 75 || event.keyCode === 38) { // k or up
-        throttledScrollToPreviousTweet();
       } else if (event.keyCode === 76 || event.keyCode === 39) { // l or right
         self.dive();
-      } else if (event.keyCode === 32) { // space
-        if (event.shiftKey) {
-          self.scrollPageUp();
-        } else {
-          self.scrollPageDown();
-        }
-      } else if (event.keyCode === 33) { // page up
-        self.scrollPageUp();
-      } else if (event.keyCode === 34) { // page down
-        self.scrollPageDown();
-      } else if (event.keyCode === 35) { // end
-        self.scrollToBottom();
-      } else if (event.keyCode === 36) { // home
-        self.scrollToTop();
       } else if (event.keyCode === 82) { // R
         if (event.metaKey || event.ctrlKey) {
           return;
@@ -676,7 +635,7 @@ var timeline = new Vue({
         default:
           break;
       }
-    };
+    });
 
     ipc.on('initialLoad', function (event, screenname) {
       self.addAvailableUser(screenname);
@@ -764,7 +723,7 @@ var timeline = new Vue({
     });
 
     ipc.on('newMessage', function (event, screenname, message) {
-      if (message.sender.screenname !== screenname || message.sender.screenname === message.recipient.screenname) {
+      if (message.sender.screenname !== screenname) {
         self.notify(screenname, 'messages', message);
       }
       self.saveMessage(screenname, message);
@@ -783,7 +742,7 @@ var timeline = new Vue({
     });
 
     ipc.on('fontSize', function (event, fontSize) {
-      self.fontSize = fontSize;
+      document.documentElement.style.fontSize = fontSize;
     });
 
     ipc.on('lastScreenname', function (event, screenname) {

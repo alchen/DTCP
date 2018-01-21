@@ -178,7 +178,9 @@ Timeline.prototype.findUser = function (screenname) {
 
 Timeline.prototype.getRelevantUsers = function (target) {
   return _.pickBy(this.users, function(value) {
-    return _.startsWith(value.screenname.toLowerCase(), target.toLowerCase());
+    var lowerVal = value.screenname.toLowerCase();
+    var lowerTarget = target.toLowerCase();
+    return _.startsWith(lowerVal, lowerTarget) && lowerVal !== lowerTarget;
   });
 };
 
@@ -251,8 +253,10 @@ Timeline.prototype.saveTweet = function (tweet) {
 
 Timeline.prototype.saveTweets = function (tweets) {
   var self = this;
-  return _.map(tweets, function (tweet) {
+  return _.uniqBy(_.map(tweets, function (tweet) {
     return self.saveTweet(tweet);
+  }), function (tweet) {
+    return tweet.id;
   });
 };
 

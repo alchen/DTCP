@@ -5,8 +5,11 @@ function RestoreDirname(options) {
 }
 
 RestoreDirname.prototype.apply = function (compiler) {
-  compiler.parser.plugin('evaluate Identifier __dirname', function (expr) {
-    return true;
+  compiler.plugin("compilation", function(compilation, data) {
+    data.normalModuleFactory.plugin("parser", function(parser, options) { parser.plugin('evaluate Identifier __dirname', function (expr) {
+        return true;
+      });
+    });
   });
 };
 

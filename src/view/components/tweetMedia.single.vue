@@ -52,14 +52,14 @@
   }
 
   &.three .tweetmediaimage:first-child {
-    height: calc(100% - .5rem);
+    width: calc(100% - .5rem);
   }
 }
 
 .inflatecontainer {
   display: flex;
   flex-wrap: wrap;
-  flex-direction: column;
+  flex-direction: row;
   position: absolute;
   top: 0;
   left: 0;

@@ -125,7 +125,7 @@ FileUploader.prototype._appendMedia = function(media_id_string, chunk_part, segm
  */
 FileUploader.prototype._initMedia = function (cb) {
   var self = this;
-  var mediaType = mime.lookup(self._file_path);
+  var mediaType = mime.getType(self._file_path);
   var mediaFileSizeBytes = fs.statSync(self._file_path).size;
 
   // Check the file size - it should not go over 15MB for video.
