@@ -298,12 +298,13 @@
   }
 }
 
-.gap-enter {
-  -webkit-animation: expand .3s;
+.gap-transition {
+  transition: all .3s ease;
 }
 
+.gap-enter,
 .gap-leave {
-  -webkit-animation: compress .3s;
+  height: 0;
 }
 </style>
 
@@ -484,8 +485,6 @@ var Tweet = Vue.extend({
         self.loading = false;
       }, 7000);
     }
-  },
-  transitions: {
   }
 });
 

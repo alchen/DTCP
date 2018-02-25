@@ -21,6 +21,7 @@ $switch-transition-time: .2s;
     position: relative;
     overflow: auto;
     margin-left: 3.5rem;
+    word-break: break-all;
 
     .newrawtweet {
       white-space: pre-wrap;

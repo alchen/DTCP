@@ -123,7 +123,7 @@ describe('Stream', function () {
       var stream = new Stream('access', 'secret', screenname);
       var tweets = _.map(tweetsJson.slice(15), function (tweet) { return new Tweet(tweet, screenname); });
 
-      var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
+      var getStub = sinon.stub(stream.T, 'get').callsFake(function (url, options, callback) {
         callback(null, tweetsJson.slice(15), null);
       });
       sinon.spy(stream, 'saveTweetsToTimeline');
@@ -149,7 +149,7 @@ describe('Stream', function () {
       var stream = new Stream('access', 'secret', screenname);
       var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
 
-      var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
+      var getStub = sinon.stub(stream.T, 'get').callsFake(function (url, options, callback) {
         callback(null, tweetsJson, null);
       });
       sinon.spy(stream, 'saveTweetsToTimeline');
@@ -173,7 +173,7 @@ describe('Stream', function () {
       var stream = new Stream('access', 'secret', screenname);
       var tweets = _.map(tweetsJson, function (tweet) { return new Tweet(tweet, screenname); });
 
-      var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
+      var getStub = sinon.stub(stream.T, 'get').callsFake(function (url, options, callback) {
         callback(null, tweetsJson.slice(5), null);
       });
       sinon.spy(stream, 'saveTweetsToTimeline');
@@ -206,7 +206,7 @@ describe('Stream', function () {
       var gap = new Tweet(tweetsJson[10], screenname);
       gap.gaps[timeline] = true;
 
-      var getStub = sinon.stub(stream.T, 'get', function (url, options, callback) {
+      var getStub = sinon.stub(stream.T, 'get').callsFake(function (url, options, callback) {
         if (options.since_id) {
           callback(null, tweetsJson.slice(0, 10), null);
         } else {

@@ -41,6 +41,9 @@ var Tweet = function (tweet, screenname) {
 
   var base = tweet.extended_tweet || tweet;
   this.rawStatus = base.full_text || base.text;
+  if (base.entities && base.entities.media) {
+    base.entities.media = base.entities.media.slice(0, 1);
+  }
   this.status = (
     base.entities ? twitterText.autoLinkWithJSON(this.rawStatus, base.entities, options)
     : twitterText.autoLink(this.rawStatus, options)
