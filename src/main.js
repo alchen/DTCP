@@ -202,6 +202,7 @@ ipc.on('getLastScreenname', function (event) {
 ipc.on('initialLoad', function () {
   _.each(streams, function (stream) {
     stream.initialLoad();
+    stream.autoUpdate();
   });
 });
 
@@ -259,6 +260,7 @@ ipc.on('sendTweet', function (event, screenname, tweet, replyTo, mediaPath) {
   var sender = windows.findWindowFromWebContents(event.sender);
   sender.hide();
   streams[screenname].sendTweet(tweet, replyTo, sender, mediaPath);
+  streams[screenname].autoUpdate();
 });
 
 ipc.on('sendMessage', function (event, screenname, recipient, message) {

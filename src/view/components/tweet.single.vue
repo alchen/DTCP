@@ -311,7 +311,7 @@
 <template lang="html">
   <li class="box" data-tweet-id="{{tweet.id}}">
     <div class="gap" v-if="tweet.gaps[view]" @click="loadMissing" transition="gap">
-      <div v-if="!loading"><span class="iconic" data-glyph="chevron-top" aria-hidden="true"></span> Load missing tweets</div>
+      <div v-if="!loading"><span class="iconic" data-glyph="chevron-top" aria-hidden="true"></span> Load more tweets</div>
       <div v-if="loading" class="ball-clip-rotate"><div></div></div>
     </div>
     <div class="tweet" @contextmenu="rightclick" @click="leftclick">

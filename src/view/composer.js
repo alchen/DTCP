@@ -211,7 +211,7 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
             textarea.selectionEnd = currentLength;
           });
         } else {
-          self.rawTweet = self.rawTweet + (savedTweet || '');
+          self.rawTweet = (savedTweet || '') + self.rawTweet;
           var savedLength = (savedTweet || '').length;
           Vue.nextTick(function () {
             textarea.selectionStart = 0;
@@ -248,51 +248,4 @@ ipc.on('pretext', function (event, screenname, availableUsers, replyTo, pretext,
       }
     }
   });
-});
-
-// In the renderer process:
-var remote = require('electron').remote;
-var webFrame = require('electron').webFrame;
-// `remote.require` since `Menu` is a main-process module.
-var buildEditorContextMenu = require('electron-editor-context-menu');
-
-var contextTemplate = [{
-  label: 'Undo',
-  role: 'undo'
-}, {
-  label: 'Redo',
-  role: 'redo'
-}, {
-  type: 'separator'
-}, {
-  label: 'Cut',
-  role: 'cut'
-}, {
-  label: 'Copy',
-  role: 'copy'
-}, {
-  label: 'Paste',
-  role: 'paste'
-}, {
-  label: 'Paste and Match Style',
-  click: function() {
-    BrowserWindow.getFocusedWindow().webContents.pasteAndMatchStyle();
-  }
-}, {
-  label: 'Select All',
-  role: 'selectall'
-}];
-
-window.addEventListener('contextmenu', function(e) {
-  // Only show the context menu in text editors.
-  if (!e.target.closest('textarea, input, [contenteditable="true"]')) return;
-
-  var menu = buildEditorContextMenu();
-
-  // The 'contextmenu' event is emitted after 'selectionchange' has fired but possibly before the
-  // visible selection has changed. Try to wait to show the menu until after that, otherwise the
-  // visible selection will update after the menu dismisses and look weird.
-  setTimeout(function() {
-    menu.popup(remote.getCurrentWindow());
-  }, 30);
 });

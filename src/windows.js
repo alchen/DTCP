@@ -269,6 +269,10 @@ var windows = {
     newWindow.loadURL('file://' + path.resolve(__dirname, '../composer.html'));
     newTweetWindows.push(newWindow);
 
+    require('electron-context-menu')({
+      window: newWindow
+    })
+
     newWindow.on('closed', function () {
       var index = newTweetWindows.indexOf(this);
       if (index !== -1) {
