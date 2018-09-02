@@ -10,9 +10,9 @@ DTCP is a Twitter client built with [`electron`][1] and [`Vue.js`][2]. Futher de
 
 # Downloads
 
-[<img src="docs/apple.png" width="32" /> OS X](https://github.com/alchen/DTCP/releases/download/v0.6.0/DTCP-mac.zip)
+[<img src="docs/apple.png" width="32" /> OS X](https://github.com/alchen/DTCP/releases/download/v0.6.1/DTCP-mac.zip)
 
-[<img src="docs/windows.png" width="32" /> Windows](https://github.com/alchen/DTCP/releases/download/v0.6.0/DTCP-win32.zip)
+[<img src="docs/windows.png" width="32" /> Windows](https://github.com/alchen/DTCP/releases/download/v0.6.1/DTCP-win32.zip)
 
 # Development
 

@@ -501,7 +501,7 @@ Stream.prototype.autoUpdate = function () {
     if (tweets.length == 0) {
       return
     }
-    var tweetId = tweets[0].id
+    var tweetId = tweets[0].retweetId || tweets[0].id
 
     console.log(tweetId)
     self.T.get('statuses/' + timeline + '_timeline', {
