@@ -3,6 +3,7 @@
 const gulp = require('gulp');
 const sass = require('gulp-sass');
 const webpack = require('webpack');
+const path = require('path');
 const RestoreDirname = require('./webpack/restoredirname.webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
@@ -23,7 +24,7 @@ gulp.task('sass', ['webpack'], function () {
 gulp.task('webpack', function (cb) {
   webpack({
     target: 'electron',
-    context: __dirname + '/src',
+    context: path.join(__dirname, 'src'),
     node: {
       __dirname: false
     },
@@ -38,7 +39,7 @@ gulp.task('webpack', function (cb) {
       'entry': './main.js'
     },
     output: {
-      path: __dirname + '/src/assets/js',
+      path: path.join(__dirname, 'src/assets/js'),
       publicPath: './js/',
       filename: '[name].js',
       chunkFilename: '[id].js'
