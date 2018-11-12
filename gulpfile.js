@@ -15,9 +15,9 @@ gulp.task('sass', ['webpack'], function () {
     './src/assets/css/viewer.scss',
     './src/assets/css/preferences.scss',
     './src/assets/css/suggestions.scss'
-    ])
-  .pipe(sass().on('error', sass.logError))
-  .pipe(gulp.dest('./src/assets/css/'));
+  ])
+    .pipe(sass().on('error', sass.logError))
+    .pipe(gulp.dest('./src/assets/css/'));
 });
 
 gulp.task('webpack', function (cb) {
@@ -45,32 +45,32 @@ gulp.task('webpack', function (cb) {
     },
     module: {
       loaders: [
-      {
-        test: /\.vue$/,
-        loader: 'vue-loader'
-      },
-      {
-        test: /\.json$/,
-        loader: 'json-loader'
-      }
+        {
+          test: /\.vue$/,
+          loader: 'vue-loader'
+        },
+        {
+          test: /\.json$/,
+          loader: 'json-loader'
+        }
       ],
       noParse: /node_modules\/json-schema\/lib\/validate\.js/
     },
     plugins: [
-    new RestoreDirname(),
-    new ExtractTextPlugin('../css/components.scss'),
-    new webpack.LoaderOptionsPlugin({
-     options: {
-       vue: {
-        loaders: {
-          sass: ExtractTextPlugin.extract('css-loader!sass-loader')
+      new RestoreDirname(),
+      new ExtractTextPlugin('../css/components.scss'),
+      new webpack.LoaderOptionsPlugin({
+        options: {
+          vue: {
+            loaders: {
+              sass: ExtractTextPlugin.extract('css-loader!sass-loader')
+            }
+          }
         }
-      }
-    }
-  })
+      })
     ],
     devtool: 'source-map',
-    externals: { spellchecker: "commonjs spellchecker" }
+    externals: { spellchecker: 'commonjs spellchecker' }
   }, cb);
 });
 
