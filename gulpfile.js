@@ -3,6 +3,7 @@
 const gulp = require('gulp');
 const sass = require('gulp-sass');
 const webpack = require('webpack');
+const path = require('path');
 const RestoreDirname = require('./webpack/restoredirname.webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
@@ -16,14 +17,14 @@ gulp.task('sass', ['webpack'], function () {
     './src/assets/css/preferences.scss',
     './src/assets/css/suggestions.scss'
   ])
-      .pipe(sass().on('error', sass.logError))
-      .pipe(gulp.dest('./src/assets/css/'));
+    .pipe(sass().on('error', sass.logError))
+    .pipe(gulp.dest('./src/assets/css/'));
 });
 
 gulp.task('webpack', function (cb) {
   webpack({
     target: 'electron',
-    context: __dirname + '/src',
+    context: path.join(__dirname, 'src'),
     node: {
       __dirname: false
     },
@@ -38,7 +39,7 @@ gulp.task('webpack', function (cb) {
       'entry': './main.js'
     },
     output: {
-      path: __dirname + '/src/assets/js',
+      path: path.join(__dirname, 'src/assets/js'),
       publicPath: './js/',
       filename: '[name].js',
       chunkFilename: '[id].js'
@@ -56,17 +57,21 @@ gulp.task('webpack', function (cb) {
       ],
       noParse: /node_modules\/json-schema\/lib\/validate\.js/
     },
-    vue: {
-      loaders: {
-        sass: ExtractTextPlugin.extract('css-loader!sass-loader')
-      }
-    },
     plugins: [
       new RestoreDirname(),
-      new ExtractTextPlugin('../css/components.scss')
+      new ExtractTextPlugin('../css/components.scss'),
+      new webpack.LoaderOptionsPlugin({
+        options: {
+          vue: {
+            loaders: {
+              sass: ExtractTextPlugin.extract('css-loader!sass-loader')
+            }
+          }
+        }
+      })
     ],
     devtool: 'source-map',
-    externals: { spellchecker: "commonjs spellchecker" }
+    externals: { spellchecker: 'commonjs spellchecker' }
   }, cb);
 });
 
